@@ -160,7 +160,6 @@ client.on('message', message => {
         }
     }
 })
-client.login(bottoken); //CHANGE
 
 // THIS  MUST  BE  THIS  WAY
 client.login(process.env.BOT_TOKEN);
