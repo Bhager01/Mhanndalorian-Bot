@@ -125,6 +125,7 @@ client.on('message', message => {
             if (rows.length) {
                 rows.map((row) => {
                     if(String(row[1]).match(/\d+/) == message.member.id){
+                        console.log(message.member.displayName + " requested flair level")
                         if(row[0] == 0){
                             message.channel.send("You have had " + row[0] + " days without missing raids.  Bronze level status is at 14 days.");
                         }
