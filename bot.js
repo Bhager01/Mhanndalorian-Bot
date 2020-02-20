@@ -60,28 +60,30 @@ var job = new CronJob('1 0,21 * * *', function() {
 }, null, true, 'America/New_York');
 job.start();
 
-function AddFlair(passedMember, row, Type){
+async function AddFlair(passedMember, row, Type){
+    var newNickname;
+    newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'')
+
     if(row <= 13){
-        passedMember.setNickname((passedMember.displayName).replace('🥉','').replace('🥈','').replace('🥇','').replace('💎',''))
+        await passedMember.setNickname(newNickname)
         console.log(Type + " - " + passedMember.displayName + " None")
     }
     if(row >= 14 && row <= 29){
-        passedMember.setNickname((passedMember.displayName).replace('🥉','').replace('🥈','').replace('🥇','').replace('💎','') + '🥉')
+        await passedMember.setNickname(newNickname + '🥉')
         console.log(Type + " - " + passedMember.displayName + " Bronze")
      }
     if(row >= 30 && row <= 59){
-        passedMember.setNickname((passedMember.displayName).replace('🥉','').replace('🥈','').replace('🥇','').replace('💎','') + '🥈')
+        await passedMember.setNickname(newNickname + '🥈')
         console.log(Type + " - " + passedMember.displayName + " Silver")
      }
     if(row >= 60 && row <= 99){
-        passedMember.setNickname((passedMember.displayName).replace('🥉','').replace('🥈','').replace('🥇','').replace('💎','') + '🥇')
+        await passedMember.setNickname(newNickname + '🥇')
         console.log(Type + " - " + passedMember.displayName + " Gold")
      }
     if(row >= 100){
-        passedMember.setNickname((passedMember.displayName).replace('🥉','').replace('🥈','').replace('🥇','').replace('💎','') + '💎')
+        await passedMember.setNickname(newNickname + '💎')
         console.log(Type + " - " + passedMember.displayName + " Diamond")
      }
-
 }
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
