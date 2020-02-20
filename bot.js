@@ -84,7 +84,7 @@ function AddFlair(passedMember, row, Type){
 
 }
 
-client.on('presenceUpdate', async (oldMember, newMember) => {
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
   var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
   authorize(content, listMajors);
 
@@ -99,7 +99,7 @@ client.on('presenceUpdate', async (oldMember, newMember) => {
             if (rows.length) {
                 rows.map((row) => {
                     if(String(row[1]).match(/\d+/) == newMember.user.id && String(row[1]).match(/\d+/) != "378053516067078149"){
-                        AddFlair(newMember, row[0], "Presence");
+                        AddFlair(newMember, row[0], "User Name Change");
                     }
                 });
             }else {
