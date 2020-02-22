@@ -3,6 +3,12 @@ const {google} = require('googleapis');
 const client = new Discord.Client();
 const prefix = "!"
 
+var newBronze = "";
+var newSilver = "";
+var newGold = "";
+var newDiamond = "";
+var NewNoStatus = [];
+
 client.once('ready', () => {
     console.log('Ready')
 })
@@ -16,8 +22,45 @@ function authorize(credentials, callback) {
       callback(oAuth2Client);
 }
 
-function FlairUpdate(Type){
+async function newFlairAnncouncment(){
+
+    if (Array.isArray(NewNoStatus) && NewNoStatus.length){
+        var x;
+        var GuildMember;
+        var User;
+        var discordID;
+        const guild = client.guilds.get("505515654833504266");
+
+        for (x in NewNoStatus){
+            client.users.get(NewNoStatus[x]).send("You have missed a raid and lost your flair.  Get back in there!")
+
+            discordID = NewNoStatus[x];
+            User =  await client.fetchUser(discordID)
+            GuildMember =  await guild.fetchMember(User);
+            console.log(GuildMember.displayName + " has lost raid flair")
+        }
+    }
+
+    if (newBronze != "")
+        client.channels.get("505515654837698563").send("Nice job! Let's congratulate the following members on just earning bronze raid status. " + newBronze)
+
+    if (newSilver != "")
+        client.channels.get("505515654837698563").send("Sweet!! Congratulate the following members on just earning silver raid status. " + newSilver)
+
+    if (newGold != "")
+        client.channels.get("505515654837698563").send("Excellent!!! Let's congratulate the following members on just earning gold raid status. " + newGold)
+    
+    if (newDiamond != "")
+        client.channels.get("505515654837698563").send("Amazing! 100 days with no raid missed!! Let's congratulate the following members on just earning diamond raid status. " + newDiamond)
+}
+
+function FlairUpdate(Type, callback){
     const guild = client.guilds.get("505515654833504266");
+    newBronze = "";
+    newSilver = "";
+    newGold = "";
+    newDiamond = "";
+    NewNoStatus = [];
 
     content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     authorize(content, listMajors);
@@ -27,7 +70,7 @@ function FlairUpdate(Type){
         sheets.spreadsheets.values.get({
           spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
           range: 'Guild Members & Data!E119:F',
-        }, (err, res) => {
+        }, async (err, res) => {
           if (err) return console.log('The API returned an error: ' + err);
           const rows = res.data.values;
           if (rows.length) {
@@ -36,16 +79,16 @@ function FlairUpdate(Type){
           var User;
           var discordID;
 
-            rows.map((row) => {
-                (async () => {
-                      discordID = row[1].replace("<","").replace(">","").replace("@","");
-                      if(discordID != 378053516067078149){
-                        User = await client.fetchUser(discordID)
-                        GuildMember = await guild.fetchMember(User);
-                        AddFlair(GuildMember,row[0],Type);
-                      }
-                })()
-            });
+            for (const element of rows){
+                discordID = element[1].replace("<","").replace(">","").replace("@","");
+                if(discordID != 378053516067078149){
+                    User =  await client.fetchUser(discordID)
+                    GuildMember =  await guild.fetchMember(User);
+                    AddFlair(GuildMember,element[0],Type);
+                }
+            }
+            callback();
+
           } else {
             console.log('No data found.');
           }
@@ -56,34 +99,49 @@ function FlairUpdate(Type){
 var CronJob = require('cron').CronJob;
 var job = new CronJob('1 0,21 * * *', function() {
     console.log("Cron job executed")
-    FlairUpdate("Cron")
+    FlairUpdate("Cron", newFlairAnncouncment)
 }, null, true, 'America/New_York');
 job.start();
 
 async function AddFlair(passedMember, row, Type){
+    var OldNickname = passedMember.displayName
+
     var newNickname;
     newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'')
 
-    if(row <= 13){
+    if(row <= 13 && OldNickname != newNickname){
         await passedMember.setNickname(newNickname)
         console.log(Type + " - " + passedMember.displayName + " None")
+        if(Type == "Manual" || Type == "Cron")
+         NewNoStatus.push(passedMember.id)
     }
-    if(row >= 14 && row <= 29){
+    else if(row >= 14 && row <= 29 && OldNickname != newNickname + '🥉'){
         await passedMember.setNickname(newNickname + '🥉')
         console.log(Type + " - " + passedMember.displayName + " Bronze")
-     }
-    if(row >= 30 && row <= 59){
+        if(Type == "Manual" || Type == "Cron")
+            newBronze = newBronze + "<@" + passedMember.id + "> "
+    }
+    else if(row >= 30 && row <= 59 && OldNickname != newNickname + '🥈'){
         await passedMember.setNickname(newNickname + '🥈')
         console.log(Type + " - " + passedMember.displayName + " Silver")
-     }
-    if(row >= 60 && row <= 99){
+        if(Type == "Manual" || Type == "Cron")
+            newSilver = newSilver + "<@" + passedMember.id + "> "
+    }
+    else if(row >= 60 && row <= 99 && OldNickname != newNickname + '🥇'){
         await passedMember.setNickname(newNickname + '🥇')
         console.log(Type + " - " + passedMember.displayName + " Gold")
-     }
-    if(row >= 100){
+        if(Type == "Manual" || Type == "Cron")
+            newGold = newGold + "<@" + passedMember.id + "> "
+    }
+    else if(row >= 100 && OldNickname != newNickname + '💎'){
         await passedMember.setNickname(newNickname + '💎')
         console.log(Type + " - " + passedMember.displayName + " Diamond")
-     }
+        if(Type == "Manual" || Type == "Cron")
+            newDiamond = newDiamond + "<@" + passedMember.id + "> "
+    }
+    else{
+        console.log(Type + " - " + passedMember.displayName + " No update needed")
+    }
 }
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
@@ -129,7 +187,7 @@ client.on('message', message => {
                     if(String(row[1]).match(/\d+/) == message.member.id){
                         console.log(message.member.displayName + " requested flair level")
                         if(row[0] == 0){
-                            message.channel.send("You have had " + row[0] + " days without missing raids.  Bronze level status is at 14 days.");
+                            message.channel.send("You have had 0 days without missing raids.  Bronze level status is at 14 days.");
                         }
                         if(row[0] >= 1 && row[0] <= 13){
                             message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  Bronze level status is at 14 days.");
@@ -157,12 +215,10 @@ client.on('message', message => {
     if(message.content == `${prefix}flairupdate` || message.content == `${prefix}Flairupdate`){
         if(message.member.id == "406945430967156766"){
             message.channel.send("Flair is being updated for all guild members")
-            FlairUpdate("Manual")
+            FlairUpdate("Manual", newFlairAnncouncment)
         } else{
             message.channel.send(message.member.displayName + ", what do you think you are doing.  Turn back.  I have spoken.")
         }
     }
 })
-
-// THIS  MUST  BE  THIS  WAY
 client.login(process.env.BOT_TOKEN);
