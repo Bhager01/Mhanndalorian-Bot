@@ -97,7 +97,7 @@ function FlairUpdate(Type, callback){
 }
 
 var CronJob = require('cron').CronJob;
-var job = new CronJob('1 0,21 * * *', function() {
+var job = new CronJob('0 9,21 * * *', function() {
     console.log("Cron job executed")
     FlairUpdate("Cron", newFlairAnncouncment)
 }, null, true, 'America/New_York');
