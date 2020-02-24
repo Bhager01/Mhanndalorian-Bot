@@ -37,7 +37,7 @@ async function newFlairAnncouncment(){
             discordID = NewNoStatus[x];
             User =  await client.fetchUser(discordID)
             GuildMember =  await guild.fetchMember(User);
-            console.log(GuildMember.displayName + " has lost raid flair")
+            console.log(GuildMember.displayName + " has lost raid flair  **")
         }
     }
 
@@ -98,7 +98,7 @@ function FlairUpdate(Type, callback){
 
 var CronJob = require('cron').CronJob;
 var job = new CronJob('0 9,21 * * *', function() {
-    console.log("Cron job executed")
+    console.log("Cron job executed **")
     FlairUpdate("Cron", newFlairAnncouncment)
 }, null, true, 'America/New_York');
 job.start();
@@ -111,31 +111,31 @@ async function AddFlair(passedMember, row, Type){
 
     if(row <= 13 && OldNickname != newNickname){
         await passedMember.setNickname(newNickname)
-        console.log(Type + " - " + passedMember.displayName + " None")
+        console.log(Type + " - " + passedMember.displayName + " None **")
         if(Type == "Manual" || Type == "Cron")
          NewNoStatus.push(passedMember.id)
     }
     else if(row >= 14 && row <= 29 && OldNickname != newNickname + '🥉'){
         await passedMember.setNickname(newNickname + '🥉')
-        console.log(Type + " - " + passedMember.displayName + " Bronze")
+        console.log(Type + " - " + passedMember.displayName + " Bronze **")
         if(Type == "Manual" || Type == "Cron")
             newBronze = newBronze + "<@" + passedMember.id + "> "
     }
     else if(row >= 30 && row <= 59 && OldNickname != newNickname + '🥈'){
         await passedMember.setNickname(newNickname + '🥈')
-        console.log(Type + " - " + passedMember.displayName + " Silver")
+        console.log(Type + " - " + passedMember.displayName + " Silver **")
         if(Type == "Manual" || Type == "Cron")
             newSilver = newSilver + "<@" + passedMember.id + "> "
     }
     else if(row >= 60 && row <= 99 && OldNickname != newNickname + '🥇'){
         await passedMember.setNickname(newNickname + '🥇')
-        console.log(Type + " - " + passedMember.displayName + " Gold")
+        console.log(Type + " - " + passedMember.displayName + " Gold **")
         if(Type == "Manual" || Type == "Cron")
             newGold = newGold + "<@" + passedMember.id + "> "
     }
     else if(row >= 100 && OldNickname != newNickname + '💎'){
         await passedMember.setNickname(newNickname + '💎')
-        console.log(Type + " - " + passedMember.displayName + " Diamond")
+        console.log(Type + " - " + passedMember.displayName + " Diamond **")
         if(Type == "Manual" || Type == "Cron")
             newDiamond = newDiamond + "<@" + passedMember.id + "> "
     }
@@ -185,7 +185,7 @@ client.on('message', message => {
             if (rows.length) {
                 rows.map((row) => {
                     if(String(row[1]).match(/\d+/) == message.member.id){
-                        console.log(message.member.displayName + " requested flair level")
+                        console.log(message.member.displayName + " requested flair level **")
                         if(row[0] == 0){
                             message.channel.send("You have had 0 days without missing raids.  Bronze level status is at 14 days.");
                         }
@@ -217,8 +217,10 @@ client.on('message', message => {
             message.channel.send("Flair is being updated for all guild members")
             FlairUpdate("Manual", newFlairAnncouncment)
         } else{
-            message.channel.send(message.member.displayName + ", what do you think you are doing.  Turn back.  I have spoken.")
+            message.channel.send(message.member.displayName + ", what do you think you are doing.  Turn back.  I have spoken.");
+            console.log(message.member.displayName + " tried to execute flairupdate **");
         }
     }
 })
+//LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
