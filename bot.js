@@ -90,7 +90,7 @@ function FlairUpdate(Type, callback){
           var discordID;
 
             for (const element of rows){
-                if(typeof element[1] != 'undefined' && isNaN(element[0]) == false){
+                if(typeof element[1] != 'undefined' && element[0].length >= 1){
                     discordID = element[1].replace("<","").replace(">","").replace("@","");
                     if(discordID != 378053516067078149){
                         User =  await client.fetchUser(discordID)
