@@ -12,6 +12,16 @@ var NewNoStatus = [];
 client.once('ready', () => {
     console.log('Ready')
 })
+
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+      currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+  }
+
+
 function authorize(credentials, callback) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
@@ -80,11 +90,13 @@ function FlairUpdate(Type, callback){
           var discordID;
 
             for (const element of rows){
-                discordID = element[1].replace("<","").replace(">","").replace("@","");
-                if(discordID != 378053516067078149){
-                    User =  await client.fetchUser(discordID)
-                    GuildMember =  await guild.fetchMember(User);
-                    AddFlair(GuildMember,element[0],Type);
+                if(typeof element[1] != 'undefined'){
+                    discordID = element[1].replace("<","").replace(">","").replace("@","");
+                    if(discordID != 378053516067078149){
+                        User =  await client.fetchUser(discordID)
+                        GuildMember =  await guild.fetchMember(User);
+                        AddFlair(GuildMember,element[0],Type);
+                    }
                 }
             }
             callback();
@@ -212,7 +224,7 @@ client.on('message', message => {
             });
         }       
     }
-    if(message.content == `${prefix}flairupdate` || message.content == `${prefix}Flairupdate`){
+    else if(message.content == `${prefix}flairupdate` || message.content == `${prefix}Flairupdate`){
         if(message.member.id == "406945430967156766"){
             message.channel.send("Flair is being updated for all guild members")
             FlairUpdate("Manual", newFlairAnncouncment)
@@ -221,6 +233,29 @@ client.on('message', message => {
             console.log(message.member.displayName + " tried to execute flairupdate QZ");
         }
     }
+
+    else if(message.content.startsWith(`${prefix}clean`)){
+        if(message.member.roles.has("505527335768948754")){
+            const args = message.content.split(' ').slice(1); // All arguments behind the command name with the prefix
+            const amount = args.join(' '); // Amount of messages which should be deleted
+
+            if (!amount) // Checks if the `amount` parameter is given
+                return message.reply('You haven\'t given an amount of messages which should be deleted!')
+            if (isNaN(amount))
+                return message.reply('The amount must be a number!'); // Checks if the `amount` parameter is a number. If not, the command throws an error
+            if (amount > 100)
+                return message.reply('You can`t delete more than 100 messages at once!'); // Checks if the `amount` integer is bigger than 100
+            if (amount < 1)
+                return message.reply('You have to delete at least 1 message!'); // Checks if the `amount` integer is smaller than 1
+            message.channel.bulkDelete(amount)
+            console.log(message.member.displayName + " Successfully executed clean command")
+        }
+        else{
+            message.reply('You do not have sufficient privileges to execute this command')
+            console.log(message.member.displayName + " Failed to execute clean command QZ")
+        }
+    }
 })
+
 //LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
