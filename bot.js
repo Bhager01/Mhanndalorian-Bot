@@ -247,8 +247,24 @@ client.on('message', message => {
                 return message.reply('You can`t delete more than 100 messages at once!'); // Checks if the `amount` integer is bigger than 100
             if (amount < 1)
                 return message.reply('You have to delete at least 1 message!'); // Checks if the `amount` integer is smaller than 1
-            message.channel.bulkDelete(amount)
-            console.log(message.member.displayName + " Successfully executed clean command")
+                
+            (async () => {
+                await message.channel.fetchMessages({ limit: amount }).then(messages => { // Fetches the messages
+                    console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages QZ`)
+                    message.channel.bulkDelete(messages)
+                    .catch(err => {
+                   //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
+                        console.log(message.member.displayName + ` Individually deleted ${messages.size} messages QZ`);
+                        messages.deleteAll()
+                        console.log(err);
+                    });
+                })
+            })()
+                //  message.channel.bulkDelete(amount)
+          //      .then(messages => console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages`))
+          //      .catch(console.error);
+          //  message.channel.fetchMessages(10000)
+           // console.log(message.member.displayName + " Successfully executed clean command")
         }
         else{
             message.reply('You do not have sufficient privileges to execute this command')
