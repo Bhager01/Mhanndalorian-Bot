@@ -333,7 +333,7 @@ client.on('message', message => {
     }
 
     else if(message.content.toLowerCase().includes("hhh") || message.content.toLowerCase().includes("triple h")){
-        gifPost(message, "Triple H WWF", "Time to play the game!!!!!")
+        gifPost(message, "hhh wwe", "Time to play the game!!!!!")
     }
 
     else if(message.content.toLowerCase().includes("ultimate warrior")){
