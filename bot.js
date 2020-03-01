@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const {google} = require('googleapis');
+const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
 const client = new Discord.Client();
 const prefix = "!"
 
@@ -8,6 +9,9 @@ var newSilver = "";
 var newGold = "";
 var newDiamond = "";
 var NewNoStatus = [];
+
+var GphApiClient = require('giphy-js-sdk-core');
+giphy = GphApiClient(giffyToken)
 
 client.once('ready', () => {
     console.log('Ready')
@@ -21,6 +25,23 @@ function sleep(milliseconds) {
     } while (currentDate - date < milliseconds);
   }
 
+function gifPost(message, searchString, tagLine) {
+    giphy.search('gifs', {"q": searchString, "limit": 35})
+        .then((response) => {
+            var TotalResponses = response.data.length;
+            var ResponseIndex = Math.floor((Math.random() * 10) + 1) % TotalResponses;
+            var ResponseFinal = response.data[ResponseIndex];
+
+            const exampleEmbed = new Discord.RichEmbed()
+	        .setTitle(tagLine)
+	        .setImage(ResponseFinal.images.fixed_height.url);
+
+            message.channel.send(exampleEmbed);
+
+        }).catch(() => {
+            message.channel.send("You mentioned " + searchString + ", but a gif was not available!")
+        })
+}
 
 function authorize(credentials, callback) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
@@ -181,6 +202,19 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
     }
 })
 
+client.on("guildMemberAdd", (member) => {
+    client.users.get(member.id).send("Welcome to Wookie and the Bandit!  I'm Mhanndalorain bot, Mhann Uhdea's personal "
+    + "bounty hunter.  Some of the services I provide include keeping track of raid participation, weekly updates, advanced "
+    + "commands, and humor. I will assign you flair (an emoji added to your username), based on your participation level in "
+    + "raids (you only need to sign up, doing damage is optional): \n \n"
+    + "Bronze (🥉) - 14 days of no missed raids \nSilver (🥈) - 30 days of no missed raids \n"
+    + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n \n"
+    + "The following command will allow you to check your flair status at any time \n!flair \n \n"
+    + "If you have any questions about my services please contact my employer, Mhann Uhdea. \n \nI have spoken. \n"
+    + "This is the way.")
+
+  });
+
 client.on('message', message => {
       if(message.content == `${prefix}flair` || message.content == `${prefix}Flair`){
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
@@ -260,17 +294,80 @@ client.on('message', message => {
                     });
                 })
             })()
-                //  message.channel.bulkDelete(amount)
-          //      .then(messages => console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages`))
-          //      .catch(console.error);
-          //  message.channel.fetchMessages(10000)
-           // console.log(message.member.displayName + " Successfully executed clean command")
         }
         else{
             message.reply('You do not have sufficient privileges to execute this command')
             console.log(message.member.displayName + " Failed to execute clean command QZ")
         }
     }
+    else if(message.content.toLowerCase().includes("flair")){
+        gifPost(message, "Ric Flair", "WOOOOOOOOOOOOOOO!")
+    }
+
+    else if(message.content.toLowerCase().includes("piper")){
+        gifPost(message, "Roddy Piper WWF", "Real men wear kilts")
+    }
+
+    else if(message.content.toLowerCase().includes("hogan")){
+        gifPost(message, "Hulk Hogan", "Hulkamania!!!!!!!")
+    }
+
+    else if(message.content.toLowerCase().includes("the rock")){
+        gifPost(message, "The Rock WWF", "Do you smell what the Rock is Cooking?")
+    }
+
+    else if(message.content.toLowerCase().includes("steve austin") || message.content.toLowerCase().includes("stone cold")){
+        gifPost(message, "Stone Cold Steve Austin", "Because Stone Cold said so!")
+    }
+
+    else if(message.content.toLowerCase().includes("macho man")){
+        gifPost(message, "macho man randy savage", "OHHHHHHHH YEAHHHHHHHHH!")
+    }
+
+    else if(message.content.toLowerCase().includes("heartbreak kid") || message.content.toLowerCase().includes("shawn michaels")){
+        gifPost(message, "shawn michaels WWF", "How about some sweet chin music?")
+    }
+
+    else if(message.content.toLowerCase().includes("undertaker")){
+        gifPost(message, "the undertaker WWF", "RIP")
+    }
+
+    else if(message.content.toLowerCase().includes("hhh") || message.content.toLowerCase().includes("triple h")){
+        gifPost(message, "Triple H WWF", "Time to play the game!!!!!")
+    }
+
+    else if(message.content.toLowerCase().includes("ultimate warrior")){
+        gifPost(message, "the ultimate warrior", "The frequencies in my head are not known to normals")
+    }
+
+    else if(message.content.toLowerCase().includes("chris jericho")){
+        gifPost(message, "chris jericho", "Welcome to RAW IS JERICHO!")
+    }
+
+    else if(message.content.toLowerCase().includes("booker t")){
+        gifPost(message, "Booker T wrestling", "Can you dig it, sucka?")
+    }
+
+    else if(message.content.toLowerCase().includes("darth vader") || message.content.toLowerCase().includes("vader")){
+        gifPost(message, "darth vader", "I am your father!")
+    }
+
+    else if(message.content.toLowerCase().includes("jar jar")){
+        gifPost(message, "jar jar binks", "Mesa called Jar Jar Binks")
+    }
+
+    else if(message.content.toLowerCase().includes("goldberg")){
+        gifPost(message, "Bill Goldberg", "Who's next?")
+    }
+
+    else if(message.content.toLowerCase().includes("andre the giant")){
+        gifPost(message, "andre the giant", "It's not my fault being the biggest and the strongest.")
+    }
+
+    else if(message.content.toLowerCase().includes("cynyde")){
+        gifPost(message, "princess", "You're gonna hear me roar!! - Cynyde")
+    }
+    
 })
 
 //LEAVE THIS WAY
