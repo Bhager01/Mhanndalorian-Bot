@@ -9,6 +9,7 @@
   "dependencies": {
     "cron": "^1.8.2",
     "discord.js": "^11.5.1",
+    "giphy-js-sdk-core": "^1.0.6",
     "googleapis": "^39.2.0"
   }
 }
