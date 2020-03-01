@@ -203,15 +203,17 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 })
 
 client.on("guildMemberAdd", (member) => {
-    client.users.get(member.id).send("Welcome to Wookie and the Bandit!  I'm Mhanndalorain bot, Mhann Uhdea's personal "
-    + "bounty hunter.  Some of the services I provide include keeping track of raid participation, weekly updates, advanced "
+    client.users.get(member.id).send("Welcome to Wookie and the Bandit!  I'm Mhanndalorain bot, and I work for <@406945430967156766>. "
+    + "Some of the services I provide include keeping track of raid participation, weekly updates, advanced "
     + "commands, and humor. I will assign you flair (an emoji added to your username), based on your participation level in "
     + "raids (you only need to sign up, doing damage is optional): \n \n"
     + "Bronze (🥉) - 14 days of no missed raids \nSilver (🥈) - 30 days of no missed raids \n"
     + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n \n"
     + "The following command will allow you to check your flair status at any time \n!flair \n \n"
-    + "If you have any questions about my services please contact my employer, Mhann Uhdea. \n \nI have spoken. \n"
+    + "If you have any questions about my services please contact my employer, <@406945430967156766>. \n \nI have spoken. \n"
     + "This is the way.")
+
+    console.log(member.displayName) + "Has joined the guild QZ"
 
   });
 
@@ -300,12 +302,12 @@ client.on('message', message => {
             console.log(message.member.displayName + " Failed to execute clean command QZ")
         }
     }
-    else if(message.content.toLowerCase().includes("flair")){
+    else if(message.content.toLowerCase().includes("flair") && message.author.bot == false){
         gifPost(message, "Ric Flair", "WOOOOOOOOOOOOOOO!")
     }
 
     else if(message.content.toLowerCase().includes("piper")){
-        gifPost(message, "Roddy Piper WWF", "Real men wear kilts")
+        gifPost(message, "Roddy Piper WWE", "Real men wear kilts")
     }
 
     else if(message.content.toLowerCase().includes("hogan")){
@@ -313,7 +315,7 @@ client.on('message', message => {
     }
 
     else if(message.content.toLowerCase().includes("the rock")){
-        gifPost(message, "The Rock WWF", "Do you smell what the Rock is Cooking?")
+        gifPost(message, "The Rock WWE", "Do you smell what the Rock is Cooking?")
     }
 
     else if(message.content.toLowerCase().includes("steve austin") || message.content.toLowerCase().includes("stone cold")){
@@ -325,11 +327,11 @@ client.on('message', message => {
     }
 
     else if(message.content.toLowerCase().includes("heartbreak kid") || message.content.toLowerCase().includes("shawn michaels")){
-        gifPost(message, "shawn michaels WWF", "How about some sweet chin music?")
+        gifPost(message, "shawn michaels WWE", "How about some sweet chin music?")
     }
 
     else if(message.content.toLowerCase().includes("undertaker")){
-        gifPost(message, "the undertaker WWF", "RIP")
+        gifPost(message, "the undertaker WWE", "RIP")
     }
 
     else if(message.content.toLowerCase().includes("hhh") || message.content.toLowerCase().includes("triple h")){
@@ -367,7 +369,59 @@ client.on('message', message => {
     else if(message.content.toLowerCase().includes("cynyde")){
         gifPost(message, "princess", "You're gonna hear me roar!! - Cynyde")
     }
-    
+
+    else if(message.content.toLowerCase().includes("sting")){
+        gifPost(message, "sting wrestling", "It's Showtime!")
+    }
+
+    else if(message.content.toLowerCase().includes("big show")){
+        gifPost(message, "big show", "Well it's the Big Show!")
+    }
+
+    else if(message.content.toLowerCase().includes("x pac") || message.content.toLowerCase().includes("xpac")){
+        gifPost(message, "x pac", "Degeneration X!!")
+    }
+
+    else if(message.content.toLowerCase().includes("rey mysterio")){
+        gifPost(message, "Rey mysterio", "Rey mysterio")
+    }
+
+    else if(message.content.toLowerCase().includes("john cena")){
+        gifPost(message, "john cena", "U can't see me!")
+    }
+
+    else if(message.content.toLowerCase().includes("baby yoda")){
+        gifPost(message, "baby yoda", "Baby Yoda")
+    }
+
+    else if(message.content.toLowerCase().includes("yoda")){
+        gifPost(message, "yoda", "Much to learn you still have")
+    }
+
+    else if(message.content.toLowerCase().includes("luke skywalker")){
+        gifPost(message, "luke skywalker", "NOOOOOOOOOO!!!!!!!!!!!")
+    }
+
+    else if(message.content.toLowerCase().includes("jabba the hut")){
+        gifPost(message, "jabba the hut", "You will soon learn to appreciate me")
+    }
+
+    else if(message.content.toLowerCase().includes("chewbacca") || message.content.toLowerCase().includes("chewie")){
+        gifPost(message, "Chewbacca", "GGGWARRRHHWWWW.")
+    }
+
+    else if(message.content.toLowerCase().includes("mankind") || message.content.toLowerCase().includes("mic foley")){
+        gifPost(message, "mankind wwe", "Have a nice day.")
+    }
+
+    else if(message.content.toLowerCase().includes("kane")){
+        gifPost(message, "kane wwe", "Kane")
+    }
+
+    else if(message.content.toLowerCase().includes("bret hart") || message.content.toLowerCase().includes("bret heart")){
+        gifPost(message, "bret hart wrestling wwe", "I'm the best there is, the best there was, and the best there ever will be.")
+    }
+
 })
 
 //LEAVE THIS WAY
