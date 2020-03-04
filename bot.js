@@ -380,10 +380,6 @@ client.on('message', message => {
         gifPost(message, "princess", "You're gonna hear me roar!! - Cynyde")
     }
 
-    else if(message.content.toLowerCase().includes("sting")){
-        gifPost(message, "sting wrestling", "It's Showtime!")
-    }
-
     else if(message.content.toLowerCase().includes("big show")){
         gifPost(message, "big show", "Well it's the Big Show!")
     }
