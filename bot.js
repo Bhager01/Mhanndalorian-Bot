@@ -32,11 +32,21 @@ function gifPost(message, searchString, tagLine) {
             var ResponseIndex = Math.floor((Math.random() * 10) + 1) % TotalResponses;
             var ResponseFinal = response.data[ResponseIndex];
 
+        //    console.log(ResponseFinal);
+
             const exampleEmbed = new Discord.RichEmbed()
 	        .setTitle(tagLine)
 	        .setImage(ResponseFinal.images.fixed_height.url);
 
             message.channel.send(exampleEmbed);
+
+          //  const exampleEmbed2 = new Discord.RichEmbed()
+	      //  .setTitle(tagLine)
+	      //  .setImage("https://raw.githubusercontent.com/cirla/vim-giphy/master/powered_by_giphy.gif");
+
+          //  message.channel.send(exampleEmbed2);
+
+            
 
         }).catch(() => {
             message.channel.send("You mentioned " + searchString + ", but a gif was not available!")
@@ -410,7 +420,7 @@ client.on('message', message => {
         gifPost(message, "Chewbacca", "GGGWARRRHHWWWW.")
     }
 
-    else if(message.content.toLowerCase().includes("mankind") || message.content.toLowerCase().includes("mic foley")){
+    else if(message.content.toLowerCase().includes("mankind") || message.content.toLowerCase().includes("mick foley")){
         gifPost(message, "mankind wwe", "Have a nice day.")
     }
 
@@ -420,6 +430,42 @@ client.on('message', message => {
 
     else if(message.content.toLowerCase().includes("bret hart") || message.content.toLowerCase().includes("bret heart")){
         gifPost(message, "bret hart wrestling wwe", "I'm the best there is, the best there was, and the best there ever will be.")
+    }
+
+    else if(message.content.toLowerCase().includes("honkytonk") || message.content.toLowerCase().includes("honky tonk")){
+        gifPost(message, "honky tonk man wwe", "Where's my guitar?")
+    }
+
+    else if(message.content.toLowerCase().includes("mtscout") || message.content.toLowerCase().includes("scout")){
+        gifPost(message, "chicken", "Chicken!!!")
+    }
+
+    else if(message.content.toLowerCase().includes("brutus the barber")){
+        gifPost(message, "Brutus the barber beefcake wwe", "Welcome to the barber shop!")
+    }
+
+    else if(message.content.toLowerCase().includes("jake the snake")){
+        gifPost(message, "jake the snake wwe", "Welcome to the snake pit!")
+    }
+
+    else if(message.content.toLowerCase().includes("sgt. slaughter") || message.content.toLowerCase().includes("sgt slaughter")){
+        gifPost(message, "sgt slaughter wwe", "Cobra clutch!!!!!")
+    }
+
+    else if(message.content.toLowerCase().includes("bam bam")){
+        gifPost(message, "bam bam bigelow wwe", "If you play with fire, you're gonna get burned.")
+    }
+
+    else if(message.content.toLowerCase().includes("kurt angle")){
+        gifPost(message, "kurt angle", "It’s True, It’s True")
+    }
+
+    else if(message.content.toLowerCase().includes("trish stratus")){
+        gifPost(message, "trish stratus", "100% Stratusfaction")
+    }
+
+    else if(message.content.toLowerCase().includes("han solo")){
+        gifPost(message, "han solo", "Don't ever tell me the odds.")
     }
 
 })
