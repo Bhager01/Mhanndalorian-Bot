@@ -23,34 +23,60 @@ function sleep(milliseconds) {
     do {
       currentDate = Date.now();
     } while (currentDate - date < milliseconds);
-  }
+}
+
+function specificGIF(searchString){
+    URLS = new Array();
+    var randomNumber;
+
+    if(searchString == "succubus"){
+        URLS.push("https://media.giphy.com/media/pseubeg1JACwo/giphy.gif")
+        URLS.push("https://media.giphy.com/media/oL0LeKVib4z3G/giphy.gif")
+        URLS.push("https://media.giphy.com/media/TTgdzuIqWc7dkARNFaE/giphy.gif")
+        URLS.push("https://media.giphy.com/media/FNnkDbKc6s6c/giphy.gif")
+        URLS.push("https://media.giphy.com/media/CQBUQn0nyxwEo/giphy.gif")
+        URLS.push("https://media.giphy.com/media/PJAzcudAG5aaQ/giphy.gif")
+    }
+    randomNumber = Math.floor((Math.random()) * URLS.length);
+    return URLS[randomNumber];
+
+}
 
 function gifPost(message, searchString, tagLine) {
-    giphy.search('gifs', {"q": searchString, "limit": 35})
-        .then((response) => {
-            var TotalResponses = response.data.length;
-            var ResponseIndex = Math.floor((Math.random() * 10) + 1) % TotalResponses;
-            var ResponseFinal = response.data[ResponseIndex];
+    var special = false;
 
-        //    console.log(ResponseFinal);
+    if(searchString == "succubus"){
+        special = true;
+    }
 
-            const exampleEmbed = new Discord.RichEmbed()
-	        .setTitle(tagLine)
-	        .setImage(ResponseFinal.images.fixed_height.url);
+    if(special == false){
+        giphy.search('gifs', {"q": searchString, "limit": 35})
+            .then((response) => {
+                var TotalResponses = response.data.length;
+                var ResponseIndex = Math.floor((Math.random() * 10) + 1) % TotalResponses;
+                var ResponseFinal = response.data[ResponseIndex];
 
-            message.channel.send(exampleEmbed);
+                const exampleEmbed = new Discord.RichEmbed()
+                .setTitle(tagLine)
+                .setImage(ResponseFinal.images.fixed_height.url);
 
-          //  const exampleEmbed2 = new Discord.RichEmbed()
-	      //  .setTitle(tagLine)
-	      //  .setImage("https://raw.githubusercontent.com/cirla/vim-giphy/master/powered_by_giphy.gif");
+                message.channel.send(exampleEmbed);
 
-          //  message.channel.send(exampleEmbed2);
+            //  const exampleEmbed2 = new Discord.RichEmbed()
+            //  .setTitle(tagLine)
+            //  .setImage("https://raw.githubusercontent.com/cirla/vim-giphy/master/powered_by_giphy.gif");
 
-            
-
-        }).catch(() => {
-            message.channel.send("You mentioned " + searchString + ", but a gif was not available!")
+            //  message.channel.send(exampleEmbed2);
+            }).catch(() => {
+                message.channel.send("You mentioned " + searchString + ", but a gif was not available!")
         })
+    }
+    else{
+        const exampleEmbed = new Discord.RichEmbed()
+        .setTitle(tagLine)
+        .setImage(specificGIF(searchString));
+        message.channel.send(exampleEmbed);
+    }
 }
 
 function authorize(credentials, callback) {
@@ -380,6 +406,10 @@ client.on('message', message => {
         gifPost(message, "princess", "You're gonna hear me roar!! - Cynyde")
     }
 
+    else if(message.content.toLowerCase().includes("sting")){
+        gifPost(message, "sting wrestling", "It's Showtime!")
+    }
+
     else if(message.content.toLowerCase().includes("big show")){
         gifPost(message, "big show", "Well it's the Big Show!")
     }
@@ -464,7 +494,12 @@ client.on('message', message => {
         gifPost(message, "han solo", "Don't ever tell me the odds.")
     }
 
+    else if(message.content.toLowerCase().includes("skittles") || message.content.toLowerCase().includes("erin")){
+        gifPost(message, "succubus", "Succubus:  A demon in female form.")
+    }
+
 })
+client.login(bottoken); //DELETE
 
 //LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
