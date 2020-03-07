@@ -499,7 +499,6 @@ client.on('message', message => {
     }
 
 })
-client.login(bottoken); //DELETE
 
 //LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
