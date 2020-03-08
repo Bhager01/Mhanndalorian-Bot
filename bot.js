@@ -58,15 +58,10 @@ function gifPost(message, searchString, tagLine) {
 
                 const exampleEmbed = new Discord.RichEmbed()
                 .setTitle(tagLine)
-                .setImage(ResponseFinal.images.fixed_height.url);
-
+                .setImage(ResponseFinal.images.fixed_height.url)
+              //  .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
+              .setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
                 message.channel.send(exampleEmbed);
-
-            //  const exampleEmbed2 = new Discord.RichEmbed()
-            //  .setTitle(tagLine)
-            //  .setImage("https://raw.githubusercontent.com/cirla/vim-giphy/master/powered_by_giphy.gif");
-
-            //  message.channel.send(exampleEmbed2);
             }).catch(() => {
                 message.channel.send("You mentioned " + searchString + ", but a gif was not available!")
         })
@@ -74,7 +69,9 @@ function gifPost(message, searchString, tagLine) {
     else{
         const exampleEmbed = new Discord.RichEmbed()
         .setTitle(tagLine)
-        .setImage(specificGIF(searchString));
+        .setImage(specificGIF(searchString))
+      //  .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
+        .setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
         message.channel.send(exampleEmbed);
     }
 }
@@ -390,7 +387,7 @@ client.on('message', message => {
         gifPost(message, "darth vader", "I am your father!")
     }
 
-    else if(message.content.toLowerCase().includes("jar jar")){
+    else if(message.content.toLowerCase().includes("jar jar") || message.content.toLowerCase().includes("jake")){
         gifPost(message, "jar jar binks", "Mesa called Jar Jar Binks")
     }
 
@@ -406,7 +403,7 @@ client.on('message', message => {
         gifPost(message, "princess", "You're gonna hear me roar!! - Cynyde")
     }
 
-    else if(message.content.toLowerCase().includes("sting")){
+    else if(message.content.toLowerCase().search(/\bsting\b/) >= 0){
         gifPost(message, "sting wrestling", "It's Showtime!")
     }
 
