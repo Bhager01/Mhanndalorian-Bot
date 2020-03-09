@@ -148,8 +148,13 @@ function FlairUpdate(Type, callback){
                     discordID = element[1].replace("<","").replace(">","").replace("@","");
                     if(discordID != 378053516067078149){
                         User =  await client.fetchUser(discordID)
-                        GuildMember =  await guild.fetchMember(User);
-                        AddFlair(GuildMember,element[0],Type);
+                        GuildMember =  await guild.fetchMember(User)
+                        .then(value =>{
+                            AddFlair(value,element[0],Type);
+                        }).catch(error => {
+                                console.log(error)
+                                console.log("catch1")
+                        });
                     }
                 }
             }
