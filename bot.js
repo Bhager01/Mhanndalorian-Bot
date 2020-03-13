@@ -60,14 +60,14 @@ function dmUsersMissedRaids() {
                     }
 
                     else if (row[2] - row[3] == 1 && row[6] > 1){
-                        console.log(user + " missed one raid QZ")
                         var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                        console.log(user + " missed one raid QZ")
                         client.users.get(user).send("You have missed the "+ row[4] + " raid on " + row[5] + ".")
                     }
 
                     else if (row[2] - row[3] > 1){
-                        console.log(user + " missed multiple raids QZ")
                         var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                        console.log(user + " missed multiple raids QZ")
                         client.users.get(user).send("You have missed the " + row[4] + " raid on " + row[5] + ". In addition, you have missed " + ((row[2] - 1) - row[3]) + " other raids(s) since you were last messaged.")
                     }
                 });
