@@ -225,8 +225,15 @@ function FlairUpdate(Type, callback){
 
 var CronJob = require('cron').CronJob;
 var job = new CronJob('0 9,21 * * *', function() {
-    console.log("Cron job executed QZ")
+    console.log("Cron job FlairUpdate executed QZ")
     FlairUpdate("Cron", newFlairAnncouncment)
+}, null, true, 'America/New_York');
+job.start();
+
+var CronJob2 = require('cron').CronJob;
+var job2 = new CronJob('30 22 * * *', function() {
+    console.log("Cron job DMusers who miss raids executed QZ")
+    dmUsersMissedRaids();
 }, null, true, 'America/New_York');
 job.start();
 
