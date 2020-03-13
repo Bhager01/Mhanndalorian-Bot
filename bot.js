@@ -17,14 +17,6 @@ client.once('ready', () => {
     console.log('Ready')
 })
 
-function sleep(milliseconds) {
-    const date = Date.now();
-    let currentDate = null;
-    do {
-      currentDate = Date.now();
-    } while (currentDate - date < milliseconds);
-}
-
 function specificGIF(searchString){
     URLS = new Array();
     var randomNumber;
@@ -40,6 +32,70 @@ function specificGIF(searchString){
     randomNumber = Math.floor((Math.random()) * URLS.length);
     return URLS[randomNumber];
 
+}
+
+function dmUsersMissedRaids() {
+ var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+ authorize(content, listMajors);
+   
+    function listMajors(auth) {
+        const sheets = google.sheets({version: 'v4', auth});
+        const guild = client.guilds.get("505515654833504266");
+        sheets.spreadsheets.values.get({
+            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+            range: 'Guild Members & Data!A60:H113',
+        }, (err, res) => {
+            if (err) return console.log('The API returned an error: ' + err);
+            const rows = res.data.values;
+            if (rows.length) {
+                rows.map((row) => { //STAY IN 
+                    if(row[2] - row[3] == 1 && row[6] == 1){
+                        var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                        console.log(user + " was just forgiven QZ")
+                        client.users.get(user).send("You have missed the "+ row[4] + " raid on " + row[5] + ", but luckily you purchased raid forgiveness!")
+                        const exampleEmbed = new Discord.RichEmbed()
+                        .setTitle('All is forgiven.')
+                        .setImage('https://media.giphy.com/media/U1sXoHqCyA7wRzXCEx/giphy.gif')
+                        client.users.get(user).send(exampleEmbed)
+                    }
+
+                    else if (row[2] - row[3] == 1 && row[6] > 1){
+                        console.log(user + " missed one raid QZ")
+                        var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                        client.users.get(user).send("You have missed the "+ row[4] + " raid on " + row[5] + ".")
+                    }
+
+                    else if (row[2] - row[3] > 1){
+                        console.log(user + " missed multiple raids QZ")
+                        var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                        client.users.get(user).send("You have missed the " + row[4] + " raid on " + row[5] + ". In addition, you have missed " + ((row[2] - 1) - row[3]) + " other raids(s) since you were last messaged.")
+                    }
+                });
+
+                var missedRaids = new Array(50);
+                for (var i = 0; i < missedRaids.length; i++) { 
+                    missedRaids[i] = new Array(1);
+                }
+
+                for (var j = 0; j < missedRaids.length; j++) {
+                    missedRaids[j][0] = rows[j][2];
+                }
+
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guild Members & Data!D60:D109',
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: missedRaids
+                    },
+                }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                });
+            }else {
+                console.log('No data found.');
+            }
+        });
+    } 
 }
 
 function gifPost(message, searchString, tagLine) {
@@ -80,8 +136,8 @@ function authorize(credentials, callback) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
-  
-      token = {"access_token":"ya29.Il-9BygCO5hRduHR-tUsBx32geTiZxDF4QUjh17uDovL_OQYrsW-q53oknT-PYfQbG6qMAvDeV4myI3_uKIYIQLMsFPIuRV0UTR4g31GFJpdOuv-uQwqm1I-g4ttX0CgDg","refresh_token":"1//0dhkLg8Xv7BDXCgYIARAAGA0SNwF-L9IrG-vrIlgGQGioOCDU2gilJp7ZHgDWgiiugPjQWGw091GlSXJx4fTJJ5-6XIZYu5p_7Ds","scope":"https://www.googleapis.com/auth/spreadsheets.readonly","token_type":"Bearer","expiry_date":1581974001623}
+    // READ ONLY  token = {"access_token":"ya29.Il-9BygCO5hRduHR-tUsBx32geTiZxDF4QUjh17uDovL_OQYrsW-q53oknT-PYfQbG6qMAvDeV4myI3_uKIYIQLMsFPIuRV0UTR4g31GFJpdOuv-uQwqm1I-g4ttX0CgDg","refresh_token":"1//0dhkLg8Xv7BDXCgYIARAAGA0SNwF-L9IrG-vrIlgGQGioOCDU2gilJp7ZHgDWgiiugPjQWGw091GlSXJx4fTJJ5-6XIZYu5p_7Ds","scope":"https://www.googleapis.com/auth/spreadsheets.readonly","token_type":"Bearer","expiry_date":1581974001623}
+      token =  {"access_token":"ya29.a0Adw1xeVMaJdFu4_Prd1JMj5VW6JLzPAux780mPR-FKiDT2XNCJ1xdywo5Q2mOCgj6PXzQEkrJJ68TymBCLF1NGIxJdwd6r6F-pDXqk8th8dc6bd_v711TCJpxdbEBSmXktCMFwb241KyLv1rJDvox_15WH4LLpNU9x8","refresh_token":"1//0dpVeaJ3ELcQBCgYIARAAGA0SNwF-L9IrUePhHzcm67KPL99LpKuThsJVLerdoAtDw5zTBbWhaxR0PobydX1sUCmVx8TdYXXpewA","scope":"https://www.googleapis.com/auth/spreadsheets","token_type":"Bearer","expiry_date":1583977474403}
       oAuth2Client.setCredentials(token);
       callback(oAuth2Client);
 }
@@ -298,6 +354,11 @@ client.on('message', message => {
             });
         }       
     }
+
+    else if(message.content == `${prefix}write` || message.content == `${prefix}Write`){
+        dmUsersMissedRaids();
+    }
+
     else if(message.content == `${prefix}flairupdate` || message.content == `${prefix}Flairupdate`){
         if(message.member.id == "406945430967156766"){
             message.channel.send("Flair is being updated for all guild members")
@@ -496,7 +557,7 @@ client.on('message', message => {
         gifPost(message, "han solo", "Don't ever tell me the odds.")
     }
 
-    else if(message.content.toLowerCase().includes("skittles") || message.content.toLowerCase().includes("erin")){
+    else if(message.content.toLowerCase().includes("skittles") || message.content.toLowerCase().search(/\berin\b/) >= 0){
         gifPost(message, "succubus", "Succubus:  A demon in female form.")
     }
 
