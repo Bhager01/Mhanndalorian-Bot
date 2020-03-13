@@ -356,7 +356,9 @@ client.on('message', message => {
     }
 
     else if(message.content == `${prefix}write` || message.content == `${prefix}Write`){
-        dmUsersMissedRaids();
+        if(message.member.id == "406945430967156766"){
+            dmUsersMissedRaids();
+        }
     }
 
     else if(message.content == `${prefix}flairupdate` || message.content == `${prefix}Flairupdate`){
