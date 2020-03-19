@@ -43,7 +43,7 @@ function dmUsersMissedRaids() {
         const guild = client.guilds.get("505515654833504266");
         sheets.spreadsheets.values.get({
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guild Members & Data!A60:H113',
+            range: 'Guild Members & Data!A60:H109',
         }, (err, res) => {
             if (err) return console.log('The API returned an error: ' + err);
             const rows = res.data.values;
@@ -53,22 +53,40 @@ function dmUsersMissedRaids() {
                         var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
                         console.log(user + " was just forgiven QZ")
                         client.users.get(user).send("You have missed the "+ row[4] + " raid on " + row[5] + ", but luckily you purchased raid forgiveness!")
+                        .catch(error => {
+                            console.log(error)
+                            console.log("Catch - Forgiven1")
+                        });
+
                         const exampleEmbed = new Discord.RichEmbed()
                         .setTitle('All is forgiven.')
                         .setImage('https://media.giphy.com/media/U1sXoHqCyA7wRzXCEx/giphy.gif')
                         client.users.get(user).send(exampleEmbed)
+                        .catch(error => {
+                                console.log(error)
+                                console.log("Catch - Forgiven2")
+                        });
+                            
                     }
 
                     else if (row[2] - row[3] == 1 && row[6] > 1){
                         var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
                         console.log(user + " missed one raid QZ")
                         client.users.get(user).send("You have missed the "+ row[4] + " raid on " + row[5] + ".")
+                        .catch(error => {
+                            console.log(error)
+                            console.log("Catch - Missed 1 raid")
+                        });
                     }
 
                     else if (row[2] - row[3] > 1){
                         var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
                         console.log(user + " missed multiple raids QZ")
                         client.users.get(user).send("You have missed the " + row[4] + " raid on " + row[5] + ". In addition, you have missed " + ((row[2] - 1) - row[3]) + " other raids(s) since you were last messaged.")
+                        .catch(error => {
+                            console.log(error)
+                            console.log("Catch - Missed multiple raids")
+                        });
                     }
                 });
 
@@ -153,6 +171,10 @@ async function newFlairAnncouncment(){
 
         for (x in NewNoStatus){
             client.users.get(NewNoStatus[x]).send("You have missed a raid and lost your flair.  Get back in there!")
+            .catch(error => {
+                console.log(error)
+                console.log("Catch - Lost Flair")
+        });
 
             discordID = NewNoStatus[x];
             User =  await client.fetchUser(discordID)
@@ -189,7 +211,7 @@ function FlairUpdate(Type, callback){
         const sheets = google.sheets({version: 'v4', auth});
         sheets.spreadsheets.values.get({
           spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-          range: 'Guild Members & Data!E119:F',
+          range: 'Guild Members & Data!F66:G',
         }, async (err, res) => {
           if (err) return console.log('The API returned an error: ' + err);
           const rows = res.data.values;
@@ -286,7 +308,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         const sheets = google.sheets({version: 'v4', auth});
         sheets.spreadsheets.values.get({
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guild Members & Data!E119:F',
+            range: 'Guild Members & Data!F66:G',
         }, (err, res) => {
             if (err) return console.log('The API returned an error: ' + err);
             const rows = res.data.values;
@@ -327,7 +349,7 @@ client.on('message', message => {
             const sheets = google.sheets({version: 'v4', auth});
             sheets.spreadsheets.values.get({
                 spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                range: 'Guild Members & Data!E119:F',
+                range: 'Guild Members & Data!F66:G',
             }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
             const rows = res.data.values;
@@ -362,9 +384,17 @@ client.on('message', message => {
         }       
     }
 
-    else if(message.content == `${prefix}write` || message.content == `${prefix}Write`){
+    else if(message.content == `${prefix}dmmissedraids` || message.content == `${prefix}DMmissedraids`){
         if(message.member.id == "406945430967156766"){
             dmUsersMissedRaids();
+        }
+    }
+
+    else if(message.content.startsWith(`${prefix}broadcast`)){
+        console.log("you made it")
+        if(message.member.id == "406945430967156766"){
+            const messagetopost = message.content.substring(11)
+            client.channels.get("505515654837698563").send(messagetopost)  
         }
     }
 
