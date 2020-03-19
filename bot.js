@@ -29,6 +29,18 @@ function specificGIF(searchString){
         URLS.push("https://media.giphy.com/media/CQBUQn0nyxwEo/giphy.gif")
         URLS.push("https://media.giphy.com/media/PJAzcudAG5aaQ/giphy.gif")
     }
+
+    else if(searchString == "molly"){
+        URLS.push("https://media.giphy.com/media/1wX9cGW6H2cLlQXetx/giphy.gif")
+        URLS.push("https://media.giphy.com/media/jTOh2zZZgxK0MLwINF/giphy.gif")
+        URLS.push("https://media.giphy.com/media/1ymoKd9B1QRTbpQJOe/giphy.gif")
+        URLS.push("https://media.giphy.com/media/58xdxGxB8RKo0/giphy.gif")
+    }
+
+    else if(searchString == "mhann"){
+        URLS.push("https://i.postimg.cc/pVjKjp1j/Me-on-Mustafar.gif")
+    }
+
     randomNumber = Math.floor((Math.random()) * URLS.length);
     return URLS[randomNumber];
 
@@ -43,16 +55,18 @@ function dmUsersMissedRaids() {
         const guild = client.guilds.get("505515654833504266");
         sheets.spreadsheets.values.get({
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guild Members & Data!A60:H109',
+            range: 'Guild Members & Data!A66:K119',
         }, (err, res) => {
             if (err) return console.log('The API returned an error: ' + err);
             const rows = res.data.values;
             if (rows.length) {
                 rows.map((row) => { //STAY IN 
-                    if(row[2] - row[3] == 1 && row[6] == 1){
-                        var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                  //  console.log(row[2] - row[8] + " | " + row[7])
+
+                    if(row[2] - row[8] == 1 && row[7] == 1){
+                        var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
                         console.log(user + " was just forgiven QZ")
-                        client.users.get(user).send("You have missed the "+ row[4] + " raid on " + row[5] + ", but luckily you purchased raid forgiveness!")
+                        client.users.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ", but luckily you purchased raid forgiveness!")
                         .catch(error => {
                             console.log(error)
                             console.log("Catch - Forgiven1")
@@ -69,39 +83,44 @@ function dmUsersMissedRaids() {
                             
                     }
 
-                    else if (row[2] - row[3] == 1 && row[6] > 1){
-                        var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                    else if (row[2] - row[8] == 1 && row[7] > 1){
+                        var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
                         console.log(user + " missed one raid QZ")
-                        client.users.get(user).send("You have missed the "+ row[4] + " raid on " + row[5] + ".")
+                        client.users.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ".")
                         .catch(error => {
                             console.log(error)
                             console.log("Catch - Missed 1 raid")
                         });
                     }
 
-                    else if (row[2] - row[3] > 1){
-                        var user = row[7].replace("<","").replace(">","").replace("@","").replace(" ","")
+                    else if (row[2] - row[8] > 1){
+                        var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
                         console.log(user + " missed multiple raids QZ")
-                        client.users.get(user).send("You have missed the " + row[4] + " raid on " + row[5] + ". In addition, you have missed " + ((row[2] - 1) - row[3]) + " other raids(s) since you were last messaged.")
+                        client.users.get(user).send("You have missed the " + row[10] + " raid on " + row[9] + ". In addition, you have missed " + ((row[2] - 1) - row[8]) + " other raids(s) since you were last messaged.")
                         .catch(error => {
                             console.log(error)
                             console.log("Catch - Missed multiple raids")
                         });
-                    }
+                    } 
                 });
 
-                var missedRaids = new Array(50);
+                var missedRaids = new Array(54);
                 for (var i = 0; i < missedRaids.length; i++) { 
                     missedRaids[i] = new Array(1);
                 }
 
                 for (var j = 0; j < missedRaids.length; j++) {
-                    missedRaids[j][0] = rows[j][2];
+                    try{
+                        missedRaids[j][0] = rows[j][2];
+                    }
+                    catch(error){
+                        missedRaids[j][0] = "";
+                    }
                 }
 
                 sheets.spreadsheets.values.update({
                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'Guild Members & Data!D60:D109',
+                    range: 'Guild Members & Data!I66:I119',
                     valueInputOption: 'USER_ENTERED',
                     resource: {
                         values: missedRaids
@@ -119,7 +138,7 @@ function dmUsersMissedRaids() {
 function gifPost(message, searchString, tagLine) {
     var special = false;
 
-    if(searchString == "succubus"){
+    if(searchString == "succubus" || searchString == "molly" || searchString == "mhann"){
         special = true;
     }
 
@@ -599,6 +618,18 @@ client.on('message', message => {
     else if(message.content.toLowerCase().includes("skittles") || message.content.toLowerCase().search(/\berin\b/) >= 0){
         gifPost(message, "succubus", "Succubus:  A demon in female form.")
     }
+
+    else if(message.content.toLowerCase().includes("molly") || message.content.toLowerCase().includes("mollywhopper")){
+        gifPost(message, "molly", "The Boss Man!!")
+    }
+
+    else if(message.content.toLowerCase().includes("the fonze") || message.content.toLowerCase().includes("fonze")){
+        gifPost(message, "the fonze", "A!!")
+    }
+
+    else if(message.content.toLowerCase().includes("mhann uhdea") || message.content.toLowerCase().includes("mhann")){
+        gifPost(message, "mhann", "Has anyone seen Obi-Wan or Anakin?  I was told to go break up a fight...")
+    }  
 
 })
 
