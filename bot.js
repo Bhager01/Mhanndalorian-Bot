@@ -61,7 +61,6 @@ function dmUsersMissedRaids() {
             const rows = res.data.values;
             if (rows.length) {
                 rows.map((row) => { //STAY IN 
-                  //  console.log(row[2] - row[8] + " | " + row[7])
 
                     if(row[2] - row[8] == 1 && row[7] == 1){
                         var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
@@ -271,12 +270,12 @@ var job = new CronJob('0 9,21 * * *', function() {
 }, null, true, 'America/New_York');
 job.start();
 
-//var CronJob2 = require('cron').CronJob;
-//var job2 = new CronJob('30 22 * * *', function() {
-//    console.log("Cron job DMusers who miss raids executed QZ")
-//    dmUsersMissedRaids();
-//}, null, true, 'America/New_York');
-//job.start();
+var CronJob2 = require('cron').CronJob;
+var job2 = new CronJob('05 9,21 * * *', function() {
+    console.log("Cron job DMusers who miss raids executed QZ")
+    dmUsersMissedRaids();
+}, null, true, 'America/New_York');
+job.start();
 
 async function AddFlair(passedMember, row, Type){
     var OldNickname = passedMember.displayName
@@ -360,7 +359,9 @@ client.on("guildMemberAdd", (member) => {
   });
 
 client.on('message', message => {
-      if(message.content == `${prefix}flair` || message.content == `${prefix}Flair`){
+    var bot = message.author.bot
+
+    if(message.content == `${prefix}flair` || message.content == `${prefix}Flair`){
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
           
@@ -459,177 +460,273 @@ client.on('message', message => {
             console.log(message.member.displayName + " Failed to execute clean command QZ")
         }
     }
-    else if(message.content.toLowerCase().includes("flair") && message.author.bot == false){
+
+    else if(message.content.toLowerCase().match(/[eb.]\d{9}[.register]/) && !bot){
+        var allyCode = String(message.content.slice(3,12));
+
+        if(message.content.includes("@"))
+            var discordID = String(message.content.split('@')[1].match(/\d+/g))
+        else
+            var discordID = String(message.member.id)
+
+        var user = client.users.get(discordID)
+        if(user == undefined){ //Discord user doesn't exist
+            message.channel.send("Could not find Discord User")
+        }
+        else //Discord user was found on server
+        {
+            discordIDArray = new Array(1)
+            discordIDArray[0] = new Array(1)
+            discordIDArray[0][0]= "<@" + discordID + "> "
+
+            var allyCodeFound = false;
+
+            var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+            authorize(content, listMajors);
+
+            function listMajors(auth) {
+                const sheets = google.sheets({version: 'v4', auth});
+                sheets.spreadsheets.values.get({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guild Members & Data!A66:A119',
+                }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                const rows = res.data.values;
+                if (rows.length) {
+                    var i = 0
+                    rows.map((row) => {
+                        if(row[0] == allyCode){ //ally code found and set discord ID
+                            allyCodeFound = true;
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'Guild Members & Data!G' + (i+66),
+                                valueInputOption: 'USER_ENTERED',
+                                resource: {
+                                    values: discordIDArray
+                                },
+                            })
+                            message.channel.send("Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode)
+                        }
+                        i++
+                    });
+                    if(allyCodeFound == false)
+                    {
+                        message.channel.send("Ally code " + allyCode +" was not found in Mhanndalorian database")
+                        const sheets = google.sheets({version: 'v4', auth});
+                        sheets.spreadsheets.values.get({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'Guild Members & Data!B57:B63',
+                        }, (err, res) => {
+                            if (err) return console.log('The API returned an error: ' + err);
+                        const rows = res.data.values;
+                        if (rows.length) {
+                            var i = 0;
+                            while(i<rows.length && rows[i][0] != allyCode && rows[i][0] != undefined)
+                            {
+                                i++
+                            }
+
+                            if(i < 7)
+                            {
+                                message.channel.send("Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database.")
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'Guild Members & Data!B' + (i+57) + ':C' + (i+57),
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: {
+                                        values: [[allyCode, "<@" + discordID + "> "]]
+                                    },
+                                })
+                            }
+                            else{
+                                message.channel.send("Temporary location in Mhanndalorian database is currently full.")
+                            }                  
+
+                        }else {
+                            console.log('No data found.');
+                        }
+                        });
+                        
+                    } 
+                }else {
+                    console.log('No data found.');
+                }
+                });
+            }                
+        }
+    }
+
+    else if(message.content.toLowerCase().includes("flair") && !bot){
         gifPost(message, "Ric Flair", "WOOOOOOOOOOOOOOO!")
     }
 
-    else if(message.content.toLowerCase().includes("piper")){
+    else if(message.content.toLowerCase().includes("piper") && !bot){
         gifPost(message, "Roddy Piper WWE", "Real men wear kilts")
     }
 
-    else if(message.content.toLowerCase().includes("hogan")){
+    else if(message.content.toLowerCase().includes("hogan") && !bot){
         gifPost(message, "Hulk Hogan", "Hulkamania!!!!!!!")
     }
 
-    else if(message.content.toLowerCase().includes("the rock")){
+    else if(message.content.toLowerCase().includes("the rock") && !bot){
         gifPost(message, "The Rock WWE", "Do you smell what the Rock is Cooking?")
     }
 
-    else if(message.content.toLowerCase().includes("steve austin") || message.content.toLowerCase().includes("stone cold")){
+    else if((message.content.toLowerCase().includes("steve austin") || message.content.toLowerCase().includes("stone cold")) && !bot){
         gifPost(message, "Stone Cold Steve Austin", "Because Stone Cold said so!")
     }
 
-    else if(message.content.toLowerCase().includes("macho man")){
+    else if(message.content.toLowerCase().includes("macho man") && !bot){
         gifPost(message, "macho man randy savage", "OHHHHHHHH YEAHHHHHHHHH!")
     }
 
-    else if(message.content.toLowerCase().includes("heartbreak kid") || message.content.toLowerCase().includes("shawn michaels")){
+    else if((message.content.toLowerCase().includes("heartbreak kid") || message.content.toLowerCase().includes("shawn michaels")) && !bot){
         gifPost(message, "shawn michaels WWE", "How about some sweet chin music?")
     }
 
-    else if(message.content.toLowerCase().includes("undertaker")){
+    else if(message.content.toLowerCase().includes("undertaker") && !bot){
         gifPost(message, "the undertaker WWE", "RIP")
     }
 
-    else if(message.content.toLowerCase().includes("hhh") || message.content.toLowerCase().includes("triple h")){
+    else if((message.content.toLowerCase().includes("hhh") || message.content.toLowerCase().includes("triple h")) && !bot){
         gifPost(message, "hhh wwe", "Time to play the game!!!!!")
     }
 
-    else if(message.content.toLowerCase().includes("ultimate warrior")){
+    else if(message.content.toLowerCase().includes("ultimate warrior") && !bot){
         gifPost(message, "the ultimate warrior", "The frequencies in my head are not known to normals")
     }
 
-    else if(message.content.toLowerCase().includes("chris jericho")){
+    else if(message.content.toLowerCase().includes("chris jericho") && !bot){
         gifPost(message, "chris jericho", "Welcome to RAW IS JERICHO!")
     }
 
-    else if(message.content.toLowerCase().includes("booker t")){
+    else if(message.content.toLowerCase().includes("booker t") && !bot){
         gifPost(message, "Booker T wrestling", "Can you dig it, sucka?")
     }
 
-    else if(message.content.toLowerCase().includes("darth vader") || message.content.toLowerCase().includes("vader")){
+    else if((message.content.toLowerCase().includes("darth vader") || message.content.toLowerCase().includes("vader")) && !bot){
         gifPost(message, "darth vader", "I am your father!")
     }
 
-    else if(message.content.toLowerCase().includes("jar jar") || message.content.toLowerCase().includes("jake")){
-        gifPost(message, "jar jar binks", "Mesa called Jar Jar Binks")
+    else if((message.content.toLowerCase().includes("jar jar") || message.content.toLowerCase().includes("jake")) && !bot && !message.content.toLowerCase().includes("the snake")){	
+        gifPost(message, "jar jar binks", "Mesa called Jar Jar Binks")	
     }
 
-    else if(message.content.toLowerCase().includes("goldberg")){
+    else if(message.content.toLowerCase().includes("goldberg") && !bot){
         gifPost(message, "Bill Goldberg", "Who's next?")
     }
 
-    else if(message.content.toLowerCase().includes("andre the giant")){
+    else if(message.content.toLowerCase().includes("andre the giant") && !bot){
         gifPost(message, "andre the giant", "It's not my fault being the biggest and the strongest.")
     }
 
-    else if(message.content.toLowerCase().includes("cynyde")){
+    else if(message.content.toLowerCase().includes("cynyde") && !bot){
         gifPost(message, "princess", "You're gonna hear me roar!! - Cynyde")
     }
 
-    else if(message.content.toLowerCase().search(/\bsting\b/) >= 0){
+    else if(message.content.toLowerCase().search(/\bsting\b/) >= 0 && !bot){
         gifPost(message, "sting wrestling", "It's Showtime!")
     }
 
-    else if(message.content.toLowerCase().includes("big show")){
+    else if(message.content.toLowerCase().includes("big show") && !bot){
         gifPost(message, "big show", "Well it's the Big Show!")
     }
 
-    else if(message.content.toLowerCase().includes("x pac") || message.content.toLowerCase().includes("xpac")){
+    else if((message.content.toLowerCase().includes("x pac") || message.content.toLowerCase().includes("xpac")) && !bot){
         gifPost(message, "x pac", "Degeneration X!!")
     }
 
-    else if(message.content.toLowerCase().includes("rey mysterio")){
+    else if(message.content.toLowerCase().includes("rey mysterio") && !bot){
         gifPost(message, "Rey mysterio", "Rey mysterio")
     }
 
-    else if(message.content.toLowerCase().includes("john cena")){
+    else if(message.content.toLowerCase().includes("john cena") && !bot){
         gifPost(message, "john cena", "U can't see me!")
     }
 
-    else if(message.content.toLowerCase().includes("baby yoda")){
+    else if(message.content.toLowerCase().includes("baby yoda") && !bot){
         gifPost(message, "baby yoda", "Baby Yoda")
     }
 
-    else if(message.content.toLowerCase().includes("yoda")){
+    else if(message.content.toLowerCase().includes("yoda") && !bot){
         gifPost(message, "yoda", "Much to learn you still have")
     }
 
-    else if(message.content.toLowerCase().includes("luke skywalker")){
+    else if(message.content.toLowerCase().includes("luke skywalker") && !bot){
         gifPost(message, "luke skywalker", "NOOOOOOOOOO!!!!!!!!!!!")
     }
 
-    else if(message.content.toLowerCase().includes("jabba the hut")){
+    else if(message.content.toLowerCase().includes("jabba the hut") && !bot){
         gifPost(message, "jabba the hut", "You will soon learn to appreciate me")
     }
 
-    else if(message.content.toLowerCase().includes("chewbacca") || message.content.toLowerCase().includes("chewie")){
+    else if((message.content.toLowerCase().includes("chewbacca") || message.content.toLowerCase().includes("chewie")) && !bot){
         gifPost(message, "Chewbacca", "GGGWARRRHHWWWW.")
     }
 
-    else if(message.content.toLowerCase().includes("mankind") || message.content.toLowerCase().includes("mick foley")){
+    else if((message.content.toLowerCase().includes("mankind") || message.content.toLowerCase().includes("mick foley")) && !bot){
         gifPost(message, "mankind wwe", "Have a nice day.")
     }
 
-    else if(message.content.toLowerCase().includes("kane")){
+    else if(message.content.toLowerCase().includes("kane") && !bot){
         gifPost(message, "kane wwe", "Kane")
     }
 
-    else if(message.content.toLowerCase().includes("bret hart") || message.content.toLowerCase().includes("bret heart")){
+    else if((message.content.toLowerCase().includes("bret hart") || message.content.toLowerCase().includes("bret heart")) && !bot){
         gifPost(message, "bret hart wrestling wwe", "I'm the best there is, the best there was, and the best there ever will be.")
     }
 
-    else if(message.content.toLowerCase().includes("honkytonk") || message.content.toLowerCase().includes("honky tonk")){
+    else if((message.content.toLowerCase().includes("honkytonk") || message.content.toLowerCase().includes("honky tonk")) && !bot){
         gifPost(message, "honky tonk man wwe", "Where's my guitar?")
     }
 
-    else if(message.content.toLowerCase().includes("mtscout") || message.content.toLowerCase().includes("scout")){
+    else if((message.content.toLowerCase().includes("mtscout") || message.content.toLowerCase().includes("scout")) && !bot){
         gifPost(message, "chicken", "Chicken!!!")
     }
 
-    else if(message.content.toLowerCase().includes("brutus the barber")){
+    else if(message.content.toLowerCase().includes("brutus the barber") && !bot){
         gifPost(message, "Brutus the barber beefcake wwe", "Welcome to the barber shop!")
     }
 
-    else if(message.content.toLowerCase().includes("jake the snake")){
+    else if(message.content.toLowerCase().includes("jake the snake") && !bot){
         gifPost(message, "jake the snake wwe", "Welcome to the snake pit!")
     }
 
-    else if(message.content.toLowerCase().includes("sgt. slaughter") || message.content.toLowerCase().includes("sgt slaughter")){
+    else if((message.content.toLowerCase().includes("sgt. slaughter") || message.content.toLowerCase().includes("sgt slaughter")) && !bot){
         gifPost(message, "sgt slaughter wwe", "Cobra clutch!!!!!")
     }
 
-    else if(message.content.toLowerCase().includes("bam bam")){
+    else if(message.content.toLowerCase().includes("bam bam") && !bot){
         gifPost(message, "bam bam bigelow wwe", "If you play with fire, you're gonna get burned.")
     }
 
-    else if(message.content.toLowerCase().includes("kurt angle")){
+    else if(message.content.toLowerCase().includes("kurt angle") && !bot){
         gifPost(message, "kurt angle", "It’s True, It’s True")
     }
 
-    else if(message.content.toLowerCase().includes("trish stratus")){
+    else if(message.content.toLowerCase().includes("trish stratus") && !bot){
         gifPost(message, "trish stratus", "100% Stratusfaction")
     }
 
-    else if(message.content.toLowerCase().includes("han solo")){
+    else if(message.content.toLowerCase().includes("han solo") && !bot){
         gifPost(message, "han solo", "Don't ever tell me the odds.")
     }
 
-    else if(message.content.toLowerCase().includes("skittles") || message.content.toLowerCase().search(/\berin\b/) >= 0){
+    else if((message.content.toLowerCase().includes("skittles") || message.content.toLowerCase().search(/\berin\b/) >= 0) && !bot){
         gifPost(message, "succubus", "Succubus:  A demon in female form.")
     }
 
-    else if(message.content.toLowerCase().includes("molly") || message.content.toLowerCase().includes("mollywhopper")){
+    else if((message.content.toLowerCase().includes("molly") || message.content.toLowerCase().includes("mollywhopper")) && !bot){
         gifPost(message, "molly", "The Boss Man!!")
     }
 
-    else if(message.content.toLowerCase().includes("the fonze") || message.content.toLowerCase().includes("fonze")){
+    else if((message.content.toLowerCase().includes("the fonze") || message.content.toLowerCase().includes("fonze")) && !bot){
         gifPost(message, "the fonze", "A!!")
     }
 
-    else if(message.content.toLowerCase().includes("mhann uhdea") || message.content.toLowerCase().includes("mhann")){
+    else if((message.content.toLowerCase().includes("mhann uhdea") || message.content.toLowerCase().includes("mhann")) && !bot){
         gifPost(message, "mhann", "Has anyone seen Obi-Wan or Anakin?  I was told to go break up a fight...")
-    }  
+    }
 
 })
 
