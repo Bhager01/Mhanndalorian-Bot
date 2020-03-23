@@ -461,7 +461,7 @@ client.on('message', message => {
         }
     }
 
-    else if(message.content.toLowerCase().match(/[eb.]\d{9}[.register]/) && !bot){
+    else if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot){
         var allyCode = String(message.content.slice(3,12));
 
         if(message.content.includes("@"))
@@ -515,7 +515,7 @@ client.on('message', message => {
                         const sheets = google.sheets({version: 'v4', auth});
                         sheets.spreadsheets.values.get({
                             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'Guild Members & Data!B57:B63',
+                            range: 'Guild Members & Data!A57:A63',
                         }, (err, res) => {
                             if (err) return console.log('The API returned an error: ' + err);
                         const rows = res.data.values;
@@ -528,13 +528,15 @@ client.on('message', message => {
 
                             if(i < 7)
                             {
+                                var today = new Date();
+                                var localdate = ((today.getTime() / 86400000) + 25569) - (4/24)
                                 message.channel.send("Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database.")
                                 sheets.spreadsheets.values.update({
                                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'Guild Members & Data!B' + (i+57) + ':C' + (i+57),
+                                    range: 'Guild Members & Data!A' + (i+57) + ':C' + (i+57),
                                     valueInputOption: 'USER_ENTERED',
                                     resource: {
-                                        values: [[allyCode, "<@" + discordID + "> "]]
+                                        values: [[allyCode, "<@" + discordID + "> ", localdate]]
                                     },
                                 })
                             }
@@ -726,6 +728,10 @@ client.on('message', message => {
 
     else if((message.content.toLowerCase().includes("mhann uhdea") || message.content.toLowerCase().includes("mhann")) && !bot){
         gifPost(message, "mhann", "Has anyone seen Obi-Wan or Anakin?  I was told to go break up a fight...")
+    }
+
+    else if(message.content.toLowerCase().includes("keon") && !bot){
+        gifPost(message, "baby crying", "Why wont this kid stop crying!!!!")
     }
 
 })
