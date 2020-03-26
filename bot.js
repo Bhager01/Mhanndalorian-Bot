@@ -41,6 +41,14 @@ function specificGIF(searchString){
         URLS.push("https://i.postimg.cc/pVjKjp1j/Me-on-Mustafar.gif")
     }
 
+    else if(searchString == "greg"){
+        URLS.push("https://media.giphy.com/media/aNTmc4keX4Fva/giphy.gif")
+        URLS.push("https://media.giphy.com/media/uPeblKaa25xy8/giphy.gif")
+        URLS.push("https://media.giphy.com/media/yk8tRCZHCV0qY/giphy.gif")
+        URLS.push("https://media.giphy.com/media/WwD2LE6RDh30I/giphy.gif")
+        URLS.push("https://media.giphy.com/media/7BK3ZB7nNf2Jq/giphy.gif")
+    }
+
     randomNumber = Math.floor((Math.random()) * URLS.length);
     return URLS[randomNumber];
 
@@ -137,7 +145,7 @@ function dmUsersMissedRaids() {
 function gifPost(message, searchString, tagLine) {
     var special = false;
 
-    if(searchString == "succubus" || searchString == "molly" || searchString == "mhann"){
+    if(searchString == "succubus" || searchString == "molly" || searchString == "mhann" || searchString == "greg"){
         special = true;
     }
 
@@ -734,6 +742,9 @@ client.on('message', message => {
         gifPost(message, "baby crying", "Why wont this kid stop crying!!!!")
     }
 
+    else if((message.content.toLowerCase().includes("greg") || message.content.toLowerCase().includes("stgregory")) && !bot){
+        gifPost(message, "greg", "I’m the Dude, so that’s what you call me. That or, uh His Dudeness, or uh Duder, or El Duderino, if you’re not into the whole brevity thing.")
+    }
 })
 
 //LEAVE THIS WAY
