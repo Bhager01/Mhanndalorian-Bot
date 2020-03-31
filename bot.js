@@ -529,9 +529,32 @@ client.on('message', message => {
                         const rows = res.data.values;
                         if (rows.length) {
                             var i = 0;
-                            while(i<rows.length && rows[i][0] != allyCode && rows[i][0] != undefined)
+                            var TempAllyCodeFound = false
+                         /*   while(i<rows.length && rows[i][0] != allyCode)// && rows[i][0] != undefined)
                             {
+                                console.log("rows.length = " + rows.length + "   rows[i][0] = " +  rows[i][0] + "allycode = " + allyCode)
                                 i++
+                            } */
+                            while(i<rows.length && !TempAllyCodeFound) //See if ally code is already in temp table
+                            {
+                                if(rows[i][0] == allyCode)
+                                {
+                                    TempAllyCodeFound = true;
+                                }
+
+                                else
+                                {
+                                    i++;
+                                }
+                            }
+
+                            if(!TempAllyCodeFound) //If ally code wasnt in temp table, search for a blank spot
+                            {
+                                i = 0;
+                                while(i<rows.length && rows[i][0] != undefined)
+                                {
+                                    i++
+                                }
                             }
 
                             if(i < 7)
