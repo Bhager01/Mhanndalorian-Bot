@@ -768,6 +768,18 @@ client.on('message', message => {
     else if((message.content.toLowerCase().includes("greg") || message.content.toLowerCase().includes("stgregory")) && !bot){
         gifPost(message, "greg", "I’m the Dude, so that’s what you call me. That or, uh His Dudeness, or uh Duder, or El Duderino, if you’re not into the whole brevity thing.")
     }
+
+    else if((message.content.toLowerCase().includes("pooedonu")) && !bot){
+        gifPost(message, "poop", "Welcome to the dark side.")
+    }
+
+    else if((message.content.toLowerCase().includes("baldoldben")) && !bot){
+        gifPost(message, "bald", "Women love a self-confident bald man.")
+    }
+
+    else if((message.content.toLowerCase().includes("kalles")) && !bot){
+        gifPost(message, "farmer", "Keep calm and farm on.")
+    }
 })
 
 //LEAVE THIS WAY
