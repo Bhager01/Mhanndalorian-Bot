@@ -28,6 +28,10 @@ function specificGIF(searchString){
         URLS.push("https://media.giphy.com/media/FNnkDbKc6s6c/giphy.gif")
         URLS.push("https://media.giphy.com/media/CQBUQn0nyxwEo/giphy.gif")
         URLS.push("https://media.giphy.com/media/PJAzcudAG5aaQ/giphy.gif")
+        URLS.push("https://tenor.com/view/lost-girl-succubus-dark-queen-angry-gif-14262254")
+        URLS.push("https://tenor.com/view/succubus-anime-gif-7830669")
+        URLS.push("https://tenor.com/view/bobsburgers-evil-laughing-laugh-louise-gif-6168753")
+        URLS.push("https://tenor.com/view/succubus-lost-girl-bo-gif-7597772")
     }
 
     else if(searchString == "molly"){
@@ -769,16 +773,20 @@ client.on('message', message => {
         gifPost(message, "greg", "I’m the Dude, so that’s what you call me. That or, uh His Dudeness, or uh Duder, or El Duderino, if you’re not into the whole brevity thing.")
     }
 
-    else if((message.content.toLowerCase().includes("pooedonu")) && !bot){
+    else if((message.content.toLowerCase().includes("pooedonu") || message.content.toLowerCase().includes("poo")) && !bot){
         gifPost(message, "poop", "Welcome to the dark side.")
     }
 
-    else if((message.content.toLowerCase().includes("baldoldben")) && !bot){
+    else if((message.content.toLowerCase().includes("baldoldben") || message.content.toLowerCase().includes("bob")) && !bot){
         gifPost(message, "bald", "Women love a self-confident bald man.")
     }
 
     else if((message.content.toLowerCase().includes("kalles")) && !bot){
         gifPost(message, "farmer", "Keep calm and farm on.")
+    }
+
+    else if((message.content.toLowerCase().includes("doc")) && !bot){
+        gifPost(message, "doc", "This wont hurt a bit.")
     }
 })
 
