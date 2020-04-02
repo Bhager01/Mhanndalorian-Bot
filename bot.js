@@ -786,7 +786,7 @@ client.on('message', message => {
     }
 
     else if((message.content.toLowerCase().includes("doc")) && !bot){
-        gifPost(message, "doc", "This wont hurt a bit.")
+        gifPost(message, "doctor", "This wont hurt a bit.")
     }
 })
 
