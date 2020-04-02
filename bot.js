@@ -28,10 +28,10 @@ function specificGIF(searchString){
         URLS.push("https://media.giphy.com/media/FNnkDbKc6s6c/giphy.gif")
         URLS.push("https://media.giphy.com/media/CQBUQn0nyxwEo/giphy.gif")
         URLS.push("https://media.giphy.com/media/PJAzcudAG5aaQ/giphy.gif")
-        URLS.push("https://tenor.com/view/lost-girl-succubus-dark-queen-angry-gif-14262254")
-        URLS.push("https://tenor.com/view/succubus-anime-gif-7830669")
-        URLS.push("https://tenor.com/view/bobsburgers-evil-laughing-laugh-louise-gif-6168753")
-        URLS.push("https://tenor.com/view/succubus-lost-girl-bo-gif-7597772")
+        URLS.push("https://i.postimg.cc/3NZH6zcZ/Succubus1.gif")
+        URLS.push("https://i.postimg.cc/59516F2F/Succubus2.gif")
+        URLS.push("https://i.postimg.cc/NMmt8K8S/Succubus3.gif")
+        URLS.push("https://i.postimg.cc/Hnmg6TBx/Succubus4.gif")
     }
 
     else if(searchString == "molly"){
