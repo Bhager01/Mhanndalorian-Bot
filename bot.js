@@ -785,7 +785,7 @@ client.on('message', message => {
         gifPost(message, "farmer", "Keep calm and farm on.")
     }
 
-    else if((message.content.toLowerCase().includes("doc")) && !bot){
+    else if((message.content.toLowerCase().includes("/\bdoc\b/")) && !bot){
         gifPost(message, "doctor", "This wont hurt a bit.")
     }
 })
