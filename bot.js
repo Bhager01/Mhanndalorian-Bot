@@ -777,16 +777,20 @@ client.on('message', message => {
         gifPost(message, "poop", "Welcome to the dark side.")
     }
 
-    else if((message.content.toLowerCase().includes("baldoldben") || message.content.toLowerCase().includes("bob")) && !bot){
+    else if((message.content.toLowerCase().includes("baldoldben") || message.content.toLowerCase().search(/\bbob\b/) >= 0) && !bot){
         gifPost(message, "bald", "Women love a self-confident bald man.")
     }
 
-    else if((message.content.toLowerCase().includes("kalles")) && !bot){
+    else if(message.content.toLowerCase().includes("kalles") && !bot){
         gifPost(message, "farmer", "Keep calm and farm on.")
     }
 
     else if(message.content.toLowerCase().search(/\bdoc\b/) >= 0 && !bot){
-        gifPost(message, "doctor", "This wont hurt a bit.")
+        gifPost(message, "doctor", "This won't hurt a bit.")
+    }
+
+    else if(message.content.toLowerCase().includes("nnak") && !bot){
+        gifPost(message, "dog the bounty hunter", "I love bounty hunters!")
     }
 })
 
