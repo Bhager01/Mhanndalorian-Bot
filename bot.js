@@ -295,6 +295,8 @@ async function AddFlair(passedMember, row, Type){
     var newNickname;
     newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'')
 
+    console.log("---row= " + row + "   old= " + OldNickname + "   new= " + newNickname + "---")
+
     if(row <= 13 && OldNickname != newNickname){
         await passedMember.setNickname(newNickname)
         console.log(Type + " - " + passedMember.displayName + " None QZ")
@@ -500,28 +502,41 @@ client.on('message', message => {
                 const sheets = google.sheets({version: 'v4', auth});
                 sheets.spreadsheets.values.get({
                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'Guild Members & Data!A66:A119',
+                    range: 'Guild Members & Data!A66:G119',
                 }, (err, res) => {
                     if (err) return console.log('The API returned an error: ' + err);
                 const rows = res.data.values;
+                var DiscordIDDuplicate = false
                 if (rows.length) {
-                    var i = 0
                     rows.map((row) => {
-                        if(row[0] == allyCode){ //ally code found and set discord ID
-                            allyCodeFound = true;
-                            sheets.spreadsheets.values.update({
-                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                range: 'Guild Members & Data!G' + (i+66),
-                                valueInputOption: 'USER_ENTERED',
-                                resource: {
-                                    values: discordIDArray
-                                },
-                            })
-                            message.channel.send("Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode)
+                        if(row[6] == discordIDArray[0][0])
+                        {
+                            message.channel.send("The discord ID is already assigned in the Mhanndalorian database.")
+                            DiscordIDDuplicate = true
                         }
-                        i++
                     });
-                    if(allyCodeFound == false)
+
+                    if(DiscordIDDuplicate == false)
+                    {
+                        var i = 0
+                        rows.map((row) => {
+                            if(row[0] == allyCode){ //ally code found and set discord ID
+                                allyCodeFound = true;
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'Guild Members & Data!G' + (i+66),
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: {
+                                        values: discordIDArray
+                                    },
+                                })
+                                message.channel.send("Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode)
+                            }
+                            i++
+                        });
+                    }
+
+                    if(allyCodeFound == false && DiscordIDDuplicate == false)
                     {
                         message.channel.send("Ally code " + allyCode +" was not found in Mhanndalorian database")
                         const sheets = google.sheets({version: 'v4', auth});
