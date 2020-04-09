@@ -295,7 +295,7 @@ async function AddFlair(passedMember, row, Type){
     var newNickname;
     newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'')
 
-    console.log("---row= " + row + "   old= " + OldNickname + "   new= " + newNickname + "---")
+    //console.log("---row= " + row + "   old= " + OldNickname + "   new= " + newNickname + "---")
 
     if(row <= 13 && OldNickname != newNickname){
         await passedMember.setNickname(newNickname)
