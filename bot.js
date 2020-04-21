@@ -814,7 +814,7 @@ client.on('message', message => {
         gifPost(message, "the undertaker WWE", "RIP")
     }
 
-    else if((message.content.toLowerCase().includes("hhh") || message.content.toLowerCase().includes("triple h")) && !bot){
+    else if((message.content.toLowerCase().search(/\bhhh\b/) >= 0) || message.content.toLowerCase().includes("triple h")) && !bot){
         gifPost(message, "hhh wwe", "Time to play the game!!!!!")
     }
 
