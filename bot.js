@@ -22,23 +22,21 @@ function specificGIF(searchString){
     var randomNumber;
 
     if(searchString == "succubus"){
-        URLS.push("https://media.giphy.com/media/pseubeg1JACwo/giphy.gif")
-        URLS.push("https://media.giphy.com/media/oL0LeKVib4z3G/giphy.gif")
-        URLS.push("https://media.giphy.com/media/TTgdzuIqWc7dkARNFaE/giphy.gif")
-        URLS.push("https://media.giphy.com/media/FNnkDbKc6s6c/giphy.gif")
-        URLS.push("https://media.giphy.com/media/CQBUQn0nyxwEo/giphy.gif")
-        URLS.push("https://media.giphy.com/media/PJAzcudAG5aaQ/giphy.gif")
+        URLS.push("https://i.postimg.cc/fWdcDZbj/Succubus8.gif")
         URLS.push("https://i.postimg.cc/3NZH6zcZ/Succubus1.gif")
         URLS.push("https://i.postimg.cc/59516F2F/Succubus2.gif")
         URLS.push("https://i.postimg.cc/NMmt8K8S/Succubus3.gif")
         URLS.push("https://i.postimg.cc/Hnmg6TBx/Succubus4.gif")
+        URLS.push("https://i.postimg.cc/Xq1yj2th/Succubus5.gif")
+        URLS.push("https://i.postimg.cc/BQcnB7hG/Succubus6.gif")
+        URLS.push("https://i.postimg.cc/y8G4mFzH/Succubus7.gif")
     }
 
     else if(searchString == "molly"){
-        URLS.push("https://media.giphy.com/media/1wX9cGW6H2cLlQXetx/giphy.gif")
-        URLS.push("https://media.giphy.com/media/jTOh2zZZgxK0MLwINF/giphy.gif")
-        URLS.push("https://media.giphy.com/media/1ymoKd9B1QRTbpQJOe/giphy.gif")
-        URLS.push("https://media.giphy.com/media/58xdxGxB8RKo0/giphy.gif")
+        URLS.push("https://i.postimg.cc/65SYzzTY/Big-Boss-Man-2.gif")
+        URLS.push("https://i.postimg.cc/NjHbnTHY/Big-Boss-Man-3.gif")
+        URLS.push("https://i.postimg.cc/wBYFYvXN/Big-Boss-Man-4.gif")
+        URLS.push("https://i.postimg.cc/Sx332kWQ/Big-Boss-Man-1.gif")
     }
 
     else if(searchString == "mhann"){
@@ -241,7 +239,7 @@ function FlairUpdate(Type, callback){
         const sheets = google.sheets({version: 'v4', auth});
         sheets.spreadsheets.values.get({
           spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-          range: 'Guild Members & Data!F66:G',
+          range: 'Guild Members & Data!F66:L119',
         }, async (err, res) => {
           if (err) return console.log('The API returned an error: ' + err);
           const rows = res.data.values;
@@ -258,7 +256,7 @@ function FlairUpdate(Type, callback){
                         User =  await client.fetchUser(discordID)
                         GuildMember =  await guild.fetchMember(User)
                         .then(value =>{
-                            AddFlair(value,element[0],Type);
+                            AddFlair(value,element[0],Type,element[6]);
                         }).catch(error => {
                                 console.log(error)
                                 console.log("catch1")
@@ -289,40 +287,51 @@ var job2 = new CronJob('05 9,21 * * *', function() {
 }, null, true, 'America/New_York');
 job.start();
 
-async function AddFlair(passedMember, row, Type){
+async function AddFlair(passedMember, row, Type, SpecialF){
     var OldNickname = passedMember.displayName
+    var SpecialFlairString = '';
 
     var newNickname;
-    newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'')
+    newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'').replace(/⚔/g,'').replace(/🛡/g,'');
 
-    //console.log("---row= " + row + "   old= " + OldNickname + "   new= " + newNickname + "---")
+    if(SpecialF != undefined)
+    {
+        if(SpecialF.includes("O"))
+        {
+            SpecialFlairString = SpecialFlairString + '⚔'
+        }
+        if(SpecialF.includes("D"))
+        {
+            SpecialFlairString = SpecialFlairString + '🛡'
+        }
+    }
 
-    if(row <= 13 && OldNickname != newNickname){
-        await passedMember.setNickname(newNickname)
+    if(row <= 13 && row >= 0 && OldNickname != newNickname + SpecialFlairString){
+        await passedMember.setNickname(newNickname + SpecialFlairString)
         console.log(Type + " - " + passedMember.displayName + " None QZ")
         if(Type == "Manual" || Type == "Cron")
          NewNoStatus.push(passedMember.id)
     }
-    else if(row >= 14 && row <= 29 && OldNickname != newNickname + '🥉'){
-        await passedMember.setNickname(newNickname + '🥉')
+    else if(row >= 14 && row <= 29 && OldNickname != newNickname + SpecialFlairString +'🥉'){
+        await passedMember.setNickname(newNickname + SpecialFlairString +'🥉')
         console.log(Type + " - " + passedMember.displayName + " Bronze QZ")
         if(Type == "Manual" || Type == "Cron")
             newBronze = newBronze + "<@" + passedMember.id + "> "
     }
-    else if(row >= 30 && row <= 59 && OldNickname != newNickname + '🥈'){
-        await passedMember.setNickname(newNickname + '🥈')
+    else if(row >= 30 && row <= 59 && OldNickname != newNickname + SpecialFlairString +'🥈'){
+        await passedMember.setNickname(newNickname + SpecialFlairString +'🥈')
         console.log(Type + " - " + passedMember.displayName + " Silver QZ")
         if(Type == "Manual" || Type == "Cron")
             newSilver = newSilver + "<@" + passedMember.id + "> "
     }
-    else if(row >= 60 && row <= 99 && OldNickname != newNickname + '🥇'){
-        await passedMember.setNickname(newNickname + '🥇')
+    else if(row >= 60 && row <= 99 && OldNickname != newNickname + SpecialFlairString +'🥇'){
+        await passedMember.setNickname(newNickname + SpecialFlairString +'🥇')
         console.log(Type + " - " + passedMember.displayName + " Gold QZ")
         if(Type == "Manual" || Type == "Cron")
             newGold = newGold + "<@" + passedMember.id + "> "
     }
-    else if(row >= 100 && OldNickname != newNickname + '💎'){
-        await passedMember.setNickname(newNickname + '💎')
+    else if(row >= 100 && OldNickname != newNickname + SpecialFlairString +'💎'){
+        await passedMember.setNickname(newNickname + SpecialFlairString +'💎')
         console.log(Type + " - " + passedMember.displayName + " Diamond QZ")
         if(Type == "Manual" || Type == "Cron")
             newDiamond = newDiamond + "<@" + passedMember.id + "> "
@@ -340,14 +349,14 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         const sheets = google.sheets({version: 'v4', auth});
         sheets.spreadsheets.values.get({
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guild Members & Data!F66:G',
+            range: 'Guild Members & Data!F66:L119',
         }, (err, res) => {
             if (err) return console.log('The API returned an error: ' + err);
             const rows = res.data.values;
             if (rows.length) {
                 rows.map((row) => {
                     if(String(row[1]).match(/\d+/) == newMember.user.id && String(row[1]).match(/\d+/) != "378053516067078149"){
-                        AddFlair(newMember, row[0], "User Name Change");
+                        AddFlair(newMember, row[0], "User Name Change",row[6]);
                     }
                 });
             }else {
@@ -440,6 +449,171 @@ client.on('message', message => {
             message.channel.send(message.member.displayName + ", what do you think you are doing.  Turn back.  I have spoken.");
             console.log(message.member.displayName + " tried to execute flairupdate QZ");
         }
+    }
+
+    else if(message.content.toLowerCase().startsWith(`${prefix}award`)){
+        if(message.member.roles.has("505527335768948754"))
+        {            
+            (async () => {
+                await message.channel.fetchMessages({ limit: 1 }).then(messages => { // Fetches the messages
+                    console.log("Deleted " + FilteredCommandArray[1].toUpperCase() + " Award Command QZ")
+                    message.channel.bulkDelete(messages)
+                    .catch(err => {
+                   //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
+                        console.log("catch4");
+                        console.log(err);
+                    });
+                })
+            })() 
+
+            var CommandArray = message.content.split(' ');
+            var FilteredCommandArray = [];
+
+            for(var i = 0; i < CommandArray.length; i++)
+            {
+                if(CommandArray[i] != '')
+                {
+                    FilteredCommandArray.push(CommandArray[i])
+                }
+            }
+
+            var discordID;
+            var Proceed = true;
+
+            for (var i = 2; i < FilteredCommandArray.length; i++){
+                discordID = client.users.get(FilteredCommandArray[i].replace("<@!","").replace(">",""))
+                if(discordID == undefined){ //Discord user doesn't exist
+                    message.channel.send("You entered a discord user that does not exist.")
+                    Proceed = false;
+                }
+            }
+
+            if (Proceed == true){
+                FilteredCommandArray[1] = FilteredCommandArray[1].toLowerCase();
+                if(FilteredCommandArray[1] == "two" || FilteredCommandArray[1] == "twd")
+                {
+                    var SpecificFlair;
+                    var AwardMessage;
+                    if(FilteredCommandArray[1] == "two")
+                    {
+                        SpecificFlair = 'O'
+                        AwardMessage = "Territory War - Offensive Award ⚔"
+                    }
+                    if(FilteredCommandArray[1] == "twd")
+                    {
+                        SpecificFlair = 'D'
+                        AwardMessage = "Territory War - Defensive Award 🛡"
+                    }
+
+                    const guild = client.guilds.get("505515654833504266");
+
+                    content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                    authorize(content, listMajors);
+
+                    function listMajors(auth) {
+                        const sheets = google.sheets({version: 'v4', auth});
+                        sheets.spreadsheets.values.get({
+                          spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                          range: 'Guild Members & Data!F66:L119',
+                        }, async (err, res) => {
+                          if (err) return console.log('The API returned an error: ' + err);
+                          const rows = res.data.values;
+                          if (rows.length)
+                          {
+                            var SpecialFlair = new Array(54);
+                            for (var i = 0; i < SpecialFlair.length; i++) { 
+                                SpecialFlair[i] = new Array(1);
+                                SpecialFlair[i][0] = '';
+                            }
+
+                            var SpecificFlairRegEx = new RegExp(SpecificFlair,'g');
+                            
+                            for (var i = 0; i < rows.length; i++)
+                            {
+                                if(rows[i][6] == undefined)
+                                {
+                                    rows[i][6] = ''
+                                }
+
+                                SpecialFlair[i][0] = rows[i][6];
+                                if(SpecialFlair[i][0].includes(SpecificFlair))
+                                {
+                                    SpecialFlair[i][0] = SpecialFlair[i][0].replace(SpecificFlairRegEx,'')
+
+                                    if(rows[i][1] != "<@378053516067078149> ")
+                                    {
+                                        User =  await client.fetchUser(rows[i][1].replace("<@","").replace("> ",""))
+
+                                        GuildMember =  await guild.fetchMember(User)
+                                        .then(value =>{
+                                                AddFlair(value,rows[i][0],"SpecialRemove", SpecialFlair[i][0]);
+                                        }).catch(error => {
+                                                console.log(error)
+                                                console.log("catch2")
+                                        });
+                                    }
+
+                                //    AddFlair(value,rows[j][0],"Special", SpecialFlair[j][0]);
+                                }
+                            }
+
+                            var ListMembersSpecialFlar = '';
+
+                            for (var i = 2; i < FilteredCommandArray.length; i++){
+                                for (var j = 0; j < rows.length; j++)
+                                {
+                                    if(FilteredCommandArray[i].replace("!","") == rows[j][1].replace(" ",""))
+                                    {
+                                        SpecialFlair[j][0] = SpecialFlair[j][0] + SpecificFlair
+                                     //   console.log(FilteredCommandArray[i].replace("<@!","").replace(">",""))
+
+                                        if(FilteredCommandArray[i].replace("<@!","").replace(">","") != 378053516067078149){
+                                            User =  await client.fetchUser(FilteredCommandArray[i].replace("<@!","").replace(">",""))
+                                            GuildMember =  await guild.fetchMember(User)
+                                            .then(value =>{
+                                                  AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
+                                           //       client.channels.get("676092306381602826").send(rows[j][1].replace(" ",""))
+                                                    ListMembersSpecialFlar = ListMembersSpecialFlar + rows[j][1].replace(" ","") + " " //CHECK!!!!
+                                            }).catch(error => {
+                                                    console.log(error)
+                                                    console.log("catch3")
+                                            });
+                                        }
+
+                                        j = rows.length;
+                                    }
+                                }
+                            }
+                            
+                            if(ListMembersSpecialFlar != '')
+                                client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
+                            
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'Guild Members & Data!L66:L119',
+                                valueInputOption: 'USER_ENTERED',
+                                resource: {
+                                    values: SpecialFlair
+                                },
+                            })                
+                          }
+
+                          else
+                          {
+                            console.log('No data found.');
+                          }
+                        });
+                    }
+                }
+                else
+                {
+                    message.channel.send("Second argument must be TWO or TWD")
+                }
+                
+            }
+        }
+        else
+            message.reply('You do not have sufficient privileges to execute this command')
     }
 
     else if(message.content.startsWith(`${prefix}clean`)){
