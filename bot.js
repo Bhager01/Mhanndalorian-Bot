@@ -71,9 +71,8 @@ function dmUsersMissedRaids() {
             const rows = res.data.values;
             if (rows.length) {
                 rows.map((row) => { //STAY IN 
-
-                    if(row[2] - row[8] == 1 && row[7] == 1){
-                        var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
+                    var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
+                    if(row[2] - row[8] == 1 && row[7] == 1 && user != ""){
                         console.log(user + " was just forgiven QZ")
                         client.users.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ", but luckily you purchased raid forgiveness!")
                         .catch(error => {
@@ -92,8 +91,7 @@ function dmUsersMissedRaids() {
                             
                     }
 
-                    else if (row[2] - row[8] == 1 && row[7] > 1){
-                        var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
+                    else if (row[2] - row[8] == 1 && row[7] > 1 && user != ""){
                         console.log(user + " missed one raid QZ")
                         client.users.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ".")
                         .catch(error => {
@@ -102,8 +100,7 @@ function dmUsersMissedRaids() {
                         });
                     }
 
-                    else if (row[2] - row[8] > 1){
-                        var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
+                    else if (row[2] - row[8] > 1 && user != ""){
                         console.log(user + " missed multiple raids QZ")
                         client.users.get(user).send("You have missed the " + row[10] + " raid on " + row[9] + ". In addition, you have missed " + ((row[2] - 1) - row[8]) + " other raids(s) since you were last messaged.")
                         .catch(error => {
@@ -120,8 +117,11 @@ function dmUsersMissedRaids() {
 
                 for (var j = 0; j < missedRaids.length; j++) {
                     try{
-                        missedRaids[j][0] = rows[j][2];
-                    }
+                        if(rows[j][6] != "")
+                            missedRaids[j][0] = rows[j][2];
+                        else
+                            missedRaids[j][0] = rows[j][8];
+                    }       
                     catch(error){
                         missedRaids[j][0] = "";
                     }
@@ -250,7 +250,7 @@ function FlairUpdate(Type, callback){
           var discordID;
 
             for (const element of rows){
-                if(typeof element[1] != 'undefined' && element[0].length >= 1){
+                if(typeof element[1] != 'undefined' && element[1] != "" && element[0].length >= 1){
                     discordID = element[1].replace("<","").replace(">","").replace("@","");
                     if(discordID != 378053516067078149){
                         User =  await client.fetchUser(discordID)
@@ -413,10 +413,10 @@ client.on('message', message => {
                             message.channel.send("You are at silver level!! You have had " + row[0] + " days without missing raids.  Gold level status is at 60 days.");
                         }
                         if(row[0] >= 60 && row[0] <= 99){
-                            message.channel.send("You are at gold level!! You have had " + row[0] + " days without missing raids.  Platnium level status is at 100 days.");
+                            message.channel.send("You are at gold level!! You have had " + row[0] + " days without missing raids.  Diamond level status is at 100 days.");
                         }
                         if(row[0] >= 100){
-                            message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  You are platnium status!!!!!");
+                            message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  You are diamond status!!!!!");
                         }
                     }
                 });
@@ -481,6 +481,7 @@ client.on('message', message => {
             var Proceed = true;
 
             for (var i = 2; i < FilteredCommandArray.length; i++){
+                console.log(FilteredCommandArray)
                 discordID = client.users.get(FilteredCommandArray[i].replace("<@!","").replace(">",""))
                 if(discordID == undefined){ //Discord user doesn't exist
                     message.channel.send("You entered a discord user that does not exist.")
@@ -586,7 +587,7 @@ client.on('message', message => {
                             }
                             
                             if(ListMembersSpecialFlar != '')
-                                client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
+                                client.channels.get("676092306381602826").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
                             
                             sheets.spreadsheets.values.update({
                                 spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
