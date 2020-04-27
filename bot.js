@@ -480,9 +480,12 @@ client.on('message', message => {
             var discordID;
             var Proceed = true;
 
+            var InputToDiscordID;
+
             for (var i = 2; i < FilteredCommandArray.length; i++){
-                console.log(FilteredCommandArray)
-                discordID = client.users.get(FilteredCommandArray[i].replace("<@!","").replace(">",""))
+                InputToDiscordID = FilteredCommandArray[i].match(/\d+/g)
+                console.log(InputToDiscordID[0])
+                discordID = client.users.get(InputToDiscordID[0])
                 if(discordID == undefined){ //Discord user doesn't exist
                     message.channel.send("You entered a discord user that does not exist.")
                     Proceed = false;
@@ -543,7 +546,7 @@ client.on('message', message => {
 
                                     if(rows[i][1] != "<@378053516067078149> ")
                                     {
-                                        User =  await client.fetchUser(rows[i][1].replace("<@","").replace("> ",""))
+                                        User =  await client.fetchUser(rows[i][1].match(/\d+/g))
 
                                         GuildMember =  await guild.fetchMember(User)
                                         .then(value =>{
@@ -566,28 +569,31 @@ client.on('message', message => {
                                     if(FilteredCommandArray[i].replace("!","") == rows[j][1].replace(" ",""))
                                     {
                                         SpecialFlair[j][0] = SpecialFlair[j][0] + SpecificFlair
-                                     //   console.log(FilteredCommandArray[i].replace("<@!","").replace(">",""))
 
-                                        if(FilteredCommandArray[i].replace("<@!","").replace(">","") != 378053516067078149){
-                                            User =  await client.fetchUser(FilteredCommandArray[i].replace("<@!","").replace(">",""))
-                                            GuildMember =  await guild.fetchMember(User)
-                                            .then(value =>{
-                                                  AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
-                                           //       client.channels.get("676092306381602826").send(rows[j][1].replace(" ",""))
-                                                    ListMembersSpecialFlar = ListMembersSpecialFlar + rows[j][1].replace(" ","") + " " //CHECK!!!!
-                                            }).catch(error => {
-                                                    console.log(error)
-                                                    console.log("catch3")
-                                            });
-                                        }
+                                        var TempUser2 = FilteredCommandArray[i].match(/\d+/g)
+
+                                        
+                                        User =  await client.fetchUser(TempUser2[0])
+                                        GuildMember =  await guild.fetchMember(User)
+                                        .then(value =>{
+                                            if(TempUser2[0] != 378053516067078149)
+                                            {
+                                                AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
+                                            }
+                                            ListMembersSpecialFlar = ListMembersSpecialFlar + rows[j][1].replace(" ","") + " " //CHECK!!!!
+                                        }).catch(error => {
+                                                console.log(error)
+                                                console.log("catch3")
+                                        });
+                                        
 
                                         j = rows.length;
                                     }
                                 }
                             }
                             
-                            if(ListMembersSpecialFlar != '')
-                                client.channels.get("676092306381602826").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
+                            if(ListMembersSpecialFlar != '')//command channel 676092306381602826     //Cantina 505515654837698563
+                                client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
                             
                             sheets.spreadsheets.values.update({
                                 spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
