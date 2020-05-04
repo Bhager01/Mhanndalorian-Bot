@@ -620,7 +620,7 @@ client.on('message', message => {
                             }
                             
                             if(ListMembersSpecialFlar != '')//command channel 676092306381602826     //Cantina 505515654837698563
-                                client.channels.get("676092306381602826").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
+                                client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
                             
                             sheets.spreadsheets.values.update({
                                 spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
