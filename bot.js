@@ -5,10 +5,6 @@ const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
 const client = new Discord.Client();
 const prefix = "!"
 
-var headers = {
-    "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
-};
-
 var newBronze = "";
 var newSilver = "";
 var newGold = "";
@@ -395,7 +391,7 @@ client.on("guildMemberAdd", (member) => {
     + "If you have any questions about my services please contact my employer, <@406945430967156766>. \n \nI have spoken. \n"
     + "This is the way.")
 
-    console.log(member.displayName) + "Has joined the guild QZ"
+    console.log(member.displayName + " Has joined the guild QZ")
 
   });
 
@@ -468,18 +464,6 @@ client.on('message', message => {
         }
     }
 
-    else if(message.content.startsWith(`${prefix}api`)){
-        if(message.member.id == "406945430967156766")
-        {
-            var server = "https://www.hotutils.app/HotStaging/swgoh/register/Mhann%20Uhdea%232253/406945430967156766/100000000"
-
-            (async () => {
-                test = await fetch(server, { headers: headers}).then(response => response.json())
-                console.log(test)
-            })()    
-        }
-    }
-
     else if(message.content == `${prefix}flairupdate` || message.content == `${prefix}Flairupdate`){
         if(message.member.id == "406945430967156766"){
             message.channel.send("Flair is being updated for all guild members")
@@ -523,7 +507,7 @@ client.on('message', message => {
 
             for (var i = 2; i < FilteredCommandArray.length; i++){
                 InputToDiscordID = FilteredCommandArray[i].match(/\d+/g)
-                console.log(InputToDiscordID[0])
+            //    console.log(InputToDiscordID[0])
                 discordID = client.users.get(InputToDiscordID[0])
                 if(discordID == undefined){ //Discord user doesn't exist
                     message.channel.send("You entered a discord user that does not exist.")
@@ -745,35 +729,55 @@ client.on('message', message => {
     
            (async () => {
                 const guild = client.guilds.get("505515654833504266");
-                const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register/"
+                const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
             
                 var User;
                 var GuildMember;
 
                 var DiscordDiscriminator;
                 var DiscordName;
-                var Server;
                 var Color;
                 var Title;
 
                 User =  await client.fetchUser(discordID);
                 GuildMember =  await guild.fetchMember(User);
 
-                DiscordDiscriminator = "%23" + GuildMember.user.discriminator
-                DiscordName = GuildMember.user.username.replace(/ /g, "%20")
+              //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
+              //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
 
-                Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode
-                console.log(Server)
-              //  server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + "100000000"
+                DiscordDiscriminator = "#" + GuildMember.user.discriminator
+                DiscordName = GuildMember.user.username
 
-                Result = await fetch(Server, { headers: headers}).then(response => response.json())
+                var headers = {
+                    "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                };
 
-                if(Result.ResponseCode == 0)
+                var body = {
+                    "discordTag": DiscordName + DiscordDiscriminator,
+                    "discordId": discordID,
+                    "allyCode": allyCode                };
+
+              //  Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode OLD API
+
+              //  Result = await fetch(Server, { headers: headers}).then(response => response.json()) OLD API
+
+                Result = await fetch(BaseURL,
+                {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(body)
+                }).then(response => response.json())
+
+                var JSONResponse = (JSON.parse(Result));
+
+                if(JSONResponse.ResponseCode == 0)
                 {
                     Color = "#ff0000"
                     Title = "Error - HotBot"
                 }
-                else
+                else if (JSONResponse.ResponseCode == 1)
                 {
                     Color = "00ff00"
                     Title = "Success - HotBot"
@@ -782,7 +786,7 @@ client.on('message', message => {
                 const Embed = new Discord.RichEmbed()
                     .setColor(Color)
                     .setTitle(Title)
-                    .setDescription(Result.ResponseMessage);
+                    .setDescription(JSONResponse.ResponseMessage);
                 message.channel.send(Embed) 
             })()
 
