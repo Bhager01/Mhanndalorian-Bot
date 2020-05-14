@@ -356,49 +356,53 @@ async function AddFlair(passedMember, row, Type, SpecialF){
 }
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
-  var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-  authorize(content, listMajors);
+    if(newMember.guild.id == "505515654833504266")
+    {
+        var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+        authorize(content, listMajors);
 
-    function listMajors(auth) {
-        const sheets = google.sheets({version: 'v4', auth});
-        sheets.spreadsheets.values.get({
-            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guild Members & Data!F66:L119',
-        }, (err, res) => {
-            if (err) return console.log('The API returned an error: ' + err);
-            const rows = res.data.values;
-            if (rows.length) {
-                rows.map((row) => {
-                    if(String(row[1]).match(/\d+/) == newMember.user.id && String(row[1]).match(/\d+/) != "378053516067078149"){
-                        AddFlair(newMember, row[0], "User Name Change",row[6]);
-                    }
-                });
-            }else {
-                console.log('No data found.');
-            }
-        });
+        function listMajors(auth) {
+            const sheets = google.sheets({version: 'v4', auth});
+            sheets.spreadsheets.values.get({
+                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                range: 'Guild Members & Data!F66:L119',
+            }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                const rows = res.data.values;
+                if (rows.length) {
+                    rows.map((row) => {
+                        if(String(row[1]).match(/\d+/) == newMember.user.id && String(row[1]).match(/\d+/) != "378053516067078149"){
+                            AddFlair(newMember, row[0], "User Name Change",row[6]);
+                        }
+                    });
+                }else {
+                    console.log('No data found.');
+                }
+            });
+        }
     }
 })
 
 client.on("guildMemberAdd", (member) => {
-    client.users.get(member.id).send("Welcome to Wookie and the Bandit!  I'm Mhanndalorain bot, and I work for <@406945430967156766>. "
-    + "Some of the services I provide include keeping track of raid participation, weekly updates, advanced "
-    + "commands, and humor. I will assign you flair (an emoji added to your username), based on your participation level in "
-    + "raids (you only need to sign up, doing damage is optional): \n \n"
-    + "Bronze (🥉) - 14 days of no missed raids \nSilver (🥈) - 30 days of no missed raids \n"
-    + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n \n"
-    + "The following command will allow you to check your flair status at any time \n!flair \n \n"
-    + "If you have any questions about my services please contact my employer, <@406945430967156766>. \n \nI have spoken. \n"
-    + "This is the way.")
+    if(member.guild.id == "505515654833504266")
+        client.users.get(member.id).send("Welcome to Wookie and the Bandit!  I'm Mhanndalorain bot, and I work for <@406945430967156766>. "
+        + "Some of the services I provide include keeping track of raid participation, weekly updates, advanced "
+        + "commands, and humor. I will assign you flair (an emoji added to your username), based on your participation level in "
+        + "raids (you only need to sign up, doing damage is optional): \n \n"
+        + "Bronze (🥉) - 14 days of no missed raids \nSilver (🥈) - 30 days of no missed raids \n"
+        + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n \n"
+        + "The following command will allow you to check your flair status at any time \n!flair \n \n"
+        + "If you have any questions about my services please contact my employer, <@406945430967156766>. \n \nI have spoken. \n"
+        + "This is the way.")
 
-    console.log(member.displayName + " Has joined the guild QZ")
+        console.log(member.displayName + " Has joined the guild QZ")
 
   });
 
 client.on('message', message => {
     var bot = message.author.bot
 
-    if(message.content == `${prefix}flair` || message.content == `${prefix}Flair`){
+    if((message.content == `${prefix}flair` || message.content == `${prefix}Flair`) && message.guild.id == "505515654833504266"){
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
           
@@ -458,7 +462,7 @@ client.on('message', message => {
         if(message.member.id == "406945430967156766"){
             const guild = client.guilds.get("505515654833504266");
            // guild.createRole({ name: 'Test', permissions: ['MANAGE_MESSAGES', 'KICK_MEMBERS'] });
-           guild.roles.get("705498744061296721").setPosition(6)
+           guild.roles.get("705498744061296721").setPosition(5)
          // guild.roles.get("505527335768948754").setPermissions(2146959351)
 
         }
@@ -572,7 +576,7 @@ client.on('message', message => {
                                 {
                                     SpecialFlair[i][0] = SpecialFlair[i][0].replace(SpecificFlairRegEx,'')
 
-                                    if(rows[i][1] != "<@378053516067078149> ")
+                                    if(rows[i][1] != "<@378053516067078149> " && null != (rows[i][1].match(/\d+/g)))
                                     {
                                         User =  await client.fetchUser(rows[i][1].match(/\d+/g))
 
@@ -684,7 +688,7 @@ client.on('message', message => {
         }
     }
 
-    else if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot){
+    else if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && message.guild.id == "505515654833504266"){
         var allyCode = String(message.content.slice(3,12));
         var officer;
 
@@ -934,7 +938,7 @@ client.on('message', message => {
         }
     }
 
-    else if(message.content.toLowerCase().startsWith(`${prefix}lookup`)){
+    else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  message.guild.id == "505515654833504266"){
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
           
@@ -1023,7 +1027,7 @@ client.on('message', message => {
         }
     }
 
-    else if (!message.content.includes(",,") && !bot && !message.content.includes("!"))
+    else if (!message.content.includes(",,") && !bot && !message.content.includes("!") &&  message.guild.id == "505515654833504266")
     {
         if(message.content.toLowerCase().includes("flair")){
             gifPost(message, "Ric Flair", "WOOOOOOOOOOOOOOO!")
@@ -1227,6 +1231,12 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().includes("legion of doom") || message.content.toLowerCase().includes("road warriors")){
             gifPost(message, "lod", "What a rush!!!!!!")
+        }
+    }
+    else if (!message.content.includes(",,") && !bot && !message.content.includes("!") &&  message.guild.id == "541730480479928351")
+    {
+        if(message.content.toLowerCase().includes("eggs")){
+            gifPost(message, "eggs", "I love eggs")
         }
     }
 })
