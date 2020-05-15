@@ -358,6 +358,33 @@ async function AddFlair(passedMember, row, Type, SpecialF){
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
     if(newMember.guild.id == "505515654833504266")
     {
+        if(newMember.roles.has("530083964380250116") && !oldMember.roles.has("530083964380250116"))
+        {
+            console.log(newMember.displayName + " Has become a bandit QZ")
+            client.users.get(newMember.user.id).send("Congratulations!! You are now an official Bandit! Please check the "
+                + "new-to-server channel on the guild Discord server for some additional instructions. \n \n"
+                + "Now, a little about me.  I'm Mhanndalorain bot, and I work for <@406945430967156766>. "
+                + "Some of the services I provide include keeping track of raid participation, informational posts, advanced "
+                + "commands, and humor. I will assign you flair (an emoji added to your username), for oustanding performance in territory wars and for your participation in "
+                + "raids (you only need to sign up, doing damage is optional): \n \n"
+                + "Bronze (🥉) - 14 days of no missed raids \nSilver (🥈) - 30 days of no missed raids \n"
+                + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n \n"
+                + "The following command will allow you to check your raid flair status at any time \n!flair \n \n"
+                + "If you have any questions about my services please contact my employer, <@406945430967156766>. \n \nI have spoken. \n"
+                + "This is the way.")
+            
+            client.channels.get("710510128381689966").send("<@" + newMember.user.id + "> , congratulations on becoming an official Bandit!  "
+                + "There are a few things we need you to do to get fully set up: \n \n"
+                + "1. Post a swgoh.gg acct in <#530063496382119937> \n \n"
+                + "2. Register for the bots we use on the server.  To do this, you need your in game ally code. "
+                + "If your ally code was 123456789 you would type the following command in the <#706614410235347034> channel: \n"
+                + "       eb.123456789.register \n       Do not use dashes \n \n"
+                + "3. Read general rules in: \n       <#529197401626378241> \n       <#530675016916795400> \n \n"
+                + "4. Read raid, TW, and TB rules in: \n       <#530674764499517440> \n       <#530991189604958210> \n       <#530991579717173279> \n \n"
+                + "Utilize the info, resources, and officers in the guild to maximize your gameplay.  Please contact officers (<@&505527335768948754>) "
+                + "or the guild leader (<@&528746539871371294>) with any comments, questions, or concerns.  Enjoy the game and this online family! \n \n - - - - - - - - - -")
+        }
+            
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
 
@@ -385,19 +412,33 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
 client.on("guildMemberAdd", (member) => {
     if(member.guild.id == "505515654833504266")
-        client.users.get(member.id).send("Welcome to Wookie and the Bandit!  I'm Mhanndalorain bot, and I work for <@406945430967156766>. "
-        + "Some of the services I provide include keeping track of raid participation, weekly updates, advanced "
-        + "commands, and humor. I will assign you flair (an emoji added to your username), based on your participation level in "
-        + "raids (you only need to sign up, doing damage is optional): \n \n"
-        + "Bronze (🥉) - 14 days of no missed raids \nSilver (🥈) - 30 days of no missed raids \n"
-        + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n \n"
-        + "The following command will allow you to check your flair status at any time \n!flair \n \n"
-        + "If you have any questions about my services please contact my employer, <@406945430967156766>. \n \nI have spoken. \n"
-        + "This is the way.")
+    {
+        client.channels.get("710510128381689966").send("Hey <@" + member.user.id + ">! Welcome to Wookie and the Bandit!  You won't find a more eclectic group of rebels "
+            + "and scoundrels anywhere in the galaxy.  Have a look around our server and make yourself comfortable.  If you're "
+            + "looking for some new droids, entertainment, pie, or good banter, stop in at the <#505515654837698563> and say hello. "
+            + "If you are interested in speaking with an officer, just mention <@&505527335768948754> and someone will be in touch. "
+            + "An officer can set you up with a visitor pass that will enable you to see many more resources available on our server. \n \n - - - - - - - - - -")
+        
+        client.channels.get("528458206192599041").send("<@" + member.user.id + "> has joined the server.")
+    }
 
         console.log(member.displayName + " Has joined the guild QZ")
+});
 
-  });
+client.on("guildMemberRemove", (member) => {
+    if(member.guild.id == "505515654833504266")
+        client.channels.get("528458206192599041").send(member.displayName + " has left the server.")
+});
+
+client.on("guildBanAdd", (guild,user) => {
+    if(guild.id == "505515654833504266") 
+        client.channels.get("528458206192599041").send(user.username + " has been banned from the server.")
+});
+
+client.on("guildBanRemove", (guild,user) => {
+    if(guild.id == "505515654833504266")
+        client.channels.get("528458206192599041").send(user.username + " has been unbanned from the server.")
+});
 
 client.on('message', message => {
     var bot = message.author.bot
@@ -462,7 +503,7 @@ client.on('message', message => {
         if(message.member.id == "406945430967156766"){
             const guild = client.guilds.get("505515654833504266");
            // guild.createRole({ name: 'Test', permissions: ['MANAGE_MESSAGES', 'KICK_MEMBERS'] });
-           guild.roles.get("705498744061296721").setPosition(5)
+           guild.roles.get("705498744061296721").setPosition(24)
          // guild.roles.get("505527335768948754").setPermissions(2146959351)
 
         }
