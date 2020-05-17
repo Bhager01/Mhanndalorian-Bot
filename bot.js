@@ -443,7 +443,7 @@ client.on("guildBanRemove", (guild,user) => {
 client.on('message', message => {
     var bot = message.author.bot
 
-    if((message.content == `${prefix}flair` || message.content == `${prefix}Flair`) && message.guild.id == "505515654833504266"){
+    if((message.content.toLowerCase().startsWith(`${prefix}flair`)) && message.guild.id == "505515654833504266"){
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
           
@@ -485,21 +485,77 @@ client.on('message', message => {
             });
         }       
     }
+    
+    else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && message.guild.id == "505515654833504266"){
+        if(message.member.id == "406945430967156766")
+        {
+            const Embed3 = new Discord.RichEmbed()
+                .setColor('ff0000')
+                .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
+                .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                    + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
+                    + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
+                    + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
+            message.channel.send(Embed3)
+        }
 
-    else if(message.content == `${prefix}dmmissedraids` || message.content == `${prefix}DMmissedraids`){
+        if(message.member.roles.has("505527335768948754"))
+        {
+            const Embed2 = new Discord.RichEmbed()
+                .setColor('#3495D5')
+                .setTitle('Commands available to those with Wook-Tang role (not case sensitive)')
+                .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                    + "__**" + prefix + "award**__ __***arg***__ @user1 @user2 - Award flair to user. *Arg* can be TWO (TW Offensive) or "
+                    + "TWD (TW Defensive).  You can mention as many users as you want after the argument. \n \n"
+                    + "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
+                    + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n");
+            message.channel.send(Embed2)
+        }
+
+        const Embed = new Discord.RichEmbed()
+            .setColor('#2FC071')
+            .setTitle('Commands available to those with bandit role (not case sensitive)')
+            .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
+                + "__**" + prefix + "help**__ - Display this help message. \n \n"
+                + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
+                +"be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
+                + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
+        message.channel.send(Embed)
+    }
+
+    else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && message.guild.id == "505515654833504266"){
+        const Embed = new Discord.RichEmbed()
+            .setColor('#ffff00')
+            .setTitle('Keywords that will cause GIF images to appear.')
+            .setDescription('A GIF will appear when any of the following keywords are mentioned (not case sensitive). '
+                + "Automatic GIF images can be overridden by using double comma ,, in the message.  Anything in parentheses "
+                + " is an alias, and will also trigger the GIF. \n\n"
+                + "__**Wrestling**__ - andre the giant, bam bam, big show, booker t, bret hart (bret heart), brutus the barber, chris jericho, "
+                + "flair, goldberg, heartbreak kid (shawn michaels), hogan, honkytonk (honky tonk), jake the snake, john cena, "
+                + "kane, kurt angle, legion of doom (road warriors), macho man, mankind (mic foley), piper, rey mysterio, "
+                + "sgt. Slaughter (sgt. Slaughter), steve austin (stone cold), sting, the rock, triple h (hhh), trish stratus, "
+                + "ultimate warrior, undertaker, x pac (xpac)\n \n"
+                + "__**Star Wars**__ - darth vader (vader), baby yoda, chewbacca (chewie), han solo, jabba the hut, jar jar (jake), luke skywalker, yoda \n \n"
+                + "__**Guild Members**__ - baldoldben (bob), cynyde, doc, greg (stgregory), kalles, keon, mhann uhdea (mhann), "
+                + "molly (mollywhopper), mtscout, nnak, pooedonu (poo), skittles (erin), the fonze (fonze)");
+        message.channel.send(Embed)
+    }
+
+    else if(message.content.toLowerCase().startsWith(`${prefix}dmmissedraids`)){
         if(message.member.id == "406945430967156766"){
             dmUsersMissedRaids();
         }
     }
 
-    else if(message.content.startsWith(`${prefix}broadcast`)){
+    else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
         if(message.member.id == "406945430967156766"){
             const messagetopost = message.content.substring(11)
-            client.channels.get("505515654837698563").send(messagetopost)  
+            client.channels.get("505515654837698563").send(messagetopost)
         }
     }
 
-    else if(message.content.startsWith(`${prefix}role`)){
+    else if(message.content.toLowerCase().startsWith(`${prefix}role`)){
         if(message.member.id == "406945430967156766"){
             const guild = client.guilds.get("505515654833504266");
            // guild.createRole({ name: 'Test', permissions: ['MANAGE_MESSAGES', 'KICK_MEMBERS'] });
@@ -509,7 +565,7 @@ client.on('message', message => {
         }
     }
 
-    else if(message.content == `${prefix}flairupdate` || message.content == `${prefix}Flairupdate`){
+    else if(message.content.toLowerCase().startsWith(`${prefix}updateflair`)){
         if(message.member.id == "406945430967156766"){
             message.channel.send("Flair is being updated for all guild members")
             FlairUpdate("Manual", newFlairAnncouncment)
@@ -696,7 +752,7 @@ client.on('message', message => {
             message.reply('You do not have sufficient privileges to execute this command')
     }
 
-    else if(message.content.startsWith(`${prefix}clean`)){
+    else if(message.content.toLowerCase().startsWith(`${prefix}clean`)){
         if(message.member.roles.has("505527335768948754")){
             const args = message.content.split(' ').slice(1); // All arguments behind the command name with the prefix
             const amount = args.join(' '); // Amount of messages which should be deleted
@@ -1068,7 +1124,7 @@ client.on('message', message => {
         }
     }
 
-    else if (!message.content.includes(",,") && !bot && !message.content.includes("!") &&  message.guild.id == "505515654833504266")
+    else if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) &&  message.guild.id == "505515654833504266")
     {
         if(message.content.toLowerCase().includes("flair")){
             gifPost(message, "Ric Flair", "WOOOOOOOOOOOOOOO!")
