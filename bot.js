@@ -14,9 +14,28 @@ var NewNoStatus = [];
 var GphApiClient = require('giphy-js-sdk-core');
 giphy = GphApiClient(giffyToken)
 
+var GIFData;
+
 client.once('ready', () => {
     console.log('Ready')
 })
+
+var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+authorize(content, listMajors);
+
+function listMajors(auth)
+{
+    const sheets = google.sheets({version: 'v4', auth});
+    sheets.spreadsheets.values.get(
+    {
+        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+        range: 'GIFData!A2:F',
+    }, (err, res) => {
+            if (err) return console.log('The API returned an error: ' + err);
+            GIFData = res.data.values;
+        }
+    )
+}
 
 function specificGIF(searchString){
     URLS = new Array();
@@ -171,8 +190,8 @@ function gifPost(message, searchString, tagLine) {
                 const exampleEmbed = new Discord.RichEmbed()
                 .setTitle(tagLine)
                 .setImage(ResponseFinal.images.fixed_height.url)
-              //  .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
-              .setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
+                .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
+              //.setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
                 message.channel.send(exampleEmbed);
             }).catch(() => {
                 message.channel.send("You mentioned " + searchString + ", but a gif was not available!")
@@ -182,8 +201,8 @@ function gifPost(message, searchString, tagLine) {
         const exampleEmbed = new Discord.RichEmbed()
         .setTitle(tagLine)
         .setImage(specificGIF(searchString))
-      //  .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
-        .setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
+        .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
+        //.setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
         message.channel.send(exampleEmbed);
     }
 }
@@ -443,466 +462,810 @@ client.on("guildBanRemove", (guild,user) => {
 client.on('message', message => {
     var bot = message.author.bot
 
-    if((message.content.toLowerCase().startsWith(`${prefix}flair`)) && message.guild.id == "505515654833504266"){
-        var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-        authorize(content, listMajors);
-          
-        function listMajors(auth) {
-            const sheets = google.sheets({version: 'v4', auth});
-            sheets.spreadsheets.values.get({
-                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                range: 'Guild Members & Data!F66:G',
-            }, (err, res) => {
-                if (err) return console.log('The API returned an error: ' + err);
-            const rows = res.data.values;
-            if (rows.length) {
-                rows.map((row) => {
-                    if(String(row[1]).match(/\d+/) == message.member.id){
-                        console.log(message.member.displayName + " requested flair level QZ")
-                        if(row[0] == 0){
-                            message.channel.send("You have had 0 days without missing raids.  Bronze level status is at 14 days.");
+    if(message.content.startsWith(`${prefix}`) && !bot)
+    {
+        if((message.content.toLowerCase().startsWith(`${prefix}flair`)) && message.guild.id == "505515654833504266"){
+            var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+            authorize(content, listMajors);
+            
+            function listMajors(auth) {
+                const sheets = google.sheets({version: 'v4', auth});
+                sheets.spreadsheets.values.get({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guild Members & Data!F66:G',
+                }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                const rows = res.data.values;
+                if (rows.length) {
+                    rows.map((row) => {
+                        if(String(row[1]).match(/\d+/) == message.member.id){
+                            console.log(message.member.displayName + " requested flair level QZ")
+                            if(row[0] == 0){
+                                message.channel.send("You have had 0 days without missing raids.  Bronze level status is at 14 days.");
+                            }
+                            if(row[0] >= 1 && row[0] <= 13){
+                                message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  Bronze level status is at 14 days.");
+                            }
+                            if(row[0] >= 14 && row[0] <= 29){
+                                message.channel.send("You are at bronze level!! You have had " + row[0] + " days without missing raids.  Silver level status is at 30 days.");
+                            }
+                            if(row[0] >= 30 && row[0] <= 59){
+                                message.channel.send("You are at silver level!! You have had " + row[0] + " days without missing raids.  Gold level status is at 60 days.");
+                            }
+                            if(row[0] >= 60 && row[0] <= 99){
+                                message.channel.send("You are at gold level!! You have had " + row[0] + " days without missing raids.  Diamond level status is at 100 days.");
+                            }
+                            if(row[0] >= 100){
+                                message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  You are diamond status!!!!!");
+                            }
                         }
-                        if(row[0] >= 1 && row[0] <= 13){
-                            message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  Bronze level status is at 14 days.");
-                        }
-                        if(row[0] >= 14 && row[0] <= 29){
-                            message.channel.send("You are at bronze level!! You have had " + row[0] + " days without missing raids.  Silver level status is at 30 days.");
-                        }
-                        if(row[0] >= 30 && row[0] <= 59){
-                            message.channel.send("You are at silver level!! You have had " + row[0] + " days without missing raids.  Gold level status is at 60 days.");
-                        }
-                        if(row[0] >= 60 && row[0] <= 99){
-                            message.channel.send("You are at gold level!! You have had " + row[0] + " days without missing raids.  Diamond level status is at 100 days.");
-                        }
-                        if(row[0] >= 100){
-                            message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  You are diamond status!!!!!");
-                        }
-                    }
-                });
-            }else {
-                console.log('No data found.');
-            }
-            });
-        }       
-    }
-    
-    else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && message.guild.id == "505515654833504266"){
-        if(message.member.id == "406945430967156766")
-        {
-            const Embed3 = new Discord.RichEmbed()
-                .setColor('ff0000')
-                .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
-                .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                    + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
-                    + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
-                    + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
-            message.channel.send(Embed3)
-        }
-
-        if(message.member.roles.has("505527335768948754"))
-        {
-            const Embed2 = new Discord.RichEmbed()
-                .setColor('#3495D5')
-                .setTitle('Commands available to those with Wook-Tang role (not case sensitive)')
-                .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                    + "__**" + prefix + "award**__ __***arg***__ @user1 @user2 - Award flair to user. *Arg* can be TWO (TW Offensive) or "
-                    + "TWD (TW Defensive).  You can mention as many users as you want after the argument. \n \n"
-                    + "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
-                    + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n");
-            message.channel.send(Embed2)
-        }
-
-        const Embed = new Discord.RichEmbed()
-            .setColor('#2FC071')
-            .setTitle('Commands available to those with bandit role (not case sensitive)')
-            .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
-                + "__**" + prefix + "help**__ - Display this help message. \n \n"
-                + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
-                +"be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
-                + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
-        message.channel.send(Embed)
-    }
-
-    else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && message.guild.id == "505515654833504266"){
-        const Embed = new Discord.RichEmbed()
-            .setColor('#ffff00')
-            .setTitle('Keywords that will cause GIF images to appear.')
-            .setDescription('A GIF will appear when any of the following keywords are mentioned (not case sensitive). '
-                + "Automatic GIF images can be overridden by using double comma ,, in the message.  Anything in parentheses "
-                + " is an alias, and will also trigger the GIF. \n\n"
-                + "__**Wrestling**__ - andre the giant, bam bam, big show, booker t, bret hart (bret heart), brutus the barber, chris jericho, "
-                + "flair, goldberg, heartbreak kid (shawn michaels), hogan, honkytonk (honky tonk), jake the snake, john cena, "
-                + "kane, kurt angle, legion of doom (road warriors), macho man, mankind (mic foley), piper, rey mysterio, "
-                + "sgt. Slaughter (sgt. Slaughter), steve austin (stone cold), sting, the rock, triple h (hhh), trish stratus, "
-                + "ultimate warrior, undertaker, x pac (xpac)\n \n"
-                + "__**Star Wars**__ - darth vader (vader), baby yoda, chewbacca (chewie), han solo, jabba the hut, jar jar (jake), luke skywalker, yoda \n \n"
-                + "__**Guild Members**__ - baldoldben (bob), cynyde, doc, greg (stgregory), kalles, keon, mhann uhdea (mhann), "
-                + "molly (mollywhopper), mtscout, nnak, pooedonu (poo), skittles (erin), the fonze (fonze)");
-        message.channel.send(Embed)
-    }
-
-    else if(message.content.toLowerCase().startsWith(`${prefix}dmmissedraids`)){
-        if(message.member.id == "406945430967156766"){
-            dmUsersMissedRaids();
-        }
-    }
-
-    else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
-        if(message.member.id == "406945430967156766"){
-            const messagetopost = message.content.substring(11)
-            client.channels.get("505515654837698563").send(messagetopost)
-        }
-    }
-
-    else if(message.content.toLowerCase().startsWith(`${prefix}role`)){
-        if(message.member.id == "406945430967156766"){
-            const guild = client.guilds.get("505515654833504266");
-           // guild.createRole({ name: 'Test', permissions: ['MANAGE_MESSAGES', 'KICK_MEMBERS'] });
-           guild.roles.get("705498744061296721").setPosition(24)
-         // guild.roles.get("505527335768948754").setPermissions(2146959351)
-
-        }
-    }
-
-    else if(message.content.toLowerCase().startsWith(`${prefix}updateflair`)){
-        if(message.member.id == "406945430967156766"){
-            message.channel.send("Flair is being updated for all guild members")
-            FlairUpdate("Manual", newFlairAnncouncment)
-        } else{
-            message.channel.send(message.member.displayName + ", what do you think you are doing.  Turn back.  I have spoken.");
-            console.log(message.member.displayName + " tried to execute flairupdate QZ");
-        }
-    }
-
-    else if(message.content.toLowerCase().startsWith(`${prefix}award`)){
-        if(message.member.roles.has("505527335768948754"))
-        {            
-            (async () => {
-                await message.channel.fetchMessages({ limit: 1 }).then(messages => { // Fetches the messages
-                    console.log("Deleted " + FilteredCommandArray[1].toUpperCase() + " Award Command QZ")
-                    message.channel.bulkDelete(messages)
-                    .catch(err => {
-                   //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
-                        console.log("catch4");
-                        console.log(err);
                     });
-                })
-            })() 
-
-            var CommandArray = message.content.split(' ');
-            var FilteredCommandArray = [];
-
-            for(var i = 0; i < CommandArray.length; i++)
+                }else {
+                    console.log('No data found.');
+                }
+                });
+            }       
+        }
+        
+        else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && message.guild.id == "505515654833504266"){
+            if(message.member.id == "406945430967156766")
             {
-                if(CommandArray[i] != '')
-                {
-                    FilteredCommandArray.push(CommandArray[i])
-                }
+                const Embed3 = new Discord.RichEmbed()
+                    .setColor('ff0000')
+                    .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
+                    .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                        + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
+                        + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
+                        + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
+                message.channel.send(Embed3)
             }
 
-            var discordID;
-            var Proceed = true;
-
-            var InputToDiscordID;
-
-            for (var i = 2; i < FilteredCommandArray.length; i++){
-                InputToDiscordID = FilteredCommandArray[i].match(/\d+/g)
-            //    console.log(InputToDiscordID[0])
-                discordID = client.users.get(InputToDiscordID[0])
-                if(discordID == undefined){ //Discord user doesn't exist
-                    message.channel.send("You entered a discord user that does not exist.")
-                    Proceed = false;
-                }
+            if(message.member.roles.has("505527335768948754"))
+            {
+                const Embed2 = new Discord.RichEmbed()
+                    .setColor('#3495D5')
+                    .setTitle('Commands available to those with Wook-Tang role (not case sensitive)')
+                    .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                        + "__**" + prefix + "addgif**__, __***arg1***__, __***arg2***__, __***arg3***__, __***arg4***__ - Command to add "
+                        + "GIF to databse. *Arg1* is the keyword to trigger GIF. *Arg2* is the phrase to search for on Giphy. *Arg3* is the "
+                        + "title displayed on the GIF. *Arg4* is the category and must be either wrestling, star wars or other.\n\n"
+                        + "__**" + prefix + "award**__ __***arg***__ @user1 @user2 - Award flair to user. *Arg* can be TWO (TW Offensive) or "
+                        + "TWD (TW Defensive).  You can mention as many users as you want after the argument. \n \n"
+                        + "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
+                        + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
+                        + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
+                        + "remove \n");
+                message.channel.send(Embed2)
             }
 
-            if (Proceed == true){
-                FilteredCommandArray[1] = FilteredCommandArray[1].toLowerCase();
-                if(FilteredCommandArray[1] == "two" || FilteredCommandArray[1] == "twd" || FilteredCommandArray[1] == "pri")
+            const Embed = new Discord.RichEmbed()
+                .setColor('#2FC071')
+                .setTitle('Commands available to those with bandit role (not case sensitive)')
+                .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                    + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
+                    + "__**" + prefix + "help**__ - Display this help message. \n \n"
+                    + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
+                    +"be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
+                    + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
+            message.channel.send(Embed)
+        }
+
+        else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && message.guild.id == "505515654833504266"){
+            var Wrestling = "";
+            var StarWars = "";
+            var Other = "";
+
+            for(var i = 0; i < GIFData.length; i++)
+            {
+                if(GIFData[i][4] == "wrestling")
+                    if(GIFData[i][1] == "")
+                        Wrestling = Wrestling + GIFData[i][0] + ","
+                    else
+                        Wrestling = Wrestling + GIFData[i][0] + " (" + GIFData[i][1] + "),"
+
+                else if(GIFData[i][4] == "star wars")
+                    if(GIFData[i][1] == "")
+                        StarWars = StarWars + GIFData[i][0] + ","
+                    else
+                        StarWars = StarWars + GIFData[i][0] + " (" + GIFData[i][1] + "),"
+                
+                else if(GIFData[i][4] == "other")
+                    if(GIFData[i][1] == "")
+                        Other = Other + GIFData[i][0] + ","
+                    else
+                        Other = Other + GIFData[i][0] + " (" + GIFData[i][1] + "),"
+            }           
+            Wrestling = Wrestling.slice(0,-1)
+            Wrestling = Wrestling.split(",").sort().join(",").replace(/,/g,", ")
+
+            StarWars = StarWars.slice(0,-1)
+            StarWars = StarWars.split(",").sort().join(",").replace(/,/g,", ")
+
+            Other = Other.slice(0,-1)
+            Other = Other.split(",").sort().join(",").replace(/,/g,", ")
+
+            const Embed = new Discord.RichEmbed()
+                .setColor('#ffff00')
+                .setTitle('Keywords that will cause GIF images to appear.')
+                .setDescription('A GIF will appear when any of the following keywords are mentioned (not case sensitive). '
+                    + "Automatic GIF images can be overridden by using double comma ,, in the message.  Anything in parentheses "
+                    + " is an alias, and will also trigger the GIF. \n\n"
+                    + "__**Wrestling**__ - " + Wrestling + "\n \n"
+                    + "__**Star Wars**__ - " + StarWars +  "\n \n"
+                    + "__**Other**__ - " + Other + "\n \n");
+            message.channel.send(Embed)
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}dmmissedraids`)){
+            if(message.member.id == "406945430967156766"){
+                dmUsersMissedRaids();
+            }
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
+            if(message.member.id == "406945430967156766"){
+                const messagetopost = message.content.substring(11)
+                client.channels.get("505515654837698563").send(messagetopost)
+            }
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}role`)){
+            if(message.member.id == "406945430967156766"){
+                const guild = client.guilds.get("505515654833504266");
+            // guild.createRole({ name: 'Test', permissions: ['MANAGE_MESSAGES', 'KICK_MEMBERS'] });
+            guild.roles.get("705498744061296721").setPosition(6)
+            // guild.roles.get("505527335768948754").setPermissions(2146959351)
+
+            }
+        }
+        else if(message.content.toLowerCase().startsWith(`${prefix}delgif`)){
+            var Keyword = message.content.slice(8).toLowerCase();
+            var Valid = true;
+            var Found = false;
+            var Row;
+
+            if(!message.member.roles.has("505527335768948754"))
+            {
+                return message.channel.send("You do not have permission to execute this command.")
+            }
+
+            if(Keyword == "")
+            {
+                Valid = false
+                message.channel.send("You did not specify a GIF keyword to be removed.  Syntax: !delgif keyword")
+            }
+
+            if(Valid == true)
+            {
+                for(var i = 0; i < GIFData.length; i++)
                 {
-                    var SpecificFlair;
-                    var AwardMessage;
-                    if(FilteredCommandArray[1] == "two")
+                    if(GIFData[i][0] == Keyword)
                     {
-                        SpecificFlair = 'O'
-                        AwardMessage = "Territory War - Offensive Award ⚔"
+                        Row = i + 2
+                        Found = true;
+                        i = GIFData.length
                     }
-                    if(FilteredCommandArray[1] == "twd")
+                }
+
+                if(Found == true)
+                {
+                    if(GIFData[Row-2][5].toLowerCase() == "n")
                     {
-                        SpecificFlair = 'D'
-                        AwardMessage = "Territory War - Defensive Award 🛡"
-                    }
-                    if(FilteredCommandArray[1] == "pri")
-                    {
-                        SpecificFlair = 'P'
-                        AwardMessage = "Wookie and the Bandit - Princess Award 👸"
-                    }
+                        var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                        authorize(content, listMajors);
 
-                    const guild = client.guilds.get("505515654833504266");
-
-                    content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-                    authorize(content, listMajors);
-
-                    function listMajors(auth) {
-                        const sheets = google.sheets({version: 'v4', auth});
-                        sheets.spreadsheets.values.get({
-                          spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                          range: 'Guild Members & Data!F66:L119',
-                        }, async (err, res) => {
-                          if (err) return console.log('The API returned an error: ' + err);
-                          const rows = res.data.values;
-                          if (rows.length)
-                          {
-                            var SpecialFlair = new Array(54);
-                            for (var i = 0; i < SpecialFlair.length; i++) { 
-                                SpecialFlair[i] = new Array(1);
-                                SpecialFlair[i][0] = '';
-                            }
-
-                            var SpecificFlairRegEx = new RegExp(SpecificFlair,'g');
-                            
-                            for (var i = 0; i < rows.length; i++)
+                        async function listMajors(auth)
+                        {
+                            const sheets = google.sheets({version: 'v4', auth});
+                            await sheets.spreadsheets.batchUpdate(
                             {
-                                if(rows[i][6] == undefined)
-                                {
-                                    rows[i][6] = ''
-                                }
-
-                                SpecialFlair[i][0] = rows[i][6];
-                                if(SpecialFlair[i][0].includes(SpecificFlair))
-                                {
-                                    SpecialFlair[i][0] = SpecialFlair[i][0].replace(SpecificFlairRegEx,'')
-
-                                    if(rows[i][1] != "<@378053516067078149> " && null != (rows[i][1].match(/\d+/g)))
-                                    {
-                                        User =  await client.fetchUser(rows[i][1].match(/\d+/g))
-
-                                        GuildMember =  await guild.fetchMember(User)
-                                        .then(value =>{
-                                                AddFlair(value,rows[i][0],"SpecialRemove", SpecialFlair[i][0]);
-                                        }).catch(error => {
-                                                console.log(error)
-                                                console.log("catch2")
-                                        });
-                                    }
-
-                                //    AddFlair(value,rows[j][0],"Special", SpecialFlair[j][0]);
-                                }
-                            }
-
-                            var ListMembersSpecialFlar = '';
-
-                            for (var i = 2; i < FilteredCommandArray.length; i++){
-                                for (var j = 0; j < rows.length; j++)
-                                {
-                                    if(FilteredCommandArray[i].replace("!","") == rows[j][1].replace(" ",""))
-                                    {
-                                        SpecialFlair[j][0] = SpecialFlair[j][0] + SpecificFlair
-
-                                        var TempUser2 = FilteredCommandArray[i].match(/\d+/g)
-
-                                        
-                                        User =  await client.fetchUser(TempUser2[0])
-                                        GuildMember =  await guild.fetchMember(User)
-                                        .then(value =>{
-                                            if(TempUser2[0] != 378053516067078149)
-                                            {
-                                                AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
-                                            }
-                                            ListMembersSpecialFlar = ListMembersSpecialFlar + rows[j][1].replace(" ","") + " " //CHECK!!!!
-                                        }).catch(error => {
-                                                console.log(error)
-                                                console.log("catch3")
-                                        });
-                                        
-
-                                        j = rows.length;
-                                    }
-                                }
-                            }
-                            
-                            if(ListMembersSpecialFlar != '')//command channel 676092306381602826     //Cantina 505515654837698563
-                                client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
-                            
-                            sheets.spreadsheets.values.update({
                                 spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                range: 'Guild Members & Data!L66:L119',
-                                valueInputOption: 'USER_ENTERED',
                                 resource: {
-                                    values: SpecialFlair
-                                },
-                            })                
-                          }
+                                    "requests": 
+                                    [
+                                    {
+                                        "deleteRange": 
+                                        {
+                                        "range": 
+                                        {
+                                            "sheetId": 143556422,
+                                            "startRowIndex": Row - 1,
+                                            "endRowIndex": Row
+                                        },
+                                        "shiftDimension": "ROWS"
+                                        }
+                                    }
+                                    ]
+                                }
+                            },(err, res) => {
+                                if (err) return console.log('The API returned an error: ' + err);
 
-                          else
-                          {
-                            console.log('No data found.');
-                          }
-                        });
+                                sheets.spreadsheets.values.get({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'GIFData!A2:F',
+                                    }, (err, res) => {
+                                            if (err) return console.log('The API returned an error: ' + err);
+                                            GIFData = res.data.values;
+                                            message.channel.send("You have deleted " + Keyword + " from database.")
+                                        }
+                                )
+
+                            });
+                        }
                     }
+                    else
+                        message.channel.send("The keyword you are trying to delete is read only.")
+                }
+                else
+                    message.channel.send("GIF keyword not found in database")
+            }
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}addgif`)){
+            var CommandArray = message.content.split(',');
+            var valid = true;
+            var NextRow;
+
+            if(!message.member.roles.has("505527335768948754"))
+            {
+                return message.channel.send("You do not have permission to execute this command.")
+            }
+
+            if(CommandArray[1] == undefined || CommandArray[2] == undefined || CommandArray [3] == undefined || CommandArray[4] == undefined)
+            {
+                message.channel.send("Invalid Command:  Syntax is: !addgif, keyword, search phrase, title on GIF, category")
+                valid = false;
+            }
+
+            if(valid == true)
+            {
+                for(var i = 1; i < CommandArray.length; i++)
+                {
+                    if(CommandArray[i].startsWith(" "))
+                        CommandArray[i] = CommandArray[i].slice(1)
+                }
+
+                CommandArray[1] = CommandArray[1].toLowerCase()        
+                CommandArray[2] = CommandArray[2].toLowerCase()
+                CommandArray[4] = CommandArray[4].toLowerCase()
+
+                for(var i = 0; i < GIFData.length; i++)
+                {
+                    if(GIFData[i][0] == CommandArray[1])
+                    {
+                        message.channel.send("Keyword already assigned to a GIF.  You may either remove the current keyword "
+                            + "from the database and re-add it or you can choose a different keyword.");
+                        valid = false;
+                        i = GIFData.length;
+                    }
+                }
+            }
+
+            if(valid == true)
+            {
+                if(CommandArray[4] != "wrestling" && CommandArray[4] != "star wars" && CommandArray[4] != "other")
+                {
+                    valid = false;
+                    message.channel.send("4th argument (category) must be either wrestling, star wars, or other.")
+                }
+            }
+
+            if(valid == true)
+            {
+                NextRow = GIFData.length + 2;
+
+                var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                authorize(content, listMajors);
+
+                async function listMajors(auth)
+                {       
+                    const sheets = google.sheets({version: 'v4', auth});
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'GIFdata!A' + NextRow + ':F' + NextRow,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[CommandArray[1],"",CommandArray[2],CommandArray[3],CommandArray[4],"n"]]
+                        },
+                    }, (err, res) => {
+                        if (err) return console.log('The API returned an error: ' + err);
+
+                        sheets.spreadsheets.values.get({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'GIFData!A2:F',
+                            }, (err, res) => {
+                                    if (err) return console.log('The API returned an error: ' + err);
+                                    GIFData = res.data.values;
+                                    message.channel.send("The following has been added as a GIF: \n"
+                                    + "   Keyword = " + CommandArray[1] + "\n"
+                                    + "   Search Term = " + CommandArray[2] + "\n"
+                                    + "   Title = " + CommandArray[3] + "\n"
+                                    + "   Category = " + CommandArray[4] + "\n")
+                                }
+                        )
+                    });
+                }
+            }
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}updateflair`)){
+            if(message.member.id == "406945430967156766"){
+                message.channel.send("Flair is being updated for all guild members")
+                FlairUpdate("Manual", newFlairAnncouncment)
+            } else{
+                message.channel.send(message.member.displayName + ", what do you think you are doing.  Turn back.  I have spoken.");
+                console.log(message.member.displayName + " tried to execute flairupdate QZ");
+            }
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}award`)){
+            if(message.member.roles.has("505527335768948754"))
+            {            
+                (async () => {
+                    await message.channel.fetchMessages({ limit: 1 }).then(messages => { // Fetches the messages
+                        console.log("Deleted " + FilteredCommandArray[1].toUpperCase() + " Award Command QZ")
+                        message.channel.bulkDelete(messages)
+                        .catch(err => {
+                    //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
+                            console.log("catch4");
+                            console.log(err);
+                        });
+                    })
+                })() 
+
+                var CommandArray = message.content.split(' ');
+                var FilteredCommandArray = [];
+
+                for(var i = 0; i < CommandArray.length; i++)
+                {
+                    if(CommandArray[i] != '')
+                    {
+                        FilteredCommandArray.push(CommandArray[i])
+                    }
+                }
+
+                var discordID;
+                var Proceed = true;
+
+                var InputToDiscordID;
+
+                for (var i = 2; i < FilteredCommandArray.length; i++){
+                    InputToDiscordID = FilteredCommandArray[i].match(/\d+/g)
+                //    console.log(InputToDiscordID[0])
+                    discordID = client.users.get(InputToDiscordID[0])
+                    if(discordID == undefined){ //Discord user doesn't exist
+                        message.channel.send("You entered a discord user that does not exist.")
+                        Proceed = false;
+                    }
+                }
+
+                if (Proceed == true){
+                    FilteredCommandArray[1] = FilteredCommandArray[1].toLowerCase();
+                    if(FilteredCommandArray[1] == "two" || FilteredCommandArray[1] == "twd" || FilteredCommandArray[1] == "pri")
+                    {
+                        var SpecificFlair;
+                        var AwardMessage;
+                        if(FilteredCommandArray[1] == "two")
+                        {
+                            SpecificFlair = 'O'
+                            AwardMessage = "Territory War - Offensive Award ⚔"
+                        }
+                        if(FilteredCommandArray[1] == "twd")
+                        {
+                            SpecificFlair = 'D'
+                            AwardMessage = "Territory War - Defensive Award 🛡"
+                        }
+                        if(FilteredCommandArray[1] == "pri")
+                        {
+                            SpecificFlair = 'P'
+                            AwardMessage = "Wookie and the Bandit - Princess Award 👸"
+                        }
+
+                        const guild = client.guilds.get("505515654833504266");
+
+                        content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                        authorize(content, listMajors);
+
+                        function listMajors(auth) {
+                            const sheets = google.sheets({version: 'v4', auth});
+                            sheets.spreadsheets.values.get({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'Guild Members & Data!F66:L119',
+                            }, async (err, res) => {
+                            if (err) return console.log('The API returned an error: ' + err);
+                            const rows = res.data.values;
+                            if (rows.length)
+                            {
+                                var SpecialFlair = new Array(54);
+                                for (var i = 0; i < SpecialFlair.length; i++) { 
+                                    SpecialFlair[i] = new Array(1);
+                                    SpecialFlair[i][0] = '';
+                                }
+
+                                var SpecificFlairRegEx = new RegExp(SpecificFlair,'g');
+                                
+                                for (var i = 0; i < rows.length; i++)
+                                {
+                                    if(rows[i][6] == undefined)
+                                    {
+                                        rows[i][6] = ''
+                                    }
+
+                                    SpecialFlair[i][0] = rows[i][6];
+                                    if(SpecialFlair[i][0].includes(SpecificFlair))
+                                    {
+                                        SpecialFlair[i][0] = SpecialFlair[i][0].replace(SpecificFlairRegEx,'')
+
+                                        if(rows[i][1] != "<@378053516067078149> " && null != (rows[i][1].match(/\d+/g)))
+                                        {
+                                            User =  await client.fetchUser(rows[i][1].match(/\d+/g))
+
+                                            GuildMember =  await guild.fetchMember(User)
+                                            .then(value =>{
+                                                    AddFlair(value,rows[i][0],"SpecialRemove", SpecialFlair[i][0]);
+                                            }).catch(error => {
+                                                    console.log(error)
+                                                    console.log("catch2")
+                                            });
+                                        }
+
+                                    //    AddFlair(value,rows[j][0],"Special", SpecialFlair[j][0]);
+                                    }
+                                }
+
+                                var ListMembersSpecialFlar = '';
+
+                                for (var i = 2; i < FilteredCommandArray.length; i++){
+                                    for (var j = 0; j < rows.length; j++)
+                                    {
+                                        if(FilteredCommandArray[i].replace("!","") == rows[j][1].replace(" ",""))
+                                        {
+                                            SpecialFlair[j][0] = SpecialFlair[j][0] + SpecificFlair
+
+                                            var TempUser2 = FilteredCommandArray[i].match(/\d+/g)
+
+                                            
+                                            User =  await client.fetchUser(TempUser2[0])
+                                            GuildMember =  await guild.fetchMember(User)
+                                            .then(value =>{
+                                                if(TempUser2[0] != 378053516067078149)
+                                                {
+                                                    AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
+                                                }
+                                                ListMembersSpecialFlar = ListMembersSpecialFlar + rows[j][1].replace(" ","") + " " //CHECK!!!!
+                                            }).catch(error => {
+                                                    console.log(error)
+                                                    console.log("catch3")
+                                            });
+                                            
+
+                                            j = rows.length;
+                                        }
+                                    }
+                                }
+                                
+                                if(ListMembersSpecialFlar != '')//command channel 676092306381602826     //Cantina 505515654837698563
+                                    client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
+                                
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'Guild Members & Data!L66:L119',
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: {
+                                        values: SpecialFlair
+                                    },
+                                })                
+                            }
+
+                            else
+                            {
+                                console.log('No data found.');
+                            }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        message.channel.send("Second argument must be TWO or TWD")
+                    }
+                    
+                }
+            }
+            else
+                message.reply('You do not have sufficient privileges to execute this command')
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}clean`)){
+            if(message.member.roles.has("505527335768948754")){
+                const args = message.content.split(' ').slice(1); // All arguments behind the command name with the prefix
+                const amount = args.join(' '); // Amount of messages which should be deleted
+
+                if (!amount) // Checks if the `amount` parameter is given
+                    return message.reply('You haven\'t given an amount of messages which should be deleted!')
+                if (isNaN(amount))
+                    return message.reply('The amount must be a number!'); // Checks if the `amount` parameter is a number. If not, the command throws an error
+                if (amount > 100)
+                    return message.reply('You can`t delete more than 100 messages at once!'); // Checks if the `amount` integer is bigger than 100
+                if (amount < 1)
+                    return message.reply('You have to delete at least 1 message!'); // Checks if the `amount` integer is smaller than 1
+                    
+                (async () => {
+                    await message.channel.fetchMessages({ limit: amount }).then(messages => { // Fetches the messages
+                        console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages QZ`)
+                        message.channel.bulkDelete(messages)
+                        .catch(err => {
+                    //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
+                            console.log(message.member.displayName + ` Individually deleted ${messages.size} messages QZ`);
+                            messages.deleteAll()
+                            console.log(err);
+                        });
+                    })
+                })()
+            }
+            else{
+                message.reply('You do not have sufficient privileges to execute this command')
+                console.log(message.member.displayName + " Failed to execute clean command QZ")
+            }
+        }
+
+        else if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && message.guild.id == "505515654833504266"){
+            var allyCode = String(message.content.slice(3,12));
+            var officer;
+
+            if(message.content.includes("@"))
+            {
+                if(message.member.roles.has("505527335768948754"))
+                {
+                    var discordID = String(message.content.split('@')[1].match(/\d+/g));
+                    officer = true;
                 }
                 else
                 {
-                    message.channel.send("Second argument must be TWO or TWD")
+                    officer = false
+                    discordID = "xxxx"
                 }
-                
-            }
-        }
-        else
-            message.reply('You do not have sufficient privileges to execute this command')
-    }
-
-    else if(message.content.toLowerCase().startsWith(`${prefix}clean`)){
-        if(message.member.roles.has("505527335768948754")){
-            const args = message.content.split(' ').slice(1); // All arguments behind the command name with the prefix
-            const amount = args.join(' '); // Amount of messages which should be deleted
-
-            if (!amount) // Checks if the `amount` parameter is given
-                return message.reply('You haven\'t given an amount of messages which should be deleted!')
-            if (isNaN(amount))
-                return message.reply('The amount must be a number!'); // Checks if the `amount` parameter is a number. If not, the command throws an error
-            if (amount > 100)
-                return message.reply('You can`t delete more than 100 messages at once!'); // Checks if the `amount` integer is bigger than 100
-            if (amount < 1)
-                return message.reply('You have to delete at least 1 message!'); // Checks if the `amount` integer is smaller than 1
-                
-            (async () => {
-                await message.channel.fetchMessages({ limit: amount }).then(messages => { // Fetches the messages
-                    console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages QZ`)
-                    message.channel.bulkDelete(messages)
-                    .catch(err => {
-                   //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
-                        console.log(message.member.displayName + ` Individually deleted ${messages.size} messages QZ`);
-                        messages.deleteAll()
-                        console.log(err);
-                    });
-                })
-            })()
-        }
-        else{
-            message.reply('You do not have sufficient privileges to execute this command')
-            console.log(message.member.displayName + " Failed to execute clean command QZ")
-        }
-    }
-
-    else if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && message.guild.id == "505515654833504266"){
-        var allyCode = String(message.content.slice(3,12));
-        var officer;
-
-        if(message.content.includes("@"))
-        {
-            if(message.member.roles.has("505527335768948754"))
-            {
-                var discordID = String(message.content.split('@')[1].match(/\d+/g));
-                officer = true;
             }
             else
+                var discordID = String(message.member.id)
+
+            var user = client.users.get(discordID)
+
+            if(officer == false) //A non officer attempted to execute an officer command
+            { 
+                const Embed = new Discord.RichEmbed()
+                    .setColor('#ff0000')
+                    .setTitle('Error - Mhanndalorian Bot')
+                    .setDescription('You do not have permission to execute this command.');
+                message.channel.send(Embed)
+            }
+
+            else if(user == undefined){ //Discord user doesn't exist
+                const Embed = new Discord.RichEmbed()
+                    .setColor('#ff0000')
+                    .setTitle('Error - Mhanndalorian Bot')
+                    .setDescription('Could not find Discord User.');
+                message.channel.send(Embed)
+            }
+
+            else //Discord user was found on server
             {
-                officer = false
-                discordID = "xxxx"
+                //*********REGISTER FOR HOT BOT**************//
+        
+            (async () => {
+                    const guild = client.guilds.get("505515654833504266");
+                    const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
+                
+                    var User;
+                    var GuildMember;
+
+                    var DiscordDiscriminator;
+                    var DiscordName;
+                    var Color;
+                    var Title;
+
+                    User =  await client.fetchUser(discordID);
+                    GuildMember =  await guild.fetchMember(User);
+
+                //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
+                //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
+
+                    DiscordDiscriminator = "#" + GuildMember.user.discriminator
+                    DiscordName = GuildMember.user.username
+
+                    var headers = {
+                        "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    };
+
+                    var body = {
+                        "discordTag": DiscordName + DiscordDiscriminator,
+                        "discordId": discordID,
+                        "allyCode": allyCode                };
+
+                //  Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode OLD API
+
+                //  Result = await fetch(Server, { headers: headers}).then(response => response.json()) OLD API
+
+                    Result = await fetch(BaseURL,
+                    {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(body)
+                    }).then(response => response.json())
+
+                    var JSONResponse = (JSON.parse(Result));
+
+                    if(JSONResponse.ResponseCode == 0)
+                    {
+                        Color = "#ff0000"
+                        Title = "Error - HotBot"
+                    }
+                    else if (JSONResponse.ResponseCode == 1)
+                    {
+                        Color = "00ff00"
+                        Title = "Success - HotBot"
+                    }
+
+                    const Embed = new Discord.RichEmbed()
+                        .setColor(Color)
+                        .setTitle(Title)
+                        .setDescription(JSONResponse.ResponseMessage);
+                    message.channel.send(Embed) 
+                })()
+
+                //**************BELOW IS TO REGISTER FOR MHANN BOT***************
+
+                discordIDArray = new Array(1)
+                discordIDArray[0] = new Array(1)
+                discordIDArray[0][0]= "<@" + discordID + "> "
+
+                var allyCodeFound = false;
+
+                var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                authorize(content, listMajors);
+
+                function listMajors(auth) {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.get({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guild Members & Data!A66:G119',
+                    }, (err, res) => {
+                        if (err) return console.log('The API returned an error: ' + err);
+                    const rows = res.data.values;
+                    var DiscordIDDuplicate = false
+                    if (rows.length) {
+                        rows.map((row) => {
+                            if(row[6] == discordIDArray[0][0])
+                            {
+                                const Embed = new Discord.RichEmbed()
+                                    .setColor('#ff0000')
+                                    .setTitle('Error - Mhanndalorian Bot')
+                                    .setDescription('The discord ID is already assigned in the Mhanndalorian database.');
+
+                                message.channel.send(Embed)
+                                DiscordIDDuplicate = true
+                            }
+                        });
+
+                        if(DiscordIDDuplicate == false)
+                        {
+                            var i = 0
+                            rows.map((row) => {
+                                if(row[0] == allyCode){ //ally code found and set discord ID
+                                    allyCodeFound = true;
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                        range: 'Guild Members & Data!G' + (i+66),
+                                        valueInputOption: 'USER_ENTERED',
+                                        resource: {
+                                            values: discordIDArray
+                                        },
+                                    })
+                                    
+                                    const Embed2 = new Discord.RichEmbed()
+                                        .setColor('#00ff00')
+                                        .setTitle('Success - Mhanndalorian Bot')
+                                        .setDescription("Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode);
+                                    message.channel.send(Embed2)
+                                }
+                                i++
+                            });
+                        }
+
+                        if(allyCodeFound == false && DiscordIDDuplicate == false)
+                        {
+                            var Description = "Ally code " + allyCode +" was not found in Mhanndalorian database.";
+
+                        // message.channel.send("Ally code " + allyCode +" was not found in Mhanndalorian database")
+                            const sheets = google.sheets({version: 'v4', auth});
+                            sheets.spreadsheets.values.get({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'Guild Members & Data!A57:A63',
+                            }, (err, res) => {
+                                if (err) return console.log('The API returned an error: ' + err);
+                            const rows = res.data.values;
+                            if (rows.length) {
+                                var i = 0;
+                                var TempAllyCodeFound = false
+
+                                while(i<rows.length && !TempAllyCodeFound) //See if ally code is already in temp table
+                                {
+                                    if(rows[i][0] == allyCode)
+                                    {
+                                        TempAllyCodeFound = true;
+                                    }
+
+                                    else
+                                    {
+                                        i++;
+                                    }
+                                }
+
+                                if(!TempAllyCodeFound) //If ally code wasnt in temp table, search for a blank spot
+                                {
+                                    i = 0;
+                                    while(i<rows.length && rows[i][0] != undefined)
+                                    {
+                                        i++
+                                    }
+                                }
+
+                                if(i < 7)
+                                {
+                                    var today = new Date();
+                                    var localdate = ((today.getTime() / 86400000) + 25569) - (4/24)
+                                    Description = Description + " Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database and will be added after new member is in SWGOH.GG database."
+                                    
+                                    const Embed3 = new Discord.RichEmbed()
+                                        .setColor('#ffff00')
+                                        .setTitle('Info - Mhanndalorian Bot')
+                                        .setDescription(Description);
+                                    message.channel.send(Embed3)
+
+                                //  message.channel.send("Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database.")
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                        range: 'Guild Members & Data!A' + (i+57) + ':C' + (i+57),
+                                        valueInputOption: 'USER_ENTERED',
+                                        resource: {
+                                            values: [[allyCode, "<@" + discordID + "> ", localdate]]
+                                        },
+                                    })
+                                }
+                                else{
+                                    Description = Description + " Allycode and Discord ID could not be stored in a temporary location in Mhanndalorian database.  Temporary location is full."
+
+                                    const Embed4 = new Discord.RichEmbed()
+                                        .setColor('#ff0000')
+                                        .setTitle('Error - Mhanndalorian Bot')
+                                        .setDescription(Description);
+                                    message.channel.send(Embed4)
+                                // message.channel.send("Temporary location in Mhanndalorian database is currently full.")
+                                }                  
+
+                            }else {
+                                console.log('No data found.');
+                            }
+                            });
+                            
+                        } 
+                    }else {
+                        console.log('No data found.');
+                    }
+                    });
+                }                
             }
         }
-        else
-            var discordID = String(message.member.id)
 
-        var user = client.users.get(discordID)
-
-        if(officer == false) //A non officer attempted to execute an officer command
-        { 
-            const Embed = new Discord.RichEmbed()
-                .setColor('#ff0000')
-                .setTitle('Error - Mhanndalorian Bot')
-                .setDescription('You do not have permission to execute this command.');
-            message.channel.send(Embed)
-        }
-
-        else if(user == undefined){ //Discord user doesn't exist
-            const Embed = new Discord.RichEmbed()
-                .setColor('#ff0000')
-                .setTitle('Error - Mhanndalorian Bot')
-                .setDescription('Could not find Discord User.');
-            message.channel.send(Embed)
-        }
-
-        else //Discord user was found on server
-        {
-            //*********REGISTER FOR HOT BOT**************//
-    
-           (async () => {
-                const guild = client.guilds.get("505515654833504266");
-                const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
-            
-                var User;
-                var GuildMember;
-
-                var DiscordDiscriminator;
-                var DiscordName;
-                var Color;
-                var Title;
-
-                User =  await client.fetchUser(discordID);
-                GuildMember =  await guild.fetchMember(User);
-
-              //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
-              //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
-
-                DiscordDiscriminator = "#" + GuildMember.user.discriminator
-                DiscordName = GuildMember.user.username
-
-                var headers = {
-                    "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
-                    "Accept": "application/json",
-                    "Content-Type": "application/json"
-                };
-
-                var body = {
-                    "discordTag": DiscordName + DiscordDiscriminator,
-                    "discordId": discordID,
-                    "allyCode": allyCode                };
-
-              //  Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode OLD API
-
-              //  Result = await fetch(Server, { headers: headers}).then(response => response.json()) OLD API
-
-                Result = await fetch(BaseURL,
-                {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(body)
-                }).then(response => response.json())
-
-                var JSONResponse = (JSON.parse(Result));
-
-                if(JSONResponse.ResponseCode == 0)
-                {
-                    Color = "#ff0000"
-                    Title = "Error - HotBot"
-                }
-                else if (JSONResponse.ResponseCode == 1)
-                {
-                    Color = "00ff00"
-                    Title = "Success - HotBot"
-                }
-
-                const Embed = new Discord.RichEmbed()
-                    .setColor(Color)
-                    .setTitle(Title)
-                    .setDescription(JSONResponse.ResponseMessage);
-                message.channel.send(Embed) 
-            })()
-
-            //**************BELOW IS TO REGISTER FOR MHANN BOT***************
-
-            discordIDArray = new Array(1)
-            discordIDArray[0] = new Array(1)
-            discordIDArray[0][0]= "<@" + discordID + "> "
-
-            var allyCodeFound = false;
-
+        else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  message.guild.id == "505515654833504266"){
             var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
             authorize(content, listMajors);
-
-            function listMajors(auth) {
+            
+            function listMajors(auth)
+            {
+                const guild = client.guilds.get("505515654833504266");
+                
                 const sheets = google.sheets({version: 'v4', auth});
                 sheets.spreadsheets.values.get({
                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
@@ -910,427 +1273,106 @@ client.on('message', message => {
                 }, (err, res) => {
                     if (err) return console.log('The API returned an error: ' + err);
                 const rows = res.data.values;
-                var DiscordIDDuplicate = false
-                if (rows.length) {
-                    rows.map((row) => {
-                        if(row[6] == discordIDArray[0][0])
-                        {
-                            const Embed = new Discord.RichEmbed()
-                                .setColor('#ff0000')
-                                .setTitle('Error - Mhanndalorian Bot')
-                                .setDescription('The discord ID is already assigned in the Mhanndalorian database.');
-
-                            message.channel.send(Embed)
-                            DiscordIDDuplicate = true
-                        }
-                    });
-
-                    if(DiscordIDDuplicate == false)
+                if (rows.length)
+                {
+                    CommandArray = message.content.split(/ (.+)/)
+                    if(CommandArray[1] == undefined)
                     {
-                        var i = 0
-                        rows.map((row) => {
-                            if(row[0] == allyCode){ //ally code found and set discord ID
-                                allyCodeFound = true;
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'Guild Members & Data!G' + (i+66),
-                                    valueInputOption: 'USER_ENTERED',
-                                    resource: {
-                                        values: discordIDArray
-                                    },
-                                })
-                                  
-                                const Embed2 = new Discord.RichEmbed()
-                                    .setColor('#00ff00')
-                                    .setTitle('Success - Mhanndalorian Bot')
-                                    .setDescription("Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode);
-                                message.channel.send(Embed2)
-                            }
-                            i++
-                        });
+                        message.channel.send("Please specify an allycode, discord name, or SWGOH name")
                     }
-
-                    if(allyCodeFound == false && DiscordIDDuplicate == false)
+                    else
                     {
-                        var Description = "Ally code " + allyCode +" was not found in Mhanndalorian database.";
-
-                       // message.channel.send("Ally code " + allyCode +" was not found in Mhanndalorian database")
-                        const sheets = google.sheets({version: 'v4', auth});
-                        sheets.spreadsheets.values.get({
-                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'Guild Members & Data!A57:A63',
-                        }, (err, res) => {
-                            if (err) return console.log('The API returned an error: ' + err);
-                        const rows = res.data.values;
-                        if (rows.length) {
-                            var i = 0;
-                            var TempAllyCodeFound = false
-
-                            while(i<rows.length && !TempAllyCodeFound) //See if ally code is already in temp table
-                            {
-                                if(rows[i][0] == allyCode)
-                                {
-                                    TempAllyCodeFound = true;
-                                }
-
-                                else
-                                {
-                                    i++;
-                                }
-                            }
-
-                            if(!TempAllyCodeFound) //If ally code wasnt in temp table, search for a blank spot
-                            {
-                                i = 0;
-                                while(i<rows.length && rows[i][0] != undefined)
-                                {
-                                    i++
-                                }
-                            }
-
-                            if(i < 7)
-                            {
-                                var today = new Date();
-                                var localdate = ((today.getTime() / 86400000) + 25569) - (4/24)
-                                Description = Description + " Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database and will be added after new member is in SWGOH.GG database."
-                                
-                                const Embed3 = new Discord.RichEmbed()
-                                    .setColor('#ffff00')
-                                    .setTitle('Info - Mhanndalorian Bot')
-                                    .setDescription(Description);
-                                message.channel.send(Embed3)
-
-                              //  message.channel.send("Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database.")
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'Guild Members & Data!A' + (i+57) + ':C' + (i+57),
-                                    valueInputOption: 'USER_ENTERED',
-                                    resource: {
-                                        values: [[allyCode, "<@" + discordID + "> ", localdate]]
-                                    },
-                                })
-                            }
-                            else{
-                                Description = Description + " Allycode and Discord ID could not be stored in a temporary location in Mhanndalorian database.  Temporary location is full."
-
-                                const Embed4 = new Discord.RichEmbed()
-                                    .setColor('#ff0000')
-                                    .setTitle('Error - Mhanndalorian Bot')
-                                    .setDescription(Description);
-                                message.channel.send(Embed4)
-                               // message.channel.send("Temporary location in Mhanndalorian database is currently full.")
-                            }                  
-
-                        }else {
-                            console.log('No data found.');
-                        }
-                        });
+                        var RowFound;
+                        var DiscordSWGOHNameIDArray;
+                        var Found = false;
                         
-                    } 
-                }else {
-                    console.log('No data found.');
-                }
-                });
-            }                
-        }
-    }
+                        (async () => { 
+                            await guild.fetchMembers()                    
+                        })()
 
-    else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  message.guild.id == "505515654833504266"){
-        var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-        authorize(content, listMajors);
-          
-        function listMajors(auth)
-        {
-            const guild = client.guilds.get("505515654833504266");
-            
-            const sheets = google.sheets({version: 'v4', auth});
-            sheets.spreadsheets.values.get({
-                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                range: 'Guild Members & Data!A66:G119',
-            }, (err, res) => {
-                if (err) return console.log('The API returned an error: ' + err);
-            const rows = res.data.values;
-            if (rows.length)
-            {
-                CommandArray = message.content.split(/ (.+)/)
-                if(CommandArray[1] == undefined)
-                {
-                    message.channel.send("Please specify an allycode, discord name, or SWGOH name")
-                }
-                else
-                {
-                    var RowFound;
-                    var DiscordSWGOHNameIDArray;
-                    var Found = false;
-                    
-                    (async () => { 
-                        await guild.fetchMembers()                    
-                    })()
+                        DiscordSWGOHNameIDArray  = guild.roles.get('530083964380250116').members.map(m => [m.id, m.displayName])
 
-                    DiscordSWGOHNameIDArray  = guild.roles.get('530083964380250116').members.map(m => [m.id, m.displayName])
+                        for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
+                        {
+                            DiscordSWGOHNameIDArray[i][1] = DiscordSWGOHNameIDArray[i][1].replace(/([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                        }
 
-                    for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
-                    {
-                        DiscordSWGOHNameIDArray[i][1] = DiscordSWGOHNameIDArray[i][1].replace(/([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
-                    }
+                        for(var i = 0; i < rows.length; i++)
+                        {
+                            for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
+                            {
+                                if(rows[i][6].match(/\d+/g) == DiscordSWGOHNameIDArray[j][0])
+                                {
+                                    DiscordSWGOHNameIDArray[j].push(rows[i][0])
+                                    DiscordSWGOHNameIDArray[j].push(rows[i][1])
+                                    j = DiscordSWGOHNameIDArray.length
+                                }
+                            }
+                        }
 
-                    for(var i = 0; i < rows.length; i++)
-                    {
                         for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
                         {
-                            if(rows[i][6].match(/\d+/g) == DiscordSWGOHNameIDArray[j][0])
+                            if(DiscordSWGOHNameIDArray[j][2] == undefined || DiscordSWGOHNameIDArray[j][3] == undefined)
+                            DiscordSWGOHNameIDArray.splice(j,1)
+                        }
+                    
+                        for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
+                        {
+                        //  if(DiscordSWGOHNameIDArray[i][1].toLowerCase() == CommandArray[1].toLowerCase() || DiscordSWGOHNameIDArray[i][2] == CommandArray[1] || DiscordSWGOHNameIDArray[i][3].toLowerCase() == CommandArray[1].toLowerCase())
+                            if(DiscordSWGOHNameIDArray[i][1].toLowerCase().startsWith(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].startsWith(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().startsWith(CommandArray[1].toLowerCase()))
                             {
-                                DiscordSWGOHNameIDArray[j].push(rows[i][0])
-                                DiscordSWGOHNameIDArray[j].push(rows[i][1])
-                                j = DiscordSWGOHNameIDArray.length
+                                RowFound = i;
+                                i = DiscordSWGOHNameIDArray.length
+                                Found = true
                             }
                         }
-                    }
 
-                    for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
-                    {
-                        if(DiscordSWGOHNameIDArray[j][2] == undefined || DiscordSWGOHNameIDArray[j][3] == undefined)
-                        DiscordSWGOHNameIDArray.splice(j,1)
-                    }
-                   
-                    for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
-                    {
-                      //  if(DiscordSWGOHNameIDArray[i][1].toLowerCase() == CommandArray[1].toLowerCase() || DiscordSWGOHNameIDArray[i][2] == CommandArray[1] || DiscordSWGOHNameIDArray[i][3].toLowerCase() == CommandArray[1].toLowerCase())
-                        if(DiscordSWGOHNameIDArray[i][1].toLowerCase().startsWith(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].startsWith(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().startsWith(CommandArray[1].toLowerCase()))
+                        if(Found == true)
                         {
-                            RowFound = i;
-                            i = DiscordSWGOHNameIDArray.length
-                            Found = true
+                            (async () => { 
+                                User =  await client.fetchUser(DiscordSWGOHNameIDArray[RowFound][0])                         
+                                GuildMember =  await guild.fetchMember(User)
+                                DisplayNamed = GuildMember.displayName
+                                message.channel.send("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n" + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n" + "__**Discord Name:**__  " + DiscordSWGOHNameIDArray[RowFound][1])
+                            })()
                         }
-                    }
 
-                    if(Found == true)
-                    {
-                        (async () => { 
-                            User =  await client.fetchUser(DiscordSWGOHNameIDArray[RowFound][0])                         
-                            GuildMember =  await guild.fetchMember(User)
-                            DisplayNamed = GuildMember.displayName
-                            message.channel.send("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n" + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n" + "__**Discord Name:**__  " + DiscordSWGOHNameIDArray[RowFound][1])
-                        })()
+                        else
+                            message.channel.send("User not found.")
                     }
-
-                    else
-                        message.channel.send("User not found.")
                 }
+                else
+                    console.log('No data found.');
+                });
             }
-            else
-                console.log('No data found.');
-            });
         }
+        else
+            message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
     }
 
-    else if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) &&  message.guild.id == "505515654833504266")
+    if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) &&  message.guild.id == "505515654833504266")
     {
-        if(message.content.toLowerCase().includes("flair")){
-            gifPost(message, "Ric Flair", "WOOOOOOOOOOOOOOO!")
+        var Key;
+        var RE;
+
+        for(var i=0; i < GIFData.length; i++)
+        {
+            if(GIFData[i][1] != "")
+                Key = '\\b' + GIFData[i][0] + '\\b' + '|\\b' + GIFData[i][1] + '\\b'
+            else
+                Key = '\\b' + GIFData[i][0] + '\\b'
+
+            RE = new RegExp(Key);
+
+            if(message.content.toLowerCase().search(RE) >= 0)
+            {
+                gifPost(message, GIFData[i][2], GIFData[i][3])
+                i = GIFData.length
+            }
         }
 
-        else if(message.content.toLowerCase().includes("piper")){
-            gifPost(message, "Roddy Piper WWE", "Real men wear kilts")
-        }
-
-        else if(message.content.toLowerCase().includes("hogan")){
-            gifPost(message, "Hulk Hogan", "Hulkamania!!!!!!!")
-        }
-
-        else if(message.content.toLowerCase().includes("the rock")){
-            gifPost(message, "The Rock WWE", "Do you smell what the Rock is Cooking?")
-        }
-
-        else if((message.content.toLowerCase().includes("steve austin") || message.content.toLowerCase().includes("stone cold"))){
-            gifPost(message, "Stone Cold Steve Austin", "Because Stone Cold said so!")
-        }
-
-        else if(message.content.toLowerCase().includes("macho man")){
-            gifPost(message, "macho man randy savage", "OHHHHHHHH YEAHHHHHHHHH!")
-        }
-
-        else if((message.content.toLowerCase().includes("heartbreak kid") || message.content.toLowerCase().includes("shawn michaels"))){
-            gifPost(message, "shawn michaels WWE", "How about some sweet chin music?")
-        }
-
-        else if(message.content.toLowerCase().includes("undertaker")){
-            gifPost(message, "the undertaker WWE", "RIP")
-        }
-
-        else if((message.content.toLowerCase().search(/\bhhh\b/) >= 0 || message.content.toLowerCase().includes("triple h"))){
-            gifPost(message, "hhh wwe", "Time to play the game!!!!!")
-        }
-
-        else if(message.content.toLowerCase().includes("ultimate warrior")){
-            gifPost(message, "the ultimate warrior", "The frequencies in my head are not known to normals")
-        }
-
-        else if(message.content.toLowerCase().includes("chris jericho")){
-            gifPost(message, "chris jericho", "Welcome to RAW IS JERICHO!")
-        }
-
-        else if(message.content.toLowerCase().includes("booker t")){
-            gifPost(message, "Booker T wrestling", "Can you dig it, sucka?")
-        }
-
-        else if((message.content.toLowerCase().includes("darth vader") || message.content.toLowerCase().includes("vader"))){
-            gifPost(message, "darth vader", "I am your father!")
-        }
-
-        else if((message.content.toLowerCase().includes("jar jar") || message.content.toLowerCase().includes("jake")) && !message.content.toLowerCase().includes("the snake")){	
-            gifPost(message, "jar jar binks", "Mesa called Jar Jar Binks")	
-        }
-
-        else if(message.content.toLowerCase().includes("goldberg")){
-            gifPost(message, "Bill Goldberg", "Who's next?")
-        }
-
-        else if(message.content.toLowerCase().includes("andre the giant")){
-            gifPost(message, "andre the giant", "It's not my fault being the biggest and the strongest.")
-        }
-
-        else if(message.content.toLowerCase().includes("cynyde")){
-            gifPost(message, "princess", "You're gonna hear me roar!! - Cynyde")
-        }
-
-        else if(message.content.toLowerCase().search(/\bsting\b/) >= 0){
-            gifPost(message, "sting wrestling", "It's Showtime!")
-        }
-
-        else if(message.content.toLowerCase().includes("big show")){
-            gifPost(message, "big show", "Well it's the Big Show!")
-        }
-
-        else if((message.content.toLowerCase().includes("x pac") || message.content.toLowerCase().includes("xpac"))){
-            gifPost(message, "x pac", "Degeneration X!!")
-        }
-
-        else if(message.content.toLowerCase().includes("rey mysterio")){
-            gifPost(message, "Rey mysterio", "Rey mysterio")
-        }
-
-        else if(message.content.toLowerCase().includes("john cena")){
-            gifPost(message, "john cena", "U can't see me!")
-        }
-
-        else if(message.content.toLowerCase().includes("baby yoda")){
-            gifPost(message, "baby yoda", "Baby Yoda")
-        }
-
-        else if(message.content.toLowerCase().includes("yoda")){
-            gifPost(message, "yoda", "Much to learn you still have")
-        }
-
-        else if(message.content.toLowerCase().includes("luke skywalker")){
-            gifPost(message, "luke skywalker", "NOOOOOOOOOO!!!!!!!!!!!")
-        }
-
-        else if(message.content.toLowerCase().includes("jabba the hut")){
-            gifPost(message, "jabba the hut", "You will soon learn to appreciate me")
-        }
-
-        else if((message.content.toLowerCase().includes("chewbacca") || message.content.toLowerCase().includes("chewie"))){
-            gifPost(message, "Chewbacca", "GGGWARRRHHWWWW.")
-        }
-
-        else if((message.content.toLowerCase().includes("mankind") || message.content.toLowerCase().includes("mick foley"))){
-            gifPost(message, "mankind wwe", "Have a nice day.")
-        }
-
-        else if(message.content.toLowerCase().includes("kane")){
-            gifPost(message, "kane wwe", "Kane")
-        }
-
-        else if((message.content.toLowerCase().includes("bret hart") || message.content.toLowerCase().includes("bret heart"))){
-            gifPost(message, "bret hart wrestling wwe", "I'm the best there is, the best there was, and the best there ever will be.")
-        }
-
-        else if((message.content.toLowerCase().includes("honkytonk") || message.content.toLowerCase().includes("honky tonk"))){
-            gifPost(message, "honky tonk man wwe", "Where's my guitar?")
-        }
-
-        else if((message.content.toLowerCase().includes("mtscout") || message.content.toLowerCase().includes("scout"))){
-            gifPost(message, "chicken", "Chicken!!!")
-        }
-
-        else if(message.content.toLowerCase().includes("brutus the barber")){
-            gifPost(message, "Brutus the barber beefcake wwe", "Welcome to the barber shop!")
-        }
-
-        else if(message.content.toLowerCase().includes("jake the snake")){
-            gifPost(message, "jake the snake wwe", "Welcome to the snake pit!")
-        }
-
-        else if((message.content.toLowerCase().includes("sgt. slaughter") || message.content.toLowerCase().includes("sgt slaughter"))){
-            gifPost(message, "sgt slaughter wwe", "Cobra clutch!!!!!")
-        }
-
-        else if(message.content.toLowerCase().includes("bam bam")){
-            gifPost(message, "bam bam bigelow wwe", "If you play with fire, you're gonna get burned.")
-        }
-
-        else if(message.content.toLowerCase().includes("kurt angle")){
-            gifPost(message, "kurt angle", "It’s True, It’s True")
-        }
-
-        else if(message.content.toLowerCase().includes("trish stratus")){
-            gifPost(message, "trish stratus", "100% Stratusfaction")
-        }
-
-        else if(message.content.toLowerCase().includes("han solo")){
-            gifPost(message, "han solo", "Don't ever tell me the odds.")
-        }
-
-        else if((message.content.toLowerCase().includes("skittles") || message.content.toLowerCase().search(/\berin\b/) >= 0)){
-            gifPost(message, "succubus", "Succubus:  A demon in female form.")
-        }
-
-        else if((message.content.toLowerCase().includes("molly") || message.content.toLowerCase().includes("mollywhopper"))){
-            gifPost(message, "molly", "The Boss Man!!")
-        }
-
-        else if((message.content.toLowerCase().includes("the fonze") || message.content.toLowerCase().includes("fonze"))){
-            gifPost(message, "the fonze", "A!!")
-        }
-
-        else if((message.content.toLowerCase().includes("mhann uhdea") || message.content.toLowerCase().includes("mhann"))){
-            gifPost(message, "mhann", "Has anyone seen Obi-Wan or Anakin?  I was told to go break up a fight...")
-        }
-
-        else if(message.content.toLowerCase().includes("keon")){
-            gifPost(message, "baby crying", "Why wont this kid stop crying!!!!")
-        }
-
-        else if((message.content.toLowerCase().includes("greg") || message.content.toLowerCase().includes("stgregory"))){
-            gifPost(message, "greg", "I’m the Dude, so that’s what you call me. That or, uh His Dudeness, or uh Duder, or El Duderino, if you’re not into the whole brevity thing.")
-        }
-
-        else if((message.content.toLowerCase().includes("pooedonu") || message.content.toLowerCase().includes("poo"))){
-            gifPost(message, "poop", "Welcome to the dark side.")
-        }
-
-        else if((message.content.toLowerCase().includes("baldoldben") || message.content.toLowerCase().search(/\bbob\b/) >= 0)){
-            gifPost(message, "bald", "Women love a self-confident bald man.")
-        }
-
-        else if(message.content.toLowerCase().includes("kalles")){
-            gifPost(message, "farmer", "Keep calm and farm on.")
-        }
-
-        else if(message.content.toLowerCase().search(/\bdoc\b/) >= 0){
-            gifPost(message, "doctor", "This won't hurt a bit.")
-        }
-
-        else if(message.content.toLowerCase().includes("nnak")){
-            gifPost(message, "dog the bounty hunter", "I love bounty hunters!")
-        }
-
-        else if(message.content.toLowerCase().includes("legion of doom") || message.content.toLowerCase().includes("road warriors")){
-            gifPost(message, "lod", "What a rush!!!!!!")
-        }
     }
-    else if (!message.content.includes(",,") && !bot && !message.content.includes("!") &&  message.guild.id == "541730480479928351")
+    else if (!message.content.includes(",,") && !bot && !message.content.includes("!") && message.guild.id == "541730480479928351")
     {
         if(message.content.toLowerCase().includes("eggs")){
             gifPost(message, "eggs", "I love eggs")
