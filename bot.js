@@ -438,11 +438,80 @@ client.on("guildMemberAdd", (member) => {
     {
         client.channels.get("710510128381689966").send("Hey <@" + member.user.id + ">! Welcome to Wookie and the Bandit!  You won't find a more eclectic group of rebels "
             + "and scoundrels anywhere in the galaxy.  Have a look around our server and make yourself comfortable.  If you're "
-            + "looking for some new droids, entertainment, pie, or good banter, stop in at the <#505515654837698563> and say hello. "
-            + "If you are interested in speaking with an officer, just mention <@&505527335768948754> and someone will be in touch. "
-            + "An officer can set you up with a visitor pass that will enable you to see many more resources available on our server. \n \n - - - - - - - - - -")
+            + "looking for some new droids, entertainment, pie, or good banter, stop in at the <#505515654837698563> and say hello.")
+
         
         client.channels.get("528458206192599041").send("<@" + member.user.id + "> has joined the server.")
+
+        var RecruitmentRooms = ['575425849713623042', '712730129750818906', '712775049139978360'];
+        var RoomStatus = new Array(3)
+        var lastMessage;
+
+        (async () => {
+            await client.channels.get(RecruitmentRooms[0]).fetchMessages({ limit: 1 }).then(messages => { //room 1
+                lastMessage = messages.first();
+
+                if(lastMessage == undefined)
+                    RoomStatus[0] = "Empty"
+                else
+                    RoomStatus[0] = "Busy"        
+            }).catch(console.error);
+
+
+            await client.channels.get(RecruitmentRooms[1]).fetchMessages({ limit: 1 }).then(messages => { //room 1
+                lastMessage = messages.first();
+
+                if(lastMessage == undefined)
+                    RoomStatus[1] = "Empty"
+                else
+                    RoomStatus[1] = "Busy"        
+            }).catch(console.error);
+
+
+            await client.channels.get(RecruitmentRooms[2]).fetchMessages({ limit: 1 }).then(messages => { //room 1
+                lastMessage = messages.first();
+
+                if(lastMessage == undefined)
+                    RoomStatus[2] = "Empty"
+                else
+                    RoomStatus[2] = "Busy"
+            }).catch(console.error);
+
+            var RoomFound = false;
+
+            for(var i = 0; i < 3; i++)
+            {
+                if(RoomStatus[i] == "Empty")
+                {
+                    client.channels.get("710510128381689966").send("If you are interested in speaking with an officer, head over to "
+                    +"<#" + RecruitmentRooms[i] + "> and someone from <@&505527335768948754> will be in touch. "
+                    + "An officer can set you up with a visitor pass that will enable you to see many more resources available on our server. \n \n - - - - - - - - - -")
+                    client.channels.get("528458206192599041").send("<@" + member.user.id + "> is waiting in <#" + RecruitmentRooms[i] + ">");
+                    client.channels.get(RecruitmentRooms[i]).send("Welcome <@" + member.user.id + ">!  Can you see this message?" )
+                    client.channels.get(RecruitmentRooms[i]).overwritePermissions(member.user.id, {
+                        VIEW_CHANNEL: true,
+                        SEND_MESSAGES: true,
+                        READ_MESSAGE_HISTORY: true,
+                        ADD_REACTIONS: true,
+                        SEND_TTS_MESSAGES: true,
+                        EMBED_LINKS: true,
+                        ATTACH_FILES: true,
+                        USE_EXTERNAL_EMOJIS: true,
+                        MENTION_EVERYONE: true,
+                     });
+                    RoomFound = true;
+                    i = 4;
+                }
+            }
+
+            if(RoomFound == false)
+            {
+                client.channels.get("528458206192599041").send("There was no empty recruiting room for <@" + member.user.id + ">")
+                client.channels.get("710510128381689966").send("If you are interested in speaking with an officer, head over to the"
+                    +"<#505515654837698563> and mention <@&505527335768948754> and an officer will be in touch. "
+                    + "An officer can set you up with a visitor pass that will enable you to see many more resources available on our server. \n \n - - - - - - - - - -")
+            }
+        })() 
     }
 
         console.log(member.displayName + " Has joined the guild QZ")
@@ -863,15 +932,33 @@ client.on('message', message => {
             }
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}role`)){
-            if(message.member.id == "406945430967156766"){
-                const guild = client.guilds.get("505515654833504266");
-            // guild.createRole({ name: 'Test', permissions: ['MANAGE_MESSAGES', 'KICK_MEMBERS'] });
-            guild.roles.get("705498744061296721").setPosition(27)
-            // guild.roles.get("505527335768948754").setPermissions(2146959351)
-
+        else if(message.content.toLowerCase().startsWith(`${prefix}promote`)){
+            if(message.member.id == "406945430967156766")
+            {
+                const guild = client.guilds.get("505515654833504266");            
+                guild.roles.get("713210691129049155").setPosition(28)
+                message.channel.send("Command Testing Activated")
             }
         }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}demote`)){
+            if(message.member.id == "406945430967156766")
+            {
+                const guild = client.guilds.get("505515654833504266");            
+                guild.roles.get("713210691129049155").setPosition(2)
+                message.channel.send("Command Testing Deactivated")
+            }
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}reset`)){
+            if(message.member.roles.has("505527335768948754"))
+            {
+                message.channel.lockPermissions()
+                .then(() => console.log('Successfully synchronized permissions with parent channel'))
+                .catch(console.error);
+            }
+        }
+        
         else if(message.content.toLowerCase().startsWith(`${prefix}delgif`)){
             var Keyword = message.content.slice(8).toLowerCase();
             var Valid = true;
