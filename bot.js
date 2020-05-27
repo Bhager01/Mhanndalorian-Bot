@@ -20,6 +20,29 @@ client.once('ready', () => {
     console.log('Ready')
 })
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+async function nuke(fetched, message) {
+    fetched = await message.channel.fetchMessages({limit: 20});
+    promise = fetched.deleteAll()
+
+    await sleep(60000).then((values) => {
+        FinalPromise = Promise.all(promise)
+    })
+
+    FinalPromise.then((values) => {
+        (async () => {
+            console.log("Nuke Function")
+            fetched = await message.channel.fetchMessages({limit: 20});
+            console.log("fetched=" + fetched.size)
+            if(fetched.size >= 1)
+                nuke(fetched, message)
+        })()
+    })
+}
+
 var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
 authorize(content, listMajors);
 
@@ -443,7 +466,13 @@ client.on("guildMemberAdd", (member) => {
         
         client.channels.get("528458206192599041").send("<@" + member.user.id + "> has joined the server.")
 
-        var RecruitmentRooms = ['575425849713623042', '712730129750818906', '712775049139978360'];
+        const guild = client.guilds.get("505515654833504266"); 
+
+        const RecruitingRoom1 = guild.channels.find(r => r.name === "recruiting-room-1");
+        const RecruitingRoom2 = guild.channels.find(r => r.name === "recruiting-room-2");
+        const RecruitingRoom3 = guild.channels.find(r => r.name === "recruiting-room-3");
+
+        var RecruitmentRooms = [RecruitingRoom1.id, RecruitingRoom2.id, RecruitingRoom3.id];
         var RoomStatus = new Array(3)
         var lastMessage;
 
@@ -837,8 +866,10 @@ client.on('message', message => {
                     .setColor('ff0000')
                     .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
                     .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                        + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
                         + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
+                        + "__**" + prefix + "demote**__ - Restore regular role after command testing. \n \n"
+                        + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
+                        + "__**" + prefix + "promote**__ - Elevate role for command testing. \n \n"
                         + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
                 message.channel.send(Embed3)
             }
@@ -857,7 +888,9 @@ client.on('message', message => {
                         + "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
                         + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
                         + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
-                        + "remove \n");
+                        + "remove \n \n"
+                        + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
+                        + "channels. \n");
                 message.channel.send(Embed2)
             }
 
@@ -950,14 +983,70 @@ client.on('message', message => {
             }
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}reset`)){
+        else if(message.content.toLowerCase().startsWith(`${prefix}nuke`)){
             if(message.member.roles.has("505527335768948754"))
             {
-                message.channel.lockPermissions()
-                .then(() => console.log('Successfully synchronized permissions with parent channel'))
-                .catch(console.error);
+                if(message.channel.name == "recruiting-room-1" || message.channel.name == "recruiting-room-2" ||
+                message.channel.name == "recruiting-room-3" || message.channel.name == "cynydes-barrel")
+                    (async () => {
+                        const guild = client.guilds.get("505515654833504266"); 
+                        const fetchedChannel = message.guild.channels.find(r => r.name === message.channel.name);
+                        await fetchedChannel.delete();
+
+                        console.log(fetchedChannel.name + " has just been nuked by " + message.member.displayName + " QZ")
+
+                        fetchedChannel2 = await guild.createChannel(message.channel.name, {type: 'text', parent: '585993212351479808'})
+                        fetchedChannel2.lockPermissions()
+                        
+                        if(fetchedChannel2.name == "cynydes-barrel")
+                            fetchedChannel2.setPosition(18)
+                        else if (fetchedChannel2.name == "recruiting-room-1")
+                            fetchedChannel2.setPosition(19)
+                        else if (fetchedChannel2.name == "recruiting-room-2")
+                            fetchedChannel2.setPosition(20)
+                        else if (fetchedChannel2.name == "recruiting-room-3")
+                            fetchedChannel2.setPosition(21)
+                         
+                    })();
+                else
+                    message.channel.send("Are you nuts?  Why are you trying to nuke this room?!?!?")
             }
+            else
+                message.channel.send("You do not have permission to execute this command")
         }
+
+              /*  if(message.channel.id == "555955759201124360" || message.channel.id == "575425849713623042" || message.channel.id == "712730129750818906" || message.channel.id == "676092306381602826" || message.channel.id == "712775049139978360")
+                {
+                    message.channel.lockPermissions()
+                    .then(() => console.log('Successfully synchronized permissions with parent channel'))
+                    .catch(console.error);
+
+                    (async () => {
+                        var fetched;
+                        var Over14Days = false                        
+                        fetched = await message.channel.fetchMessages({limit: 40});
+
+                        while(fetched.size >= 1 && Over14Days == false)
+                        {
+                            console.log(fetched.size)
+                            await message.channel.bulkDelete(fetched)
+                            .then(value => {
+                                (async () => {
+                                    console.log("Bulk Delete")
+                                    fetched = await message.channel.fetchMessages({limit: 40});
+                                })()
+                            })
+                            .catch(err => {
+                                Over14Days = true
+                                console.log(err)
+                                nuke(fetched, message)
+                            //    return;
+                            })
+                        }
+                    })()
+                }
+                else
+                    message.channel.send("Are you nuts?  Why are you trying to nuke this room?!?!?") */
         
         else if(message.content.toLowerCase().startsWith(`${prefix}delgif`)){
             var Keyword = message.content.slice(8).toLowerCase();
