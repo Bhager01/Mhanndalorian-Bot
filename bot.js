@@ -1472,7 +1472,9 @@ client.on('message', message => {
 
                         DiscordSWGOHNameIDArray  = guild.roles.get('530083964380250116').members.map(m => [m.id, m.displayName])
 
-                        for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
+                        console.log(DiscordSWGOHNameIDArray)
+
+                        for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)  //no longer used
                         {
                             DiscordSWGOHNameIDArray[i][1] = DiscordSWGOHNameIDArray[i][1].replace(/([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
                         }
@@ -1513,7 +1515,10 @@ client.on('message', message => {
                                 User =  await client.fetchUser(DiscordSWGOHNameIDArray[RowFound][0])                         
                                 GuildMember =  await guild.fetchMember(User)
                                 DisplayNamed = GuildMember.displayName
-                                message.channel.send("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n" + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n" + "__**Discord Name:**__  " + DiscordSWGOHNameIDArray[RowFound][1])
+                                message.channel.send
+                                    ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
+                                    + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n"
+                                    + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[RowFound][0] + ">")
                             })()
                         }
 
