@@ -1501,7 +1501,7 @@ client.on('message', message => {
                         for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
                         {
                         //  if(DiscordSWGOHNameIDArray[i][1].toLowerCase() == CommandArray[1].toLowerCase() || DiscordSWGOHNameIDArray[i][2] == CommandArray[1] || DiscordSWGOHNameIDArray[i][3].toLowerCase() == CommandArray[1].toLowerCase())
-                            if(DiscordSWGOHNameIDArray[i][1].toLowerCase().startsWith(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].startsWith(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().startsWith(CommandArray[1].toLowerCase()))
+                            if(DiscordSWGOHNameIDArray[i][1].toLowerCase().includes(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().includes(CommandArray[1].toLowerCase()))
                             {
                                 RowFound = i;
                                 i = DiscordSWGOHNameIDArray.length
