@@ -10,6 +10,9 @@ var newSilver = "";
 var newGold = "";
 var newDiamond = "";
 var NewNoStatus = [];
+var BadWords =  ['fuck', 'shit', 'pissoff', 'dickhead', 'asshole', 'sonofabitch', 'bitch', 'bastard', 'cunt', 'goddamn', 
+                'motherfucker', 'hell', 'holyshit', 'dick', 'cock', 'pussy', 'ass', 'ballsack', 'blowjob', 'fag',
+                'tit', 'vagina', 'screwyou']
 
 var GphApiClient = require('giphy-js-sdk-core');
 giphy = GphApiClient(giffyToken)
@@ -22,7 +25,51 @@ client.once('ready', () => {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+}
+
+async function FiveMinRaidReminder()
+{
+    var fetched;
+    var lastMessage;
+    var now = new Date();
+    var MSSinceLastMsg;
+
+    fetched = await client.channels.get("709448648035008543").fetchMessages({limit: 1});
+    lastMessage = fetched.first()
+    MSSinceLastMsg = now - lastMessage.createdAt
+
+    if((lastMessage.content.includes("have successfully joined") || lastMessage.content.includes("notifications have been sent")) && MSSinceLastMsg <= 3600000)
+    {
+        var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+        authorize(content, listMajors);
+
+        function listMajors(auth)
+        {
+            const sheets = google.sheets({version: 'v4', auth});
+            sheets.spreadsheets.values.get(
+            {
+                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                range: 'Guild Members & Data!G66:R119',
+            }, (err, res) => {
+                    if (err) return console.log('The API returned an error: ' + err);
+                    const rows = res.data.values;
+
+                    for(var i=0; i < rows.length; i++)
+                    {
+                        if(rows[i][11] == 'Y')
+                        {
+                            client.users.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")).send(rows[i][0] + " Raid time in 5 minutes!!")
+                            .catch(error => {
+                                console.log(error)
+                                console.log("Catch6")
+                            });
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
 
 async function nuke(fetched, message) {
     fetched = await message.channel.fetchMessages({limit: 20});
@@ -337,6 +384,13 @@ var job2 = new CronJob('05 9,21 * * *', function() {
     console.log("Cron job DMusers who miss raids executed QZ")
     dmUsersMissedRaids();
 }, null, true, 'America/New_York');
+job.start(); //async function FiveMinRaidReminder()
+
+var CronJob3 = require('cron').CronJob;
+var job = new CronJob('55 19 * * *', function() {
+    console.log("Cron job FlairUpdate executed QZ")
+    FiveMinRaidReminder();
+}, null, true, 'America/New_York');
 job.start();
 
 async function AddFlair(passedMember, row, Type, SpecialF){
@@ -563,8 +617,42 @@ client.on("guildBanRemove", (guild,user) => {
 
 client.on('message', message => {
     var bot = message.author.bot
+    var wookieGuild
 
-    if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && message.guild.id == "505515654833504266"){
+    if(message.guild != null)
+    {
+        if(message.guild.id == "505515654833504266")
+            wookieGuild = true
+        else
+            wookieGuild = false
+    }
+    else
+        wookieGuild = false
+ 
+    if(message.channel.id == "709448648035008543"  && !bot)
+    {
+        (async () => {
+            fetched = await message.channel.fetchMessages({ limit: 1 });
+            await message.channel.bulkDelete(fetched);
+        })()
+
+    }
+
+    if(message.author.id == "406945430967156766")
+    {
+        for(var i=0; i <= BadWords.length; i++)
+        {
+            if(message.content.toLowerCase().replace(/ /g, "").includes(BadWords[i]))
+            {
+                message.channel.send("You said a bad word Cynyde.  This had been recorded.")
+                message.react('👎');
+                message.react('❌');
+                console.log("Bad word QZ")
+            }
+        }
+    }
+
+    if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && wookieGuild){
         var allyCode = String(message.content.slice(3,12));
         var officer;
 
@@ -816,7 +904,7 @@ client.on('message', message => {
 
     else if(message.content.startsWith(`${prefix}`) && !bot)
     {
-        if((message.content.toLowerCase().startsWith(`${prefix}flair`)) && message.guild.id == "505515654833504266"){
+        if((message.content.toLowerCase().startsWith(`${prefix}flair`)) && (wookieGuild || message.channel.type=='dm')){
             var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
             authorize(content, listMajors);
             
@@ -830,8 +918,8 @@ client.on('message', message => {
                 const rows = res.data.values;
                 if (rows.length) {
                     rows.map((row) => {
-                        if(String(row[1]).match(/\d+/) == message.member.id){
-                            console.log(message.member.displayName + " requested flair level QZ")
+                        if(String(row[1]).match(/\d+/) == message.author.id){
+                            console.log(message.author.username + " requested flair level QZ")
                             if(row[0] == 0){
                                 message.channel.send("You have had 0 days without missing raids.  Bronze level status is at 14 days.");
                             }
@@ -858,55 +946,68 @@ client.on('message', message => {
                 });
             }       
         }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}test`))
+        {
+            FiveMinRaidReminder()
+        }
         
-        else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && message.guild.id == "505515654833504266"){
-            if(message.member.id == "406945430967156766")
-            {
-                const Embed3 = new Discord.RichEmbed()
-                    .setColor('ff0000')
-                    .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
-                    .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                        + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
-                        + "__**" + prefix + "demote**__ - Restore regular role after command testing. \n \n"
-                        + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
-                        + "__**" + prefix + "promote**__ - Elevate role for command testing. \n \n"
-                        + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
-                message.channel.send(Embed3)
-            }
+        else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
+            (async () => {
+                
+                const guild = client.guilds.get("505515654833504266"); 
+                var User =  await client.fetchUser(message.author.id)
+                var GuildMember =  await guild.fetchMember(User);
+            
 
-            if(message.member.roles.has("505527335768948754"))
-            {
-                const Embed2 = new Discord.RichEmbed()
-                    .setColor('#3495D5')
-                    .setTitle('Commands available to those with Wook-Tang role (not case sensitive)')
-                    .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                        + "__**" + prefix + "addgif**__, __***arg1***__, __***arg2***__, __***arg3***__, __***arg4***__ - Command to add "
-                        + "GIF to databse. *Arg1* is the keyword to trigger GIF. *Arg2* is the phrase to search for on Giphy. *Arg3* is the "
-                        + "title displayed on the GIF. *Arg4* is the category and must be either wrestling, star wars or other.\n\n"
-                        + "__**" + prefix + "award**__ __***arg***__ @user1 @user2 - Award flair to user. *Arg* can be TWO (TW Offensive) or "
-                        + "TWD (TW Defensive).  You can mention as many users as you want after the argument. \n \n"
-                        + "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
-                        + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
-                        + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
-                        + "remove \n \n"
-                        + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
-                        + "channels. \n");
-                message.channel.send(Embed2)
-            }
+                if(message.author.id == "406945430967156766")
+                {
+                    const Embed3 = new Discord.RichEmbed()
+                        .setColor('ff0000')
+                        .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
+                        .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                            + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
+                            + "__**" + prefix + "demote**__ - Restore regular role after command testing. \n \n"
+                            + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
+                            + "__**" + prefix + "promote**__ - Elevate role for command testing. \n \n"
+                            + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
+                    message.channel.send(Embed3)
+                }
 
-            const Embed = new Discord.RichEmbed()
-                .setColor('#2FC071')
-                .setTitle('Commands available to those with bandit role (not case sensitive)')
-                .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                    + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
-                    + "__**" + prefix + "help**__ - Display this help message. \n \n"
-                    + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
-                    +"be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
-                    + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
-            message.channel.send(Embed)
+                if(GuildMember.roles.has("505527335768948754"))
+                {
+                    const Embed2 = new Discord.RichEmbed()
+                        .setColor('#3495D5')
+                        .setTitle('Commands available to those with Wook-Tang role (not case sensitive)')
+                        .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                            + "__**" + prefix + "addgif**__, __***arg1***__, __***arg2***__, __***arg3***__, __***arg4***__ - Command to add "
+                            + "GIF to databse. *Arg1* is the keyword to trigger GIF. *Arg2* is the phrase to search for on Giphy. *Arg3* is the "
+                            + "title displayed on the GIF. *Arg4* is the category and must be either wrestling, star wars or other.\n\n"
+                            + "__**" + prefix + "award**__ __***arg***__ @user1 @user2 - Award flair to user. *Arg* can be TWO (TW Offensive) or "
+                            + "TWD (TW Defensive).  You can mention as many users as you want after the argument. \n \n"
+                            + "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
+                            + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
+                            + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
+                            + "remove \n \n"
+                            + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
+                            + "channels. \n");
+                    message.channel.send(Embed2)
+                }
+
+                const Embed = new Discord.RichEmbed()
+                    .setColor('#2FC071')
+                    .setTitle('Commands available to those with bandit role (not case sensitive)')
+                    .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                        + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
+                        + "__**" + prefix + "help**__ - Display this help message. \n \n"
+                        + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
+                        +"be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
+                        + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
+                message.channel.send(Embed)
+            })()
         }
 
-        else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && message.guild.id == "505515654833504266"){
+        else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && (wookieGuild || message.channel.type=='dm')){
             var Wrestling = "";
             var StarWars = "";
             var Other = "";
@@ -953,20 +1054,22 @@ client.on('message', message => {
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}dmmissedraids`)){
-            if(message.member.id == "406945430967156766"){
+            if(message.author.id == "406945430967156766"){
                 dmUsersMissedRaids();
+                message.channel.send("Users that missed raids have been direct messaged.")
             }
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
-            if(message.member.id == "406945430967156766"){
+            if(message.author.id == "406945430967156766"){
                 const messagetopost = message.content.substring(11)
                 client.channels.get("505515654837698563").send(messagetopost)
+                message.channel.send("The following has been sent: " + messagetopost)
             }
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}promote`)){
-            if(message.member.id == "406945430967156766")
+            if(message.author.id == "406945430967156766")
             {
                 const guild = client.guilds.get("505515654833504266");            
                 guild.roles.get("713210691129049155").setPosition(28)
@@ -975,7 +1078,7 @@ client.on('message', message => {
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}demote`)){
-            if(message.member.id == "406945430967156766")
+            if(message.author.id == "406945430967156766")
             {
                 const guild = client.guilds.get("505515654833504266");            
                 guild.roles.get("713210691129049155").setPosition(2)
@@ -983,7 +1086,7 @@ client.on('message', message => {
             }
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}nuke`)){
+        else if(message.content.toLowerCase().startsWith(`${prefix}nuke`) && wookieGuild){
             if(message.member.roles.has("505527335768948754"))
             {
                 if(message.channel.name == "recruiting-room-1" || message.channel.name == "recruiting-room-2" ||
@@ -1048,187 +1151,199 @@ client.on('message', message => {
                 else
                     message.channel.send("Are you nuts?  Why are you trying to nuke this room?!?!?") */
         
-        else if(message.content.toLowerCase().startsWith(`${prefix}delgif`)){
-            var Keyword = message.content.slice(8).toLowerCase();
-            var Valid = true;
-            var Found = false;
-            var Row;
+        else if(message.content.toLowerCase().startsWith(`${prefix}delgif`) && (wookieGuild || message.channel.type == 'dm')){
+            (async () => {
+                var Keyword = message.content.slice(8).toLowerCase();
+                var Valid = true;
+                var Found = false;
+                var Row;
 
-            if(!message.member.roles.has("505527335768948754"))
-            {
-                return message.channel.send("You do not have permission to execute this command.")
-            }
+                const guild = client.guilds.get("505515654833504266"); 
+                var User =  await client.fetchUser(message.author.id)
+                var GuildMember =  await guild.fetchMember(User);
 
-            if(Keyword == "")
-            {
-                Valid = false
-                message.channel.send("You did not specify a GIF keyword to be removed.  Syntax: !delgif keyword")
-            }
-
-            if(Valid == true)
-            {
-                for(var i = 0; i < GIFData.length; i++)
+                if(!GuildMember.roles.has("505527335768948754"))
                 {
-                    if(GIFData[i][0] == Keyword)
-                    {
-                        Row = i + 2
-                        Found = true;
-                        i = GIFData.length
-                    }
+                    return message.channel.send("You do not have permission to execute this command.")
                 }
 
-                if(Found == true)
+                if(Keyword == "")
                 {
-                    if(GIFData[Row-2][5].toLowerCase() == "n")
+                    Valid = false
+                    message.channel.send("You did not specify a GIF keyword to be removed.  Syntax: !delgif keyword")
+                }
+
+                if(Valid == true)
+                {
+                    for(var i = 0; i < GIFData.length; i++)
                     {
-                        var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-                        authorize(content, listMajors);
-
-                        async function listMajors(auth)
+                        if(GIFData[i][0] == Keyword)
                         {
-                            const sheets = google.sheets({version: 'v4', auth});
-                            await sheets.spreadsheets.batchUpdate(
-                            {
-                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                resource: {
-                                    "requests": 
-                                    [
-                                    {
-                                        "deleteRange": 
-                                        {
-                                        "range": 
-                                        {
-                                            "sheetId": 143556422,
-                                            "startRowIndex": Row - 1,
-                                            "endRowIndex": Row
-                                        },
-                                        "shiftDimension": "ROWS"
-                                        }
-                                    }
-                                    ]
-                                }
-                            },(err, res) => {
-                                if (err) return console.log('The API returned an error: ' + err);
-
-                                sheets.spreadsheets.values.get({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'GIFData!A2:F',
-                                    }, (err, res) => {
-                                            if (err) return console.log('The API returned an error: ' + err);
-                                            GIFData = res.data.values;
-                                            message.channel.send("You have deleted " + Keyword + " from database.")
-                                        }
-                                )
-
-                            });
+                            Row = i + 2
+                            Found = true;
+                            i = GIFData.length
                         }
                     }
+
+                    if(Found == true)
+                    {
+                        if(GIFData[Row-2][5].toLowerCase() == "n")
+                        {
+                            var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                            authorize(content, listMajors);
+
+                            async function listMajors(auth)
+                            {
+                                const sheets = google.sheets({version: 'v4', auth});
+                                await sheets.spreadsheets.batchUpdate(
+                                {
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    resource: {
+                                        "requests": 
+                                        [
+                                        {
+                                            "deleteRange": 
+                                            {
+                                            "range": 
+                                            {
+                                                "sheetId": 143556422,
+                                                "startRowIndex": Row - 1,
+                                                "endRowIndex": Row
+                                            },
+                                            "shiftDimension": "ROWS"
+                                            }
+                                        }
+                                        ]
+                                    }
+                                },(err, res) => {
+                                    if (err) return console.log('The API returned an error: ' + err);
+
+                                    sheets.spreadsheets.values.get({
+                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                        range: 'GIFData!A2:F',
+                                        }, (err, res) => {
+                                                if (err) return console.log('The API returned an error: ' + err);
+                                                GIFData = res.data.values;
+                                                message.channel.send("You have deleted " + Keyword + " from database.")
+                                            }
+                                    )
+
+                                });
+                            }
+                        }
+                        else
+                            message.channel.send("The keyword you are trying to delete is read only.")
+                    }
                     else
-                        message.channel.send("The keyword you are trying to delete is read only.")
+                        message.channel.send("GIF keyword not found in database")
                 }
-                else
-                    message.channel.send("GIF keyword not found in database")
-            }
+            })()
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}addgif`)){
-            var CommandArray = message.content.split(',');
-            var valid = true;
-            var NextRow;
+        else if(message.content.toLowerCase().startsWith(`${prefix}addgif`) && (wookieGuild || message.channel.type == 'dm')){
+            (async () => {
+                var CommandArray = message.content.split(',');
+                var valid = true;
+                var NextRow;
 
-            if(!message.member.roles.has("505527335768948754"))
-            {
-                return message.channel.send("You do not have permission to execute this command.")
-            }
+                const guild = client.guilds.get("505515654833504266"); 
+                var User =  await client.fetchUser(message.author.id)
+                var GuildMember =  await guild.fetchMember(User);
 
-            if(CommandArray[1] == undefined || CommandArray[2] == undefined || CommandArray [3] == undefined || CommandArray[4] == undefined)
-            {
-                message.channel.send("Invalid Command:  Syntax is: !addgif, keyword, search phrase, title on GIF, category")
-                valid = false;
-            }
-
-            if(valid == true)
-            {
-                for(var i = 1; i < CommandArray.length; i++)
+                if(!GuildMember.roles.has("505527335768948754"))
                 {
-                    if(CommandArray[i].startsWith(" "))
-                        CommandArray[i] = CommandArray[i].slice(1)
+                    return message.channel.send("You do not have permission to execute this command.")
                 }
 
-                CommandArray[1] = CommandArray[1].toLowerCase()        
-                CommandArray[2] = CommandArray[2].toLowerCase()
-                CommandArray[4] = CommandArray[4].toLowerCase()
-
-                for(var i = 0; i < GIFData.length; i++)
+                if(CommandArray[1] == undefined || CommandArray[2] == undefined || CommandArray [3] == undefined || CommandArray[4] == undefined)
                 {
-                    if(GIFData[i][0] == CommandArray[1])
+                    message.channel.send("Invalid Command:  Syntax is: !addgif, keyword, search phrase, title on GIF, category")
+                    valid = false;
+                }
+
+                if(valid == true)
+                {
+                    for(var i = 1; i < CommandArray.length; i++)
                     {
-                        message.channel.send("Keyword already assigned to a GIF.  You may either remove the current keyword "
-                            + "from the database and re-add it or you can choose a different keyword.");
-                        valid = false;
-                        i = GIFData.length;
+                        if(CommandArray[i].startsWith(" "))
+                            CommandArray[i] = CommandArray[i].slice(1)
+                    }
+
+                    CommandArray[1] = CommandArray[1].toLowerCase()        
+                    CommandArray[2] = CommandArray[2].toLowerCase()
+                    CommandArray[4] = CommandArray[4].toLowerCase()
+
+                    for(var i = 0; i < GIFData.length; i++)
+                    {
+                        if(GIFData[i][0] == CommandArray[1])
+                        {
+                            message.channel.send("Keyword already assigned to a GIF.  You may either remove the current keyword "
+                                + "from the database and re-add it or you can choose a different keyword.");
+                            valid = false;
+                            i = GIFData.length;
+                        }
                     }
                 }
-            }
 
-            if(valid == true)
-            {
-                if(CommandArray[4] != "wrestling" && CommandArray[4] != "star wars" && CommandArray[4] != "other")
+                if(valid == true)
                 {
-                    valid = false;
-                    message.channel.send("4th argument (category) must be either wrestling, star wars, or other.")
+                    if(CommandArray[4] != "wrestling" && CommandArray[4] != "star wars" && CommandArray[4] != "other")
+                    {
+                        valid = false;
+                        message.channel.send("4th argument (category) must be either wrestling, star wars, or other.")
+                    }
                 }
-            }
 
-            if(valid == true)
-            {
-                NextRow = GIFData.length + 2;
+                if(valid == true)
+                {
+                    NextRow = GIFData.length + 2;
 
-                var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-                authorize(content, listMajors);
+                    var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                    authorize(content, listMajors);
 
-                async function listMajors(auth)
-                {       
-                    const sheets = google.sheets({version: 'v4', auth});
-                    await sheets.spreadsheets.values.update({
-                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                        range: 'GIFdata!A' + NextRow + ':F' + NextRow,
-                        valueInputOption: 'USER_ENTERED',
-                        resource: {
-                            values: [[CommandArray[1],"",CommandArray[2],CommandArray[3],CommandArray[4],"n"]]
-                        },
-                    }, (err, res) => {
-                        if (err) return console.log('The API returned an error: ' + err);
-
-                        sheets.spreadsheets.values.get({
+                    async function listMajors(auth)
+                    {       
+                        const sheets = google.sheets({version: 'v4', auth});
+                        await sheets.spreadsheets.values.update({
                             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'GIFData!A2:F',
-                            }, (err, res) => {
-                                    if (err) return console.log('The API returned an error: ' + err);
-                                    GIFData = res.data.values;
-                                    message.channel.send("The following has been added as a GIF: \n"
-                                    + "   Keyword = " + CommandArray[1] + "\n"
-                                    + "   Search Term = " + CommandArray[2] + "\n"
-                                    + "   Title = " + CommandArray[3] + "\n"
-                                    + "   Category = " + CommandArray[4] + "\n")
-                                }
-                        )
-                    });
+                            range: 'GIFdata!A' + NextRow + ':F' + NextRow,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: [[CommandArray[1],"",CommandArray[2],CommandArray[3],CommandArray[4],"n"]]
+                            },
+                        }, (err, res) => {
+                            if (err) return console.log('The API returned an error: ' + err);
+
+                            sheets.spreadsheets.values.get({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'GIFData!A2:F',
+                                }, (err, res) => {
+                                        if (err) return console.log('The API returned an error: ' + err);
+                                        GIFData = res.data.values;
+                                        message.channel.send("The following has been added as a GIF: \n"
+                                        + "   Keyword = " + CommandArray[1] + "\n"
+                                        + "   Search Term = " + CommandArray[2] + "\n"
+                                        + "   Title = " + CommandArray[3] + "\n"
+                                        + "   Category = " + CommandArray[4] + "\n")
+                                    }
+                            )
+                        });
+                    }
                 }
-            }
+            })()
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}updateflair`)){
-            if(message.member.id == "406945430967156766"){
+            if(message.author.id == "406945430967156766"){
                 message.channel.send("Flair is being updated for all guild members")
                 FlairUpdate("Manual", newFlairAnncouncment)
             } else{
-                message.channel.send(message.member.displayName + ", what do you think you are doing.  Turn back.  I have spoken.");
-                console.log(message.member.displayName + " tried to execute flairupdate QZ");
+                message.channel.send(message.author.username + ", what do you think you are doing.  Turn back.  I have spoken.");
+                console.log(message.author.username + " tried to execute flairupdate QZ");
             }
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}award`)){
+        else if(message.content.toLowerCase().startsWith(`${prefix}award`) && wookieGuild){
             if(message.member.roles.has("505527335768948754"))
             {            
                 (async () => {
@@ -1405,7 +1520,7 @@ client.on('message', message => {
                 message.reply('You do not have sufficient privileges to execute this command')
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}clean`)){
+        else if(message.content.toLowerCase().startsWith(`${prefix}clean`) && wookieGuild){
             if(message.member.roles.has("505527335768948754")){
                 const args = message.content.split(' ').slice(1); // All arguments behind the command name with the prefix
                 const amount = args.join(' '); // Amount of messages which should be deleted
@@ -1438,7 +1553,7 @@ client.on('message', message => {
             }
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  message.guild.id == "505515654833504266"){
+        else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  (wookieGuild || message.channel.type=='dm')){
             var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
             authorize(content, listMajors);
             
@@ -1471,8 +1586,6 @@ client.on('message', message => {
                         })()
 
                         DiscordSWGOHNameIDArray  = guild.roles.get('530083964380250116').members.map(m => [m.id, m.displayName])
-
-                        console.log(DiscordSWGOHNameIDArray)
 
                         for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)  //no longer used
                         {
@@ -1535,7 +1648,7 @@ client.on('message', message => {
             message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
     }
 
-    else if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) &&  message.guild.id == "505515654833504266")
+    else if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) &&  (wookieGuild || message.channel.type == 'dm'))
     {
         var Key;
         var RE;
@@ -1557,12 +1670,12 @@ client.on('message', message => {
         }
 
     }
-    else if (!message.content.includes(",,") && !bot && !message.content.includes("!") && message.guild.id == "541730480479928351")
+  /*  else if (!message.content.includes(",,") && !bot && !message.content.includes("!") && message.guild.id == "541730480479928351")
     {
         if(message.content.toLowerCase().includes("eggs")){
             gifPost(message, "eggs", "I love eggs")
         }
-    }
+    }*/ //for Kali
 })
 
 //LEAVE THIS WAY
