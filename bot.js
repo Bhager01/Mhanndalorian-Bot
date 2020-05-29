@@ -638,12 +638,17 @@ client.on('message', message => {
 
     }
 
-    if(message.author.id == "406945430967156766")
+    if(message.author.id == "198905950919196672")
     {
         for(var i=0; i <= BadWords.length; i++)
         {
             if(message.content.toLowerCase().replace(/ /g, "").includes(BadWords[i]))
             {
+              //  (async () => {
+              //  fetched = await message.channel.fetchMessages({limit: 1});
+              //  fetched.deleteAll();
+              //  })()
+
                 message.channel.send("You said a bad word Cynyde.  This had been recorded.")
                 message.react('👎');
                 message.react('❌');
@@ -947,6 +952,94 @@ client.on('message', message => {
             }       
         }
 
+        if((message.content.toLowerCase().startsWith(`${prefix}alert`)) && (wookieGuild || message.channel.type=='dm')){
+            var CommandArray = message.content.toLowerCase().split(' ');
+            var Proceed;
+
+            if(CommandArray[1] == "raid")
+            {
+                if(CommandArray[2] == "subscribe" || CommandArray[2] == "unsubscribe")
+                    Proceed = true;
+                else
+                {
+                    message.channel.send("Second argument must be either subscribe or unsubscribe")
+                    Proceed = false;
+                }
+            }
+            else
+            {
+                message.channel.send("First argument must be the word raid")
+                Proceed = false;
+            }
+
+            if(Proceed == true)
+            {
+                var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                authorize(content, listMajors);
+
+                function listMajors(auth)
+                {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.get(
+                    {
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guild Members & Data!G66:R119',
+                    }, (err, res) => {
+                            if (err) return console.log('The API returned an error: ' + err);
+                            rows = res.data.values;
+                            var UserRow;
+
+                            for(var i = 0; i < rows.length; i++)
+                                if(rows[i][0].replace("<@","").replace(">","").replace(" ","") == message.author.id)
+                                {
+                                    UserRow = i;
+                                    i = rows.length
+                                }
+                            if(CommandArray[2] == "subscribe")
+                            {
+                                if(rows[UserRow][11] == 'Y')
+                                    message.channel.send("You are already subscribed to 5 minute raid reminder.")
+                                else
+                                {
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                        range: 'Guild Members & Data!R' + (UserRow + 66),
+                                        valueInputOption: 'USER_ENTERED',
+                                        resource: {
+                                            values: [["Y"]]
+                                        },
+                                    })
+
+                                    message.channel.send("You have sucessfully subscribed to the 5 minute raid reminder.")
+                                    console.log("Subscribe to 5 minute raid reminder QZ")
+                                }
+                            }
+                            
+                            if(CommandArray[2] == "unsubscribe")
+                            {
+                                if(rows[UserRow][11] == 'N')
+                                    message.channel.send("You are already unsubscribed from the 5 minute raid reminder.")
+                                else
+                                {
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'Guild Members & Data!R' + (UserRow + 66),
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: {
+                                        values: [["N"]]
+                                    },
+                                })
+
+                                message.channel.send("You have sucessfully unsubscribed from the 5 minute raid reminder.")
+                            }
+
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
             FiveMinRaidReminder()
@@ -998,6 +1091,8 @@ client.on('message', message => {
                     .setColor('#2FC071')
                     .setTitle('Commands available to those with bandit role (not case sensitive)')
                     .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                        + "__**" + prefix + "alert**__ __***arg1***__ __***arg2***__ - Subscribes or unsubscribes you from a reminder. "
+                        + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
                         + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
                         + "__**" + prefix + "help**__ - Display this help message. \n \n"
                         + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
@@ -1343,181 +1438,197 @@ client.on('message', message => {
             }
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}award`) && wookieGuild){
-            if(message.member.roles.has("505527335768948754"))
-            {            
-                (async () => {
-                    await message.channel.fetchMessages({ limit: 1 }).then(messages => { // Fetches the messages
-                        console.log("Deleted " + FilteredCommandArray[1].toUpperCase() + " Award Command QZ")
-                        message.channel.bulkDelete(messages)
-                        .catch(err => {
-                    //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
-                            console.log("catch4");
-                            console.log(err);
-                        });
-                    })
-                })() 
+        else if(message.content.toLowerCase().startsWith(`${prefix}award`) && (wookieGuild || message.channel.type=='dm')){
+            (async () => {
+                const guild = client.guilds.get("505515654833504266"); 
+                var User =  await client.fetchUser(message.author.id)
+                var GuildMember =  await guild.fetchMember(User);
 
-                var CommandArray = message.content.split(' ');
-                var FilteredCommandArray = [];
-
-                for(var i = 0; i < CommandArray.length; i++)
-                {
-                    if(CommandArray[i] != '')
+                if(GuildMember.roles.has("505527335768948754"))
+                { 
+                    if(message.channel.type != 'dm')
                     {
-                        FilteredCommandArray.push(CommandArray[i])
+                        await message.channel.fetchMessages({ limit: 1 }).then(messages => { // Fetches the messages
+                            console.log("Deleted Award Command QZ");
+                            messages.deleteAll()
+                        })
                     }
-                }
 
-                var discordID;
-                var Proceed = true;
+                    var CommandArray = message.content.split(' ');
+                    var FilteredCommandArray = [];
 
-                var InputToDiscordID;
+                    for(var i = 0; i < CommandArray.length; i++)
+                    {
+                        if(CommandArray[i] != '')
+                        {
+                            FilteredCommandArray.push(CommandArray[i])
+                        }
+                    }
 
-                for (var i = 2; i < FilteredCommandArray.length; i++){
-                    InputToDiscordID = FilteredCommandArray[i].match(/\d+/g)
-                //    console.log(InputToDiscordID[0])
-                    discordID = client.users.get(InputToDiscordID[0])
-                    if(discordID == undefined){ //Discord user doesn't exist
-                        message.channel.send("You entered a discord user that does not exist.")
+                    var discordID;
+                    var Proceed = true;
+
+                    var InputToDiscordID;
+
+                    if(FilteredCommandArray[1] == undefined)
+                    {
+                        message.channel.send("First argument cannot be blank")
                         Proceed = false;
                     }
-                }
 
-                if (Proceed == true){
-                    FilteredCommandArray[1] = FilteredCommandArray[1].toLowerCase();
-                    if(FilteredCommandArray[1] == "two" || FilteredCommandArray[1] == "twd" || FilteredCommandArray[1] == "pri")
-                    {
-                        var SpecificFlair;
-                        var AwardMessage;
-                        if(FilteredCommandArray[1] == "two")
+                    for (var i = 2; i < FilteredCommandArray.length; i++){
+                        InputToDiscordID = FilteredCommandArray[i].match(/\d+/g)
+
+                        if(InputToDiscordID == null)
                         {
-                            SpecificFlair = 'O'
-                            AwardMessage = "Territory War - Offensive Award ⚔"
+                            message.channel.send("You entered a discord user that does not exist.");
+                            Proceed = false;
                         }
-                        if(FilteredCommandArray[1] == "twd")
+                        else
                         {
-                            SpecificFlair = 'D'
-                            AwardMessage = "Territory War - Defensive Award 🛡"
+                            discordID = client.users.get(InputToDiscordID[0])
+                            if(discordID == undefined){ //Discord user doesn't exist
+                                message.channel.send("You entered a discord user that does not exist.")
+                                Proceed = false;
+                            }
                         }
-                        if(FilteredCommandArray[1] == "pri")
+                    }
+
+                    if (Proceed == true){
+                        FilteredCommandArray[1] = FilteredCommandArray[1].toLowerCase();
+                        if(FilteredCommandArray[1] == "two" || FilteredCommandArray[1] == "twd" || FilteredCommandArray[1] == "pri")
                         {
-                            SpecificFlair = 'P'
-                            AwardMessage = "Wookie and the Bandit - Princess Award 👸"
-                        }
-
-                        const guild = client.guilds.get("505515654833504266");
-
-                        content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-                        authorize(content, listMajors);
-
-                        function listMajors(auth) {
-                            const sheets = google.sheets({version: 'v4', auth});
-                            sheets.spreadsheets.values.get({
-                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'Guild Members & Data!F66:L119',
-                            }, async (err, res) => {
-                            if (err) return console.log('The API returned an error: ' + err);
-                            const rows = res.data.values;
-                            if (rows.length)
+                            var SpecificFlair;
+                            var AwardMessage;
+                            if(FilteredCommandArray[1] == "two")
                             {
-                                var SpecialFlair = new Array(54);
-                                for (var i = 0; i < SpecialFlair.length; i++) { 
-                                    SpecialFlair[i] = new Array(1);
-                                    SpecialFlair[i][0] = '';
-                                }
+                                SpecificFlair = 'O'
+                                AwardMessage = "Territory War - Offensive Award ⚔"
+                            }
+                            if(FilteredCommandArray[1] == "twd")
+                            {
+                                SpecificFlair = 'D'
+                                AwardMessage = "Territory War - Defensive Award 🛡"
+                            }
+                            if(FilteredCommandArray[1] == "pri")
+                            {
+                                SpecificFlair = 'P'
+                                AwardMessage = "Wookie and the Bandit - Princess Award 👸"
+                            }
 
-                                var SpecificFlairRegEx = new RegExp(SpecificFlair,'g');
-                                
-                                for (var i = 0; i < rows.length; i++)
+                            const guild = client.guilds.get("505515654833504266");
+
+                            content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                            authorize(content, listMajors);
+
+                            function listMajors(auth) {
+                                const sheets = google.sheets({version: 'v4', auth});
+                                sheets.spreadsheets.values.get({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'Guild Members & Data!F66:L119',
+                                }, async (err, res) => {
+                                if (err) return console.log('The API returned an error: ' + err);
+                                const rows = res.data.values;
+                                if (rows.length)
                                 {
-                                    if(rows[i][6] == undefined)
-                                    {
-                                        rows[i][6] = ''
+                                    var SpecialFlair = new Array(54);
+                                    for (var i = 0; i < SpecialFlair.length; i++) { 
+                                        SpecialFlair[i] = new Array(1);
+                                        SpecialFlair[i][0] = '';
                                     }
 
-                                    SpecialFlair[i][0] = rows[i][6];
-                                    if(SpecialFlair[i][0].includes(SpecificFlair))
+                                    var SpecificFlairRegEx = new RegExp(SpecificFlair,'g');
+                                    
+                                    for (var i = 0; i < rows.length; i++)
                                     {
-                                        SpecialFlair[i][0] = SpecialFlair[i][0].replace(SpecificFlairRegEx,'')
-
-                                        if(rows[i][1] != "<@378053516067078149> " && null != (rows[i][1].match(/\d+/g)))
+                                        if(rows[i][6] == undefined)
                                         {
-                                            User =  await client.fetchUser(rows[i][1].match(/\d+/g))
-
-                                            GuildMember =  await guild.fetchMember(User)
-                                            .then(value =>{
-                                                    AddFlair(value,rows[i][0],"SpecialRemove", SpecialFlair[i][0]);
-                                            }).catch(error => {
-                                                    console.log(error)
-                                                    console.log("catch2")
-                                            });
+                                            rows[i][6] = ''
                                         }
 
-                                    //    AddFlair(value,rows[j][0],"Special", SpecialFlair[j][0]);
-                                    }
-                                }
-
-                                var ListMembersSpecialFlar = '';
-
-                                for (var i = 2; i < FilteredCommandArray.length; i++){
-                                    for (var j = 0; j < rows.length; j++)
-                                    {
-                                        if(FilteredCommandArray[i].replace("!","") == rows[j][1].replace(" ",""))
+                                        SpecialFlair[i][0] = rows[i][6];
+                                        if(SpecialFlair[i][0].includes(SpecificFlair))
                                         {
-                                            SpecialFlair[j][0] = SpecialFlair[j][0] + SpecificFlair
+                                            SpecialFlair[i][0] = SpecialFlair[i][0].replace(SpecificFlairRegEx,'')
 
-                                            var TempUser2 = FilteredCommandArray[i].match(/\d+/g)
+                                            if(rows[i][1] != "<@378053516067078149> " && null != (rows[i][1].match(/\d+/g)))
+                                            {
+                                                User =  await client.fetchUser(rows[i][1].match(/\d+/g))
 
-                                            
-                                            User =  await client.fetchUser(TempUser2[0])
-                                            GuildMember =  await guild.fetchMember(User)
-                                            .then(value =>{
-                                                if(TempUser2[0] != 378053516067078149)
-                                                {
-                                                    AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
-                                                }
-                                                ListMembersSpecialFlar = ListMembersSpecialFlar + rows[j][1].replace(" ","") + " " //CHECK!!!!
-                                            }).catch(error => {
-                                                    console.log(error)
-                                                    console.log("catch3")
-                                            });
-                                            
+                                                GuildMember =  await guild.fetchMember(User)
+                                                .then(value =>{
+                                                        AddFlair(value,rows[i][0],"SpecialRemove", SpecialFlair[i][0]);
+                                                }).catch(error => {
+                                                        console.log(error)
+                                                        console.log("catch2")
+                                                });
+                                            }
 
-                                            j = rows.length;
+                                        //    AddFlair(value,rows[j][0],"Special", SpecialFlair[j][0]);
                                         }
                                     }
-                                }
-                                
-                                if(ListMembersSpecialFlar != '')//command channel 676092306381602826     //Cantina 505515654837698563
-                                    client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
-                                
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'Guild Members & Data!L66:L119',
-                                    valueInputOption: 'USER_ENTERED',
-                                    resource: {
-                                        values: SpecialFlair
-                                    },
-                                })                
-                            }
 
-                            else
-                            {
-                                console.log('No data found.');
+                                    var ListMembersSpecialFlar = '';
+
+                                    for (var i = 2; i < FilteredCommandArray.length; i++){
+                                        for (var j = 0; j < rows.length; j++)
+                                        {
+                                            if(FilteredCommandArray[i].replace("!","") == rows[j][1].replace(" ",""))
+                                            {
+                                                SpecialFlair[j][0] = SpecialFlair[j][0] + SpecificFlair
+
+                                                var TempUser2 = FilteredCommandArray[i].match(/\d+/g)
+
+                                                
+                                                User =  await client.fetchUser(TempUser2[0])
+                                                GuildMember =  await guild.fetchMember(User)
+                                                .then(value =>{
+                                                    if(TempUser2[0] != 378053516067078149)
+                                                    {
+                                                        AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
+                                                    }
+                                                    ListMembersSpecialFlar = ListMembersSpecialFlar + rows[j][1].replace(" ","") + " " //CHECK!!!!
+                                                }).catch(error => {
+                                                        console.log(error)
+                                                        console.log("catch3")
+                                                });
+                                                
+
+                                                j = rows.length;
+                                            }
+                                        }
+                                    }
+                                    
+                                    if(ListMembersSpecialFlar != '')//command channel 676092306381602826     //Cantina 505515654837698563
+                                        client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
+                                    
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                        range: 'Guild Members & Data!L66:L119',
+                                        valueInputOption: 'USER_ENTERED',
+                                        resource: {
+                                            values: SpecialFlair
+                                        },
+                                    })                
+                                }
+
+                                else
+                                {
+                                    console.log('No data found.');
+                                }
+                                });
                             }
-                            });
                         }
+                        else
+                        {
+                            message.channel.send("First argument must be TWO or TWD")
+                        }
+                        
                     }
-                    else
-                    {
-                        message.channel.send("Second argument must be TWO or TWD")
-                    }
-                    
                 }
-            }
-            else
-                message.reply('You do not have sufficient privileges to execute this command')
+                else
+                    message.reply('You do not have sufficient privileges to execute this command')
+            })()
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}clean`) && wookieGuild){
