@@ -602,17 +602,26 @@ client.on("guildMemberAdd", (member) => {
 
 client.on("guildMemberRemove", (member) => {
     if(member.guild.id == "505515654833504266")
+    {
         client.channels.cache.get("528458206192599041").send(member.displayName + " has left the server.")
+        console.log(member.displayName + " has left the server. QZ")
+    }
 });
 
 client.on("guildBanAdd", (guild,user) => {
-    if(guild.id == "505515654833504266") 
+    if(guild.id == "505515654833504266")
+    {
         client.channels.cache.get("528458206192599041").send(user.username + " has been banned from the server.")
+        console.log(user.username + " has been banned. QZ")
+    }
 });
 
 client.on("guildBanRemove", (guild,user) => {
     if(guild.id == "505515654833504266")
+    {
         client.channels.cache.get("528458206192599041").send(user.username + " has been unbanned from the server.")
+        console.log(user.username + " has been unbanned. QZ")
+    }
 });
 
 client.on('message', message => {
@@ -661,6 +670,8 @@ client.on('message', message => {
         var allyCode = String(message.content.slice(3,12));
         var officer;
 
+        console.log(message.member.displayName + " issued echo base register command. QZ")
+
         if(message.content.includes("@"))
         {
             if(message.member.roles.cache.has("505527335768948754"))
@@ -686,6 +697,7 @@ client.on('message', message => {
                 .setTitle('Error - Mhanndalorian Bot')
                 .setDescription('You do not have permission to execute this command.');
             message.channel.send(Embed)
+            console.log(message.member.displayName + " Attempted to use officer Echo Base register command. QZ")
         }
 
         else if(user == undefined){ //Discord user doesn't exist
@@ -1031,6 +1043,7 @@ client.on('message', message => {
                                 })
 
                                 message.channel.send("You have sucessfully unsubscribed from the 5 minute raid reminder.")
+                                console.log("Unsubscribe from 5 minute raid reminder QZ")
                             }
 
                             }
@@ -1042,7 +1055,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            FiveMinRaidReminder()
+           // FiveMinRaidReminder()
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -1051,6 +1064,8 @@ client.on('message', message => {
                 const guild = client.guilds.cache.get("505515654833504266"); 
                 var User =  await client.users.fetch(message.author.id)
                 var GuildMember =  await guild.members.fetch(User);
+
+                console.log(message.author.id + " asked for help. QZ")
             
 
                 if(message.author.id == "406945430967156766")
@@ -1106,6 +1121,8 @@ client.on('message', message => {
             var Wrestling = "";
             var StarWars = "";
             var Other = "";
+
+            console.log(message.author.id + " asked for GIF help. QZ")
 
             for(var i = 0; i < GIFData.length; i++)
             {
@@ -1257,6 +1274,8 @@ client.on('message', message => {
                 var User =  await client.users.fetch(message.author.id)
                 var GuildMember =  await guild.members.fetch(User);
 
+                console.log(GuildMember.displayName + " issued delgif command. QZ")
+
                 if(!GuildMember.roles.cache.has("505527335768948754"))
                 {
                     return message.channel.send("You do not have permission to execute this command.")
@@ -1344,6 +1363,8 @@ client.on('message', message => {
                 const guild = client.guilds.cache.get("505515654833504266"); 
                 var User =  await client.users.fetch(message.author.id)
                 var GuildMember =  await guild.members.fetch(User);
+
+                console.log(GuildMember.displayName + " issued addgif command. QZ")
 
                 if(!GuildMember.roles.cache.has("505527335768948754"))
                 {
@@ -1434,7 +1455,7 @@ client.on('message', message => {
                 FlairUpdate("Manual", newFlairAnncouncment)
             } else{
                 message.channel.send(message.author.username + ", what do you think you are doing.  Turn back.  I have spoken.");
-                console.log(message.author.username + " tried to execute flairupdate QZ");
+                console.log(message.author.username + " tried to execute flairupdate. QZ");
             }
         }
 
@@ -1444,12 +1465,14 @@ client.on('message', message => {
                 var User =  await client.users.fetch(message.author.id)
                 var GuildMember =  await guild.members.fetch(User);
 
+                console.log(message.author.username + " issued award command. QZ")
+
                 if(GuildMember.roles.cache.has("505527335768948754"))
                 { 
                     if(message.channel.type != 'dm')
                     {
                         await message.channel.messages.fetch({ limit: 1 }).then(messages => { // Fetches the messages
-                            console.log("Deleted Award Command QZ");
+                            console.log("Deleted Award Command. QZ");
                             messages.clear()
                         })
                     }
@@ -1647,11 +1670,11 @@ client.on('message', message => {
                     
                 (async () => {
                     await message.channel.messages.fetch({ limit: amount }).then(messages => { // Fetches the messages
-                        console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages QZ`)
+                        console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages. QZ`)
                         message.channel.bulkDelete(messages)
                         .catch(err => {
                     //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
-                            console.log(message.member.displayName + ` Individually deleted ${messages.size} messages QZ`);
+                            console.log(message.member.displayName + ` Individually deleted ${messages.size} messages. QZ`);
                             messages.clear()
                             console.log(err);
                         });
@@ -1660,13 +1683,15 @@ client.on('message', message => {
             }
             else{
                 message.reply('You do not have sufficient privileges to execute this command')
-                console.log(message.member.displayName + " Failed to execute clean command QZ")
+                console.log(message.member.displayName + " Tried to execute clean command. QZ")
             }
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  (wookieGuild || message.channel.type=='dm')){
             var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
             authorize(content, listMajors);
+
+            console.log(message.author.username + " issued lookup command. QZ")
             
             function listMajors(auth)
             {
@@ -1756,7 +1781,10 @@ client.on('message', message => {
             }
         }
         else
+        {
             message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
+            console.log("Unknown Command: " + message.content + " issued by " + message.author.username + ". QZ")
+        }
     }
 
     else if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) &&  (wookieGuild || message.channel.type == 'dm'))
