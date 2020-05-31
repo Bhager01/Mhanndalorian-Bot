@@ -34,7 +34,7 @@ async function FiveMinRaidReminder()
     var now = new Date();
     var MSSinceLastMsg;
 
-    fetched = await client.channels.get("709448648035008543").fetchMessages({limit: 1});
+    fetched = await client.channels.cache.get("709448648035008543").messages.fetch({limit: 1});
     lastMessage = fetched.first()
     MSSinceLastMsg = now - lastMessage.createdAt
 
@@ -58,7 +58,7 @@ async function FiveMinRaidReminder()
                     {
                         if(rows[i][11] == 'Y')
                         {
-                            client.users.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")).send(rows[i][0] + " Raid time in 5 minutes!!")
+                            client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")).send(rows[i][0] + " Raid time in 5 minutes!!")
                             .catch(error => {
                                 console.log(error)
                                 console.log("Catch6")
@@ -72,8 +72,8 @@ async function FiveMinRaidReminder()
 }
 
 async function nuke(fetched, message) {
-    fetched = await message.channel.fetchMessages({limit: 20});
-    promise = fetched.deleteAll()
+    fetched = await message.channel.messages.fetch({limit: 20});
+    promise = fetched.clear()
 
     await sleep(60000).then((values) => {
         FinalPromise = Promise.all(promise)
@@ -82,7 +82,7 @@ async function nuke(fetched, message) {
     FinalPromise.then((values) => {
         (async () => {
             console.log("Nuke Function")
-            fetched = await message.channel.fetchMessages({limit: 20});
+            fetched = await message.channel.messages.fetch({limit: 20});
             console.log("fetched=" + fetched.size)
             if(fetched.size >= 1)
                 nuke(fetched, message)
@@ -161,7 +161,7 @@ function dmUsersMissedRaids() {
    
     function listMajors(auth) {
         const sheets = google.sheets({version: 'v4', auth});
-        const guild = client.guilds.get("505515654833504266");
+        const guild = client.guilds.cache.get("505515654833504266");
         sheets.spreadsheets.values.get({
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
             range: 'Guild Members & Data!A66:K119',
@@ -173,16 +173,16 @@ function dmUsersMissedRaids() {
                     var user = row[6].replace("<","").replace(">","").replace("@","").replace(" ","")
                     if(row[2] - row[8] == 1 && row[7] == 1 && user != ""){
                         console.log(user + " was just forgiven QZ")
-                        client.users.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ", but luckily you purchased raid forgiveness!")
+                        client.users.cache.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ", but luckily you purchased raid forgiveness!")
                         .catch(error => {
                             console.log(error)
                             console.log("Catch - Forgiven1")
                         });
 
-                        const exampleEmbed = new Discord.RichEmbed()
+                        const exampleEmbed = new Discord.MessageEmbed()
                         .setTitle('All is forgiven.')
                         .setImage('https://media.giphy.com/media/U1sXoHqCyA7wRzXCEx/giphy.gif')
-                        client.users.get(user).send(exampleEmbed)
+                        client.users.cache.get(user).send(exampleEmbed)
                         .catch(error => {
                                 console.log(error)
                                 console.log("Catch - Forgiven2")
@@ -192,7 +192,7 @@ function dmUsersMissedRaids() {
 
                     else if (row[2] - row[8] == 1 && row[7] > 1 && user != ""){
                         console.log(user + " missed one raid QZ")
-                        client.users.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ".")
+                        client.users.cache.get(user).send("You have missed the "+ row[10] + " raid on " + row[9] + ".")
                         .catch(error => {
                             console.log(error)
                             console.log("Catch - Missed 1 raid")
@@ -201,7 +201,7 @@ function dmUsersMissedRaids() {
 
                     else if (row[2] - row[8] > 1 && user != ""){
                         console.log(user + " missed multiple raids QZ")
-                        client.users.get(user).send("You have missed the " + row[10] + " raid on " + row[9] + ". In addition, you have missed " + ((row[2] - 1) - row[8]) + " other raids(s) since you were last messaged.")
+                        client.users.cache.get(user).send("You have missed the " + row[10] + " raid on " + row[9] + ". In addition, you have missed " + ((row[2] - 1) - row[8]) + " other raids(s) since you were last messaged.")
                         .catch(error => {
                             console.log(error)
                             console.log("Catch - Missed multiple raids")
@@ -257,7 +257,7 @@ function gifPost(message, searchString, tagLine) {
                 var ResponseIndex = Math.floor((Math.random() * 10) + 1) % TotalResponses;
                 var ResponseFinal = response.data[ResponseIndex];
 
-                const exampleEmbed = new Discord.RichEmbed()
+                const exampleEmbed = new Discord.MessageEmbed()
                 .setTitle(tagLine)
                 .setImage(ResponseFinal.images.fixed_height.url)
                 .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
@@ -268,7 +268,7 @@ function gifPost(message, searchString, tagLine) {
         })
     }
     else{
-        const exampleEmbed = new Discord.RichEmbed()
+        const exampleEmbed = new Discord.MessageEmbed()
         .setTitle(tagLine)
         .setImage(specificGIF(searchString))
         .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
@@ -294,37 +294,37 @@ async function newFlairAnncouncment(){
         var GuildMember;
         var User;
         var discordID;
-        const guild = client.guilds.get("505515654833504266");
+        const guild = client.guilds.cache.get("505515654833504266");
 
         for (x in NewNoStatus){
-            client.users.get(NewNoStatus[x]).send("You have missed a raid and lost your flair.  Get back in there!")
+            client.users.cache.get(NewNoStatus[x]).send("You have missed a raid and lost your flair.  Get back in there!")
             .catch(error => {
                 console.log(error)
                 console.log("Catch - Lost Flair")
         });
 
             discordID = NewNoStatus[x];
-            User =  await client.fetchUser(discordID)
-            GuildMember =  await guild.fetchMember(User);
+            User =  await client.users.fetch(discordID)
+            GuildMember =  await guild.members.fetch(User);
             console.log(GuildMember.displayName + " has lost raid flair  QZ")
         }
     }
 
     if (newBronze != "")
-        client.channels.get("505515654837698563").send("Nice job! Let's congratulate the following members on just earning bronze raid status. " + newBronze)
+        client.channels.cache.get("505515654837698563").send("Nice job! Let's congratulate the following members on just earning bronze raid status. " + newBronze)
 
     if (newSilver != "")
-        client.channels.get("505515654837698563").send("Sweet!! Congratulate the following members on just earning silver raid status. " + newSilver)
+        client.channels.cache.get("505515654837698563").send("Sweet!! Congratulate the following members on just earning silver raid status. " + newSilver)
 
     if (newGold != "")
-        client.channels.get("505515654837698563").send("Excellent!!! Let's congratulate the following members on just earning gold raid status. " + newGold)
+        client.channels.cache.get("505515654837698563").send("Excellent!!! Let's congratulate the following members on just earning gold raid status. " + newGold)
     
     if (newDiamond != "")
-        client.channels.get("505515654837698563").send("Amazing! 100 days with no raid missed!! Let's congratulate the following members on just earning diamond raid status. " + newDiamond)
+        client.channels.cache.get("505515654837698563").send("Amazing! 100 days with no raid missed!! Let's congratulate the following members on just earning diamond raid status. " + newDiamond)
 }
 
 function FlairUpdate(Type, callback){
-    const guild = client.guilds.get("505515654833504266");
+    const guild = client.guilds.cache.get("505515654833504266");
     newBronze = "";
     newSilver = "";
     newGold = "";
@@ -352,8 +352,8 @@ function FlairUpdate(Type, callback){
                 if(typeof element[1] != 'undefined' && element[1] != "" && element[0].length >= 1){
                     discordID = element[1].replace("<","").replace(">","").replace("@","");
                     if(discordID != 378053516067078149){
-                        User =  await client.fetchUser(discordID)
-                        GuildMember =  await guild.fetchMember(User)
+                        User =  await client.users.fetch(discordID)
+                        GuildMember =  await guild.members.fetch(User)
                         .then(value =>{
                             AddFlair(value,element[0],Type,element[6]);
                         }).catch(error => {
@@ -454,10 +454,10 @@ async function AddFlair(passedMember, row, Type, SpecialF){
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
     if(newMember.guild.id == "505515654833504266")
     {
-        if(newMember.roles.has("530083964380250116") && !oldMember.roles.has("530083964380250116"))
+        if(newMember.roles.cache.has("530083964380250116") && !oldMember.roles.cache.has("530083964380250116"))
         {
             console.log(newMember.displayName + " Has become a bandit QZ")
-            client.users.get(newMember.user.id).send("Congratulations!! You are now an official Bandit! Please check the "
+            client.users.cache.get(newMember.user.id).send("Congratulations!! You are now an official Bandit! Please check the "
                 + "new-to-server channel on the guild Discord server for some additional instructions. \n \n"
                 + "Now, a little about me.  I'm Mhanndalorain bot, and I work for <@406945430967156766>. "
                 + "Some of the services I provide include keeping track of raid participation, informational posts, advanced "
@@ -473,7 +473,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
                     console.log("Catch5")
                 });
             
-            client.channels.get("710510128381689966").send("<@" + newMember.user.id + "> , congratulations on becoming an official Bandit!  "
+            client.channels.cache.get("710510128381689966").send("<@" + newMember.user.id + "> , congratulations on becoming an official Bandit!  "
                 + "There are a few things we need you to do to get fully set up: \n \n"
                 + "1. Post a swgoh.gg acct in <#530063496382119937> \n \n"
                 + "2. Register for the bots we use on the server.  To do this, you need your in game ally code. "
@@ -513,25 +513,25 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 client.on("guildMemberAdd", (member) => {
     if(member.guild.id == "505515654833504266")
     {
-        client.channels.get("710510128381689966").send("Hey <@" + member.user.id + ">! Welcome to Wookie and the Bandit!  You won't find a more eclectic group of rebels "
+        client.channels.cache.get("710510128381689966").send("Hey <@" + member.user.id + ">! Welcome to Wookie and the Bandit!  You won't find a more eclectic group of rebels "
             + "and scoundrels anywhere in the galaxy.  Have a look around our server and make yourself comfortable.  If you're "
             + "looking for some new droids, entertainment, pie, or good banter, stop in at the <#505515654837698563> and say hello.")
 
         
-        client.channels.get("528458206192599041").send("<@" + member.user.id + "> has joined the server.")
+        client.channels.cache.get("528458206192599041").send("<@" + member.user.id + "> has joined the server.")
 
-        const guild = client.guilds.get("505515654833504266"); 
+        const guild = client.guilds.cache.get("505515654833504266"); 
 
-        const RecruitingRoom1 = guild.channels.find(r => r.name === "recruiting-room-1");
-        const RecruitingRoom2 = guild.channels.find(r => r.name === "recruiting-room-2");
-        const RecruitingRoom3 = guild.channels.find(r => r.name === "recruiting-room-3");
+        const RecruitingRoom1 = guild.channels.cache.find(r => r.name === "recruiting-room-1");
+        const RecruitingRoom2 = guild.channels.cache.find(r => r.name === "recruiting-room-2");
+        const RecruitingRoom3 = guild.channels.cache.find(r => r.name === "recruiting-room-3");
 
         var RecruitmentRooms = [RecruitingRoom1.id, RecruitingRoom2.id, RecruitingRoom3.id];
         var RoomStatus = new Array(3)
         var lastMessage;
 
         (async () => {
-            await client.channels.get(RecruitmentRooms[0]).fetchMessages({ limit: 1 }).then(messages => { //room 1
+            await client.channels.cache.get(RecruitmentRooms[0]).messages.fetch({ limit: 1 }).then(messages => { //room 1
                 lastMessage = messages.first();
 
                 if(lastMessage == undefined)
@@ -541,7 +541,7 @@ client.on("guildMemberAdd", (member) => {
             }).catch(console.error);
 
 
-            await client.channels.get(RecruitmentRooms[1]).fetchMessages({ limit: 1 }).then(messages => { //room 1
+            await client.channels.cache.get(RecruitmentRooms[1]).messages.fetch({ limit: 1 }).then(messages => { //room 1
                 lastMessage = messages.first();
 
                 if(lastMessage == undefined)
@@ -551,7 +551,7 @@ client.on("guildMemberAdd", (member) => {
             }).catch(console.error);
 
 
-            await client.channels.get(RecruitmentRooms[2]).fetchMessages({ limit: 1 }).then(messages => { //room 1
+            await client.channels.cache.get(RecruitmentRooms[2]).messages.fetch({ limit: 1 }).then(messages => { //room 1
                 lastMessage = messages.first();
 
                 if(lastMessage == undefined)
@@ -566,12 +566,12 @@ client.on("guildMemberAdd", (member) => {
             {
                 if(RoomStatus[i] == "Empty")
                 {
-                    client.channels.get("710510128381689966").send("If you are interested in speaking with an officer, head over to "
+                    client.channels.cache.get("710510128381689966").send("If you are interested in speaking with an officer, head over to "
                     +"<#" + RecruitmentRooms[i] + "> and someone from <@&505527335768948754> will be in touch. "
                     + "An officer can set you up with a visitor pass that will enable you to see many more resources available on our server. \n \n - - - - - - - - - -")
-                    client.channels.get("528458206192599041").send("<@" + member.user.id + "> is waiting in <#" + RecruitmentRooms[i] + ">");
-                    client.channels.get(RecruitmentRooms[i]).send("Welcome <@" + member.user.id + ">!  Can you see this message?" )
-                    client.channels.get(RecruitmentRooms[i]).overwritePermissions(member.user.id, {
+                    client.channels.cache.get("528458206192599041").send("<@" + member.user.id + "> is waiting in <#" + RecruitmentRooms[i] + ">");
+                    client.channels.cache.get(RecruitmentRooms[i]).send("Welcome <@" + member.user.id + ">!  Can you see this message?" )
+                    client.channels.cache.get(RecruitmentRooms[i]).createOverwrite(member.user.id, {
                         VIEW_CHANNEL: true,
                         SEND_MESSAGES: true,
                         READ_MESSAGE_HISTORY: true,
@@ -589,8 +589,8 @@ client.on("guildMemberAdd", (member) => {
 
             if(RoomFound == false)
             {
-                client.channels.get("528458206192599041").send("There was no empty recruiting room for <@" + member.user.id + ">")
-                client.channels.get("710510128381689966").send("If you are interested in speaking with an officer, head over to the"
+                client.channels.cache.get("528458206192599041").send("There was no empty recruiting room for <@" + member.user.id + ">")
+                client.channels.cache.get("710510128381689966").send("If you are interested in speaking with an officer, head over to the"
                     +"<#505515654837698563> and mention <@&505527335768948754> and an officer will be in touch. "
                     + "An officer can set you up with a visitor pass that will enable you to see many more resources available on our server. \n \n - - - - - - - - - -")
             }
@@ -602,17 +602,17 @@ client.on("guildMemberAdd", (member) => {
 
 client.on("guildMemberRemove", (member) => {
     if(member.guild.id == "505515654833504266")
-        client.channels.get("528458206192599041").send(member.displayName + " has left the server.")
+        client.channels.cache.get("528458206192599041").send(member.displayName + " has left the server.")
 });
 
 client.on("guildBanAdd", (guild,user) => {
     if(guild.id == "505515654833504266") 
-        client.channels.get("528458206192599041").send(user.username + " has been banned from the server.")
+        client.channels.cache.get("528458206192599041").send(user.username + " has been banned from the server.")
 });
 
 client.on("guildBanRemove", (guild,user) => {
     if(guild.id == "505515654833504266")
-        client.channels.get("528458206192599041").send(user.username + " has been unbanned from the server.")
+        client.channels.cache.get("528458206192599041").send(user.username + " has been unbanned from the server.")
 });
 
 client.on('message', message => {
@@ -632,21 +632,21 @@ client.on('message', message => {
     if(message.channel.id == "709448648035008543"  && !bot)
     {
         (async () => {
-            fetched = await message.channel.fetchMessages({ limit: 1 });
+            fetched = await message.channel.messages.fetch({ limit: 1 });
             await message.channel.bulkDelete(fetched);
         })()
 
     }
 
-    if(message.author.id == "198905950919196672")
+   /* if(message.author.id == "198905950919196672")
     {
         for(var i=0; i <= BadWords.length; i++)
         {
-            if(message.content.toLowerCase().replace(/ /g, "").includes(BadWords[i]))
+            if(message.content.toLowerCase().replace(/\w\s\w/g, "").includes(BadWords[i]))
             {
               //  (async () => {
-              //  fetched = await message.channel.fetchMessages({limit: 1});
-              //  fetched.deleteAll();
+              //  fetched = await message.channel.messages.fetch({limit: 1});
+              //  fetched.clear();
               //  })()
 
                 message.channel.send("You said a bad word Cynyde.  This had been recorded.")
@@ -655,7 +655,7 @@ client.on('message', message => {
                 console.log("Bad word QZ")
             }
         }
-    }
+    } */
 
     if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && wookieGuild){
         var allyCode = String(message.content.slice(3,12));
@@ -663,7 +663,7 @@ client.on('message', message => {
 
         if(message.content.includes("@"))
         {
-            if(message.member.roles.has("505527335768948754"))
+            if(message.member.roles.cache.has("505527335768948754"))
             {
                 var discordID = String(message.content.split('@')[1].match(/\d+/g));
                 officer = true;
@@ -677,11 +677,11 @@ client.on('message', message => {
         else
             var discordID = String(message.member.id)
 
-        var user = client.users.get(discordID)
+        var user = client.users.cache.get(discordID)
 
         if(officer == false) //A non officer attempted to execute an officer command
         { 
-            const Embed = new Discord.RichEmbed()
+            const Embed = new Discord.MessageEmbed()
                 .setColor('#ff0000')
                 .setTitle('Error - Mhanndalorian Bot')
                 .setDescription('You do not have permission to execute this command.');
@@ -689,7 +689,7 @@ client.on('message', message => {
         }
 
         else if(user == undefined){ //Discord user doesn't exist
-            const Embed = new Discord.RichEmbed()
+            const Embed = new Discord.MessageEmbed()
                 .setColor('#ff0000')
                 .setTitle('Error - Mhanndalorian Bot')
                 .setDescription('Could not find Discord User.');
@@ -701,7 +701,7 @@ client.on('message', message => {
             //*********REGISTER FOR HOT BOT**************//
     
         (async () => {
-                const guild = client.guilds.get("505515654833504266");
+                const guild = client.guilds.cache.get("505515654833504266");
                 const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
             
                 var User;
@@ -712,8 +712,8 @@ client.on('message', message => {
                 var Color;
                 var Title;
 
-                User =  await client.fetchUser(discordID);
-                GuildMember =  await guild.fetchMember(User);
+                User =  await client.users.fetch(discordID);
+                GuildMember =  await guild.members.fetch(User);
 
             //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
             //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
@@ -756,7 +756,7 @@ client.on('message', message => {
                     Title = "Success - HotBot"
                 }
 
-                const Embed = new Discord.RichEmbed()
+                const Embed = new Discord.MessageEmbed()
                     .setColor(Color)
                     .setTitle(Title)
                     .setDescription(JSONResponse.ResponseMessage);
@@ -787,7 +787,7 @@ client.on('message', message => {
                     rows.map((row) => {
                         if(row[6] == discordIDArray[0][0])
                         {
-                            const Embed = new Discord.RichEmbed()
+                            const Embed = new Discord.MessageEmbed()
                                 .setColor('#ff0000')
                                 .setTitle('Error - Mhanndalorian Bot')
                                 .setDescription('The discord ID is already assigned in the Mhanndalorian database.');
@@ -812,7 +812,7 @@ client.on('message', message => {
                                     },
                                 })
                                 
-                                const Embed2 = new Discord.RichEmbed()
+                                const Embed2 = new Discord.MessageEmbed()
                                     .setColor('#00ff00')
                                     .setTitle('Success - Mhanndalorian Bot')
                                     .setDescription("Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode);
@@ -866,7 +866,7 @@ client.on('message', message => {
                                 var localdate = ((today.getTime() / 86400000) + 25569) - (4/24)
                                 Description = Description + " Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database and will be added after new member is in SWGOH.GG database."
                                 
-                                const Embed3 = new Discord.RichEmbed()
+                                const Embed3 = new Discord.MessageEmbed()
                                     .setColor('#ffff00')
                                     .setTitle('Info - Mhanndalorian Bot')
                                     .setDescription(Description);
@@ -885,7 +885,7 @@ client.on('message', message => {
                             else{
                                 Description = Description + " Allycode and Discord ID could not be stored in a temporary location in Mhanndalorian database.  Temporary location is full."
 
-                                const Embed4 = new Discord.RichEmbed()
+                                const Embed4 = new Discord.MessageEmbed()
                                     .setColor('#ff0000')
                                     .setTitle('Error - Mhanndalorian Bot')
                                     .setDescription(Description);
@@ -952,7 +952,7 @@ client.on('message', message => {
             }       
         }
 
-        if((message.content.toLowerCase().startsWith(`${prefix}alert`)) && (wookieGuild || message.channel.type=='dm')){
+        else if((message.content.toLowerCase().startsWith(`${prefix}alert`)) && (wookieGuild || message.channel.type=='dm')){
             var CommandArray = message.content.toLowerCase().split(' ');
             var Proceed;
 
@@ -1048,14 +1048,14 @@ client.on('message', message => {
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
             (async () => {
                 
-                const guild = client.guilds.get("505515654833504266"); 
-                var User =  await client.fetchUser(message.author.id)
-                var GuildMember =  await guild.fetchMember(User);
+                const guild = client.guilds.cache.get("505515654833504266"); 
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
             
 
                 if(message.author.id == "406945430967156766")
                 {
-                    const Embed3 = new Discord.RichEmbed()
+                    const Embed3 = new Discord.MessageEmbed()
                         .setColor('ff0000')
                         .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
                         .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
@@ -1067,9 +1067,9 @@ client.on('message', message => {
                     message.channel.send(Embed3)
                 }
 
-                if(GuildMember.roles.has("505527335768948754"))
+                if(GuildMember.roles.cache.has("505527335768948754"))
                 {
-                    const Embed2 = new Discord.RichEmbed()
+                    const Embed2 = new Discord.MessageEmbed()
                         .setColor('#3495D5')
                         .setTitle('Commands available to those with Wook-Tang role (not case sensitive)')
                         .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
@@ -1087,7 +1087,7 @@ client.on('message', message => {
                     message.channel.send(Embed2)
                 }
 
-                const Embed = new Discord.RichEmbed()
+                const Embed = new Discord.MessageEmbed()
                     .setColor('#2FC071')
                     .setTitle('Commands available to those with bandit role (not case sensitive)')
                     .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
@@ -1136,7 +1136,7 @@ client.on('message', message => {
             Other = Other.slice(0,-1)
             Other = Other.split(",").sort().join(",").replace(/,/g,", ")
 
-            const Embed = new Discord.RichEmbed()
+            const Embed = new Discord.MessageEmbed()
                 .setColor('#ffff00')
                 .setTitle('Keywords that will cause GIF images to appear.')
                 .setDescription('A GIF will appear when any of the following keywords are mentioned (not case sensitive). '
@@ -1158,7 +1158,7 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
             if(message.author.id == "406945430967156766"){
                 const messagetopost = message.content.substring(11)
-                client.channels.get("505515654837698563").send(messagetopost)
+                client.channels.cache.get("505515654837698563").send(messagetopost)
                 message.channel.send("The following has been sent: " + messagetopost)
             }
         }
@@ -1166,8 +1166,8 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}promote`)){
             if(message.author.id == "406945430967156766")
             {
-                const guild = client.guilds.get("505515654833504266");            
-                guild.roles.get("713210691129049155").setPosition(28)
+                const guild = client.guilds.cache.get("505515654833504266");            
+                guild.roles.cache.get("713210691129049155").setPosition(28)
                 message.channel.send("Command Testing Activated")
             }
         }
@@ -1175,35 +1175,35 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}demote`)){
             if(message.author.id == "406945430967156766")
             {
-                const guild = client.guilds.get("505515654833504266");            
-                guild.roles.get("713210691129049155").setPosition(2)
+                const guild = client.guilds.cache.get("505515654833504266");            
+                guild.roles.cache.get("713210691129049155").setPosition(2)
                 message.channel.send("Command Testing Deactivated")
             }
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}nuke`) && wookieGuild){
-            if(message.member.roles.has("505527335768948754"))
+            if(message.member.roles.cache.has("505527335768948754"))
             {
                 if(message.channel.name == "recruiting-room-1" || message.channel.name == "recruiting-room-2" ||
                 message.channel.name == "recruiting-room-3" || message.channel.name == "cynydes-barrel")
                     (async () => {
-                        const guild = client.guilds.get("505515654833504266"); 
-                        const fetchedChannel = message.guild.channels.find(r => r.name === message.channel.name);
+                        const guild = client.guilds.cache.get("505515654833504266"); 
+                        const fetchedChannel = message.guild.channels.cache.find(r => r.name === message.channel.name);
                         await fetchedChannel.delete();
 
                         console.log(fetchedChannel.name + " has just been nuked by " + message.member.displayName + " QZ")
 
-                        fetchedChannel2 = await guild.createChannel(message.channel.name, {type: 'text', parent: '585993212351479808'})
+                        fetchedChannel2 = await guild.channels.create(message.channel.name, {type: 'text', parent: '585993212351479808'})
                         fetchedChannel2.lockPermissions()
                         
                         if(fetchedChannel2.name == "cynydes-barrel")
-                            fetchedChannel2.setPosition(18)
+                            fetchedChannel2.setPosition(1)
                         else if (fetchedChannel2.name == "recruiting-room-1")
-                            fetchedChannel2.setPosition(19)
+                            fetchedChannel2.setPosition(2)
                         else if (fetchedChannel2.name == "recruiting-room-2")
-                            fetchedChannel2.setPosition(20)
+                            fetchedChannel2.setPosition(3)
                         else if (fetchedChannel2.name == "recruiting-room-3")
-                            fetchedChannel2.setPosition(21)
+                            fetchedChannel2.setPosition(4)
                          
                     })();
                 else
@@ -1222,7 +1222,7 @@ client.on('message', message => {
                     (async () => {
                         var fetched;
                         var Over14Days = false                        
-                        fetched = await message.channel.fetchMessages({limit: 40});
+                        fetched = await message.channel.messages.fetch({limit: 40});
 
                         while(fetched.size >= 1 && Over14Days == false)
                         {
@@ -1231,7 +1231,7 @@ client.on('message', message => {
                             .then(value => {
                                 (async () => {
                                     console.log("Bulk Delete")
-                                    fetched = await message.channel.fetchMessages({limit: 40});
+                                    fetched = await message.channel.messages.fetch({limit: 40});
                                 })()
                             })
                             .catch(err => {
@@ -1253,11 +1253,11 @@ client.on('message', message => {
                 var Found = false;
                 var Row;
 
-                const guild = client.guilds.get("505515654833504266"); 
-                var User =  await client.fetchUser(message.author.id)
-                var GuildMember =  await guild.fetchMember(User);
+                const guild = client.guilds.cache.get("505515654833504266"); 
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
 
-                if(!GuildMember.roles.has("505527335768948754"))
+                if(!GuildMember.roles.cache.has("505527335768948754"))
                 {
                     return message.channel.send("You do not have permission to execute this command.")
                 }
@@ -1341,11 +1341,11 @@ client.on('message', message => {
                 var valid = true;
                 var NextRow;
 
-                const guild = client.guilds.get("505515654833504266"); 
-                var User =  await client.fetchUser(message.author.id)
-                var GuildMember =  await guild.fetchMember(User);
+                const guild = client.guilds.cache.get("505515654833504266"); 
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
 
-                if(!GuildMember.roles.has("505527335768948754"))
+                if(!GuildMember.roles.cache.has("505527335768948754"))
                 {
                     return message.channel.send("You do not have permission to execute this command.")
                 }
@@ -1440,17 +1440,17 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}award`) && (wookieGuild || message.channel.type=='dm')){
             (async () => {
-                const guild = client.guilds.get("505515654833504266"); 
-                var User =  await client.fetchUser(message.author.id)
-                var GuildMember =  await guild.fetchMember(User);
+                const guild = client.guilds.cache.get("505515654833504266"); 
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
 
-                if(GuildMember.roles.has("505527335768948754"))
+                if(GuildMember.roles.cache.has("505527335768948754"))
                 { 
                     if(message.channel.type != 'dm')
                     {
-                        await message.channel.fetchMessages({ limit: 1 }).then(messages => { // Fetches the messages
+                        await message.channel.messages.fetch({ limit: 1 }).then(messages => { // Fetches the messages
                             console.log("Deleted Award Command QZ");
-                            messages.deleteAll()
+                            messages.clear()
                         })
                     }
 
@@ -1486,7 +1486,7 @@ client.on('message', message => {
                         }
                         else
                         {
-                            discordID = client.users.get(InputToDiscordID[0])
+                            discordID = client.users.cache.get(InputToDiscordID[0])
                             if(discordID == undefined){ //Discord user doesn't exist
                                 message.channel.send("You entered a discord user that does not exist.")
                                 Proceed = false;
@@ -1516,7 +1516,7 @@ client.on('message', message => {
                                 AwardMessage = "Wookie and the Bandit - Princess Award 👸"
                             }
 
-                            const guild = client.guilds.get("505515654833504266");
+                            const guild = client.guilds.cache.get("505515654833504266");
 
                             content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
                             authorize(content, listMajors);
@@ -1553,9 +1553,9 @@ client.on('message', message => {
 
                                             if(rows[i][1] != "<@378053516067078149> " && null != (rows[i][1].match(/\d+/g)))
                                             {
-                                                User =  await client.fetchUser(rows[i][1].match(/\d+/g))
+                                                User =  await client.users.fetch(rows[i][1].match(/\d+/g))
 
-                                                GuildMember =  await guild.fetchMember(User)
+                                                GuildMember =  await guild.members.fetch(User)
                                                 .then(value =>{
                                                         AddFlair(value,rows[i][0],"SpecialRemove", SpecialFlair[i][0]);
                                                 }).catch(error => {
@@ -1580,8 +1580,8 @@ client.on('message', message => {
                                                 var TempUser2 = FilteredCommandArray[i].match(/\d+/g)
 
                                                 
-                                                User =  await client.fetchUser(TempUser2[0])
-                                                GuildMember =  await guild.fetchMember(User)
+                                                User =  await client.users.fetch(TempUser2[0])
+                                                GuildMember =  await guild.members.fetch(User)
                                                 .then(value =>{
                                                     if(TempUser2[0] != 378053516067078149)
                                                     {
@@ -1600,7 +1600,7 @@ client.on('message', message => {
                                     }
                                     
                                     if(ListMembersSpecialFlar != '')//command channel 676092306381602826     //Cantina 505515654837698563
-                                        client.channels.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
+                                        client.channels.cache.get("505515654837698563").send("In recognition of achievement, the following member(s) have earned the " + AwardMessage + "  Excellent job!!\n" + ListMembersSpecialFlar)
                                     
                                     sheets.spreadsheets.values.update({
                                         spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
@@ -1632,7 +1632,7 @@ client.on('message', message => {
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}clean`) && wookieGuild){
-            if(message.member.roles.has("505527335768948754")){
+            if(message.member.roles.cache.has("505527335768948754")){
                 const args = message.content.split(' ').slice(1); // All arguments behind the command name with the prefix
                 const amount = args.join(' '); // Amount of messages which should be deleted
 
@@ -1646,13 +1646,13 @@ client.on('message', message => {
                     return message.reply('You have to delete at least 1 message!'); // Checks if the `amount` integer is smaller than 1
                     
                 (async () => {
-                    await message.channel.fetchMessages({ limit: amount }).then(messages => { // Fetches the messages
+                    await message.channel.messages.fetch({ limit: amount }).then(messages => { // Fetches the messages
                         console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages QZ`)
                         message.channel.bulkDelete(messages)
                         .catch(err => {
                     //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
                             console.log(message.member.displayName + ` Individually deleted ${messages.size} messages QZ`);
-                            messages.deleteAll()
+                            messages.clear()
                             console.log(err);
                         });
                     })
@@ -1670,7 +1670,7 @@ client.on('message', message => {
             
             function listMajors(auth)
             {
-                const guild = client.guilds.get("505515654833504266");
+                const guild = client.guilds.cache.get("505515654833504266");
                 
                 const sheets = google.sheets({version: 'v4', auth});
                 sheets.spreadsheets.values.get({
@@ -1693,10 +1693,10 @@ client.on('message', message => {
                         var Found = false;
                         
                         (async () => { 
-                            await guild.fetchMembers()                    
+                            await guild.members.fetch()                    
                         })()
 
-                        DiscordSWGOHNameIDArray  = guild.roles.get('530083964380250116').members.map(m => [m.id, m.displayName])
+                        DiscordSWGOHNameIDArray  = guild.roles.cache.get('530083964380250116').members.map(m => [m.id, m.displayName])
 
                         for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)  //no longer used
                         {
@@ -1736,8 +1736,8 @@ client.on('message', message => {
                         if(Found == true)
                         {
                             (async () => { 
-                                User =  await client.fetchUser(DiscordSWGOHNameIDArray[RowFound][0])                         
-                                GuildMember =  await guild.fetchMember(User)
+                                User =  await client.users.fetch(DiscordSWGOHNameIDArray[RowFound][0])                         
+                                GuildMember =  await guild.members.fetch(User)
                                 DisplayNamed = GuildMember.displayName
                                 message.channel.send
                                     ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
