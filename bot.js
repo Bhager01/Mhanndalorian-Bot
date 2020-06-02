@@ -348,14 +348,15 @@ function FlairUpdate(Type, callback){
           var User;
           var discordID;
 
-            for (const element of rows){
-                if(typeof element[1] != 'undefined' && element[1] != "" && element[0].length >= 1){
-                    discordID = element[1].replace("<","").replace(">","").replace("@","");
+            for (let i=0; i<rows.length; i++){
+                if(typeof rows[i][1] != 'undefined' && rows[i][1] != "" && rows[i][0].length >= 1){
+                    discordID = rows[i][1].replace("<","").replace(">","").replace("@","");
                     if(discordID != 378053516067078149){
                         User =  await client.users.fetch(discordID)
                         GuildMember =  await guild.members.fetch(User)
                         .then(value =>{
-                            AddFlair(value,element[0],Type,element[6]);
+                           AddFlair(value,rows[i][0],Type,rows[i][6]);
+                        //   setTimeout(AddFlair,delay,value,rows[0],Type,rows[6])
                         }).catch(error => {
                                 console.log(error)
                                 console.log("catch1")
@@ -450,6 +451,14 @@ async function AddFlair(passedMember, row, Type, SpecialF){
         console.log(Type + " - " + passedMember.displayName + " No update needed")
     }
 }
+
+client.on('rateLimit', (RateLimitInfo) => {
+    if(RateLimitInfo.path.includes("channels"))
+    {
+        channelID = RateLimitInfo.path.match(/\d+/g);
+        client.channels.cache.get(channelID[0]).send("Rate limit reached for this command. Please wait " + RateLimitInfo.timeout/1000 + " seconds.")
+    }
+})
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
     if(newMember.guild.id == "505515654833504266")
@@ -1055,7 +1064,8 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-           // FiveMinRaidReminder()
+
+
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -1470,10 +1480,9 @@ client.on('message', message => {
                 if(GuildMember.roles.cache.has("505527335768948754"))
                 { 
                     if(message.channel.type != 'dm')
-                    {
-                        await message.channel.messages.fetch({ limit: 1 }).then(messages => { // Fetches the messages
-                            console.log("Deleted Award Command. QZ");
-                            messages.clear()
+                    {       
+                            await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                            messages.delete();
                         })
                     }
 
@@ -1673,9 +1682,16 @@ client.on('message', message => {
                         console.log(message.member.displayName + ` Bulk deleted ${messages.size} messages. QZ`)
                         message.channel.bulkDelete(messages)
                         .catch(err => {
-                    //     console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
-                            console.log(message.member.displayName + ` Individually deleted ${messages.size} messages. QZ`);
-                            messages.clear()
+                            if(amount <= 20)
+                            {
+                                console.log(message.member.displayName + ' Attempted to delete messages more than 14 days old. QZ');
+                                console.log(message.member.displayName + ` Individually deleted ${messages.size} messages. QZ`);
+                                messages.forEach(msg => {
+                                        msg.delete()
+                                })
+                            }
+                            else
+                                message.reply('The bulkdelete command did not work.  Please try deleting <= 20 messages.')
                             console.log(err);
                         });
                     })
