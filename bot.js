@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const {google} = require('googleapis');
 const fetch = require('node-fetch');
+const bottoken   = "Njc4NzQ4MzM0OTA2NjcxMTQ1.Xk1ByA.axjPvO001ywyjeI9ed_ERSVqduw"; //DELETE
 const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
 const client = new Discord.Client();
 const prefix = "!"
@@ -150,6 +151,60 @@ function specificGIF(searchString){
         URLS.push("https://i.postimg.cc/8P4qcqBd/LOD6.gif")
     }
 
+    else if(searchString == "cobra"){
+        URLS.push("https://i.postimg.cc/7LRbyfDJ/cobra1.gif")
+        URLS.push("https://i.postimg.cc/nh0C03Pk/cobra2.gif")
+        URLS.push("https://i.postimg.cc/RVTFZP4B/cobra3.gif")
+        URLS.push("https://i.postimg.cc/cJP1b2MQ/cobra4.gif")
+        URLS.push("https://i.postimg.cc/CxLKBjxf/cobra5.gif")
+        URLS.push("https://i.postimg.cc/K8q8nR1p/cobra6.gif")
+        URLS.push("https://i.postimg.cc/BQJSkxDw/cobra7.gif")
+        URLS.push("https://i.postimg.cc/zfyXp8Wz/cobra8.gif")
+        URLS.push("https://i.postimg.cc/wxXxwWtm/cobra9.gif")
+        URLS.push("https://i.postimg.cc/j2bxsf12/cobra10.gif")
+        URLS.push("https://i.postimg.cc/mg5TPJn0/cobra11.gif")
+        URLS.push("https://i.postimg.cc/7hnxb6vV/cobra12.gif")
+        URLS.push("https://i.postimg.cc/85WkQ4tx/cobra13.gif")
+        URLS.push("https://i.postimg.cc/XYJV74sf/cobra14.gif")
+        URLS.push("https://i.postimg.cc/15MmQfrR/cobra15.gif")
+    }
+
+    else if(searchString == "joey"){
+        URLS.push("https://i.postimg.cc/MHqMpH36/Joey1.gif")
+        URLS.push("https://i.postimg.cc/QdyTJXCm/Joey2.gif")
+        URLS.push("https://i.postimg.cc/j2cWwTBz/Joey3.gif")
+        URLS.push("https://i.postimg.cc/g0L6Mf6W/Joey4.gif")
+        URLS.push("https://i.postimg.cc/bY9SF0ds/Joey5.gif")
+        URLS.push("https://i.postimg.cc/ydq32vFS/Joey6.gif")
+        URLS.push("https://i.postimg.cc/V6j0wnRZ/Joey7.gif")
+        URLS.push("https://i.postimg.cc/ZKYvk9yj/Joey8.gif")
+        URLS.push("https://i.postimg.cc/DyCJ72rh/Joey9.gif")
+        URLS.push("https://i.postimg.cc/HkVJxfzy/Joey10.gif")
+        URLS.push("https://i.postimg.cc/bJHrW8yK/Joey11.gif")
+        URLS.push("https://i.postimg.cc/tJqJHf77/Joey12.gif")
+        URLS.push("https://i.postimg.cc/vBdD0Dsr/Joey13.gif")
+        URLS.push("https://i.postimg.cc/4xqYhB2F/Joey14.gif")
+        URLS.push("https://i.postimg.cc/25WVdhPj/Joey15.gif")
+    }
+
+    else if(searchString == "rogue"){
+        URLS.push("https://i.postimg.cc/G2CMgNqM/rogue1.gif")
+        URLS.push("https://i.postimg.cc/BZNhNmDg/rogue2.gif")
+        URLS.push("https://i.postimg.cc/LsfCTRBY/rogue3.gif")
+        URLS.push("https://i.postimg.cc/7Y6KRSny/rogue4.gif")
+        URLS.push("https://i.postimg.cc/KYnfTfxt/rogue5.gif")
+        URLS.push("https://i.postimg.cc/Gt3XdD0G/rogue6.gif")
+        URLS.push("https://i.postimg.cc/HnSBxLHK/rogue7.gif")
+        URLS.push("https://i.postimg.cc/3x0n87qS/rogue8.gif")
+        URLS.push("https://i.postimg.cc/wBKF3Z86/rogue9.gif")
+        URLS.push("https://i.postimg.cc/prdJgt8B/rogue10.gif")
+        URLS.push("https://i.postimg.cc/c4bFG6Ft/rogue11.gif")
+        URLS.push("https://i.postimg.cc/B64gBFnk/rogue12.gif")
+        URLS.push("https://i.postimg.cc/W387W4D3/rogue13.gif")
+        URLS.push("https://i.postimg.cc/XN289pS1/rogue14.gif")
+        URLS.push("https://i.postimg.cc/RhbLmbLx/rogue15.gif")
+    }
+
     randomNumber = Math.floor((Math.random()) * URLS.length);
     return URLS[randomNumber];
 
@@ -246,7 +301,9 @@ function dmUsersMissedRaids() {
 function gifPost(message, searchString, tagLine) {
     var special = false;
 
-    if(searchString == "succubus" || searchString == "molly" || searchString == "mhann" || searchString == "greg" || searchString == "lod"){
+    if(searchString == "succubus" || searchString == "molly" || searchString == "mhann"
+    || searchString == "greg" || searchString == "lod" || searchString == "cobra"
+    || searchString == "joey" || searchString == "rogue"){
         special = true;
     }
 
@@ -603,10 +660,10 @@ client.on("guildMemberAdd", (member) => {
                     +"<#505515654837698563> and mention <@&505527335768948754> and an officer will be in touch. "
                     + "An officer can set you up with a visitor pass that will enable you to see many more resources available on our server. \n \n - - - - - - - - - -")
             }
-        })() 
-    }
+        })()
 
         console.log(member.displayName + " Has joined the guild QZ")
+    }
 });
 
 client.on("guildMemberRemove", (member) => {
@@ -1798,8 +1855,11 @@ client.on('message', message => {
         }
         else
         {
-            message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
-            console.log("Unknown Command: " + message.content + " issued by " + message.author.username + ". QZ")
+            if(message.guild.id == "505515654833504266")
+            {
+                message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
+                console.log("Unknown Command: " + message.content + " issued by " + message.author.username + ". QZ")
+            }
         }
     }
 
@@ -1825,13 +1885,26 @@ client.on('message', message => {
         }
 
     }
-  /*  else if (!message.content.includes(",,") && !bot && !message.content.includes("!") && message.guild.id == "541730480479928351")
+    else if (!message.content.includes(",,") && !bot && message.guild.id == "399955359801802762")
     {
-        if(message.content.toLowerCase().includes("eggs")){
-            gifPost(message, "eggs", "I love eggs")
+        //console.log("Keyword for Kali")
+        if(message.content.toLowerCase().search(/\bcobra\b/) >= 0)
+        {
+            gifPost(message, "cobra", "Cobra")
         }
-    }*/ //for Kali
+
+        else if(message.content.toLowerCase().search(/\bjoey\b/) >= 0)
+        {
+            gifPost(message, "joey", "Joey")
+        }
+
+        else if(message.content.toLowerCase().search(/\brogue\b/) >= 0)
+        {
+            gifPost(message, "rogue", "Rogue")
+        }
+    } //for Kali
 })
+client.login(bottoken); //DELETE
 
 //LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
