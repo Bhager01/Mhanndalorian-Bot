@@ -1,7 +1,6 @@
 const Discord = require('discord.js');
 const {google} = require('googleapis');
 const fetch = require('node-fetch');
-const bottoken   = "Njc4NzQ4MzM0OTA2NjcxMTQ1.Xk1ByA.axjPvO001ywyjeI9ed_ERSVqduw"; //DELETE
 const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
 const client = new Discord.Client();
 const prefix = "!"
@@ -1904,7 +1903,6 @@ client.on('message', message => {
         }
     } //for Kali
 })
-client.login(bottoken); //DELETE
 
 //LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
