@@ -709,7 +709,49 @@ client.on('message', message => {
             fetched = await message.channel.messages.fetch({ limit: 1 });
             await message.channel.bulkDelete(fetched);
         })()
+    }
 
+    if(message.channel.id == "676092306381602826"  && !bot)
+    {
+        const regex = /-d\d{1,2}/g;
+        const string = message.content.match(regex);
+
+        if(string == null)
+        {
+            (async () => {
+                await message.channel.send("Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
+                await message.channel.messages.fetch({limit: 2}).then(messages => {
+                    setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
+                })              
+            })()
+        }
+        else
+        {
+            const days = string[0].match(/\d+/g)
+            if(days <= 14)
+            {
+                (async () => {
+                    await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
+                    await message.channel.messages.fetch({limit: 1}).then(messages => {
+                        setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
+                    })              
+                })()
+            }
+            else
+            {
+                (async () => {
+                    await message.channel.send("Error.  Maximum number of days for an MIA post is 14.");
+                    await message.channel.messages.fetch({limit: 2}).then(messages => {
+                        setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
+                    })              
+                })()
+            }
+        }
+
+      //  console.log(string[0].match(/\d+/g))
+
+      //    const days = string[0].match(/\d+/g)
+      //    console.log(days)    
     }
 
    /* if(message.author.id == "198905950919196672")
