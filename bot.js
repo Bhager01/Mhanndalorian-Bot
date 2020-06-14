@@ -711,7 +711,7 @@ client.on('message', message => {
         })()
     }
 
-    if(message.channel.id == "676092306381602826"  && !bot)
+    if(message.channel.id == "584496478412734464"  && !bot)
     {
         const regex = /-d\d{1,2}/g;
         const string = message.content.match(regex);
@@ -719,7 +719,8 @@ client.on('message', message => {
         if(string == null)
         {
             (async () => {
-                await message.channel.send("Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
+                console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
+                await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
                 await message.channel.messages.fetch({limit: 2}).then(messages => {
                     setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
                 })              
@@ -731,6 +732,7 @@ client.on('message', message => {
             if(days <= 14)
             {
                 (async () => {
+                    console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
                     await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
                     await message.channel.messages.fetch({limit: 1}).then(messages => {
                         setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
@@ -740,6 +742,7 @@ client.on('message', message => {
             else
             {
                 (async () => {
+                    console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
                     await message.channel.send("Error.  Maximum number of days for an MIA post is 14.");
                     await message.channel.messages.fetch({limit: 2}).then(messages => {
                         setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
