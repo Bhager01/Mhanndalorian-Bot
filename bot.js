@@ -1765,7 +1765,7 @@ client.on('message', message => {
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}clean`) && wookieGuild){
-            if(message.member.roles.cache.has("505527335768948754")){
+            if(message.member.roles.cache.has("505527335768948754") && message.channel.id != "584496478412734464"){
                 const args = message.content.split(' ').slice(1); // All arguments behind the command name with the prefix
                 const amount = args.join(' '); // Amount of messages which should be deleted
 
