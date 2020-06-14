@@ -711,7 +711,7 @@ client.on('message', message => {
         })()
     }
 
-    if(message.channel.id == "584496478412734464"  && !bot)
+    if(message.channel.id == "584496478412734464"  && !bot && wookieGuild)
     {
         const regex = /-d\d{1,2}/g;
         const string = message.content.match(regex);
