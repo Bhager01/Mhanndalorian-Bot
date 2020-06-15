@@ -722,7 +722,7 @@ client.on('message', message => {
                 console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
                 await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
                 await message.channel.messages.fetch({limit: 2}).then(messages => {
-                    setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
+                    setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
                 })              
             })()
         }
@@ -735,7 +735,7 @@ client.on('message', message => {
                     console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
                     await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
                     await message.channel.messages.fetch({limit: 1}).then(messages => {
-                        setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
+                        setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
                     })              
                 })()
             }
@@ -745,7 +745,7 @@ client.on('message', message => {
                     console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
                     await message.channel.send("Error.  Maximum number of days for an MIA post is 14.");
                     await message.channel.messages.fetch({limit: 2}).then(messages => {
-                        setTimeout(function() {message.channel.bulkDelete(messages);}, 7000);
+                        setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
                     })              
                 })()
             }
