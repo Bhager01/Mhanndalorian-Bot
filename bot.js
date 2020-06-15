@@ -27,6 +27,39 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function CleanMIA()
+{
+    console.log("In clean MIA function");
+    (async () => {
+        const now = new Date();
+        const guild = client.guilds.cache.get("505515654833504266"); 
+
+        const fetchedChannel = guild.channels.cache.find(r => r.id == "584496478412734464"); //mhann command 676092306381602826
+        await fetchedChannel.messages.fetch({ limit: 40 }).then(messages => {                //MIA 584496478412734464
+        var MessagesToDelete = new Array();
+            messages.forEach(msg => {
+                if(msg.id != "721885057853161583")
+                {
+                    const regex = /-d\d{1,2}/g;
+                    const string = msg.content.match(regex);
+                    if(string != null)
+                    {
+                        const days = string[0].match(/\d+/g)
+                        const timelapsedMS = now - msg.createdAt
+                        const timelapsedDays = timelapsedMS/86400000
+                        if(timelapsedDays >= days) //FIX FOR TESTING
+                        {
+                            MessagesToDelete.push(msg)
+                            console.log("Deleted MIA message from " + msg.author.username + " QZ")
+                        }
+                    }
+                }
+            })
+            fetchedChannel.bulkDelete(MessagesToDelete)
+        })
+    })()
+}
+
 async function FiveMinRaidReminder()
 {
     var fetched;
@@ -441,14 +474,21 @@ var job2 = new CronJob('05 9,21 * * *', function() {
     console.log("Cron job DMusers who miss raids executed QZ")
     dmUsersMissedRaids();
 }, null, true, 'America/New_York');
-job.start(); //async function FiveMinRaidReminder()
+job2.start(); //async function FiveMinRaidReminder()
 
 var CronJob3 = require('cron').CronJob;
-var job = new CronJob('55 19 * * *', function() {
-    console.log("Cron job FlairUpdate executed QZ")
+var job3 = new CronJob('55 19 * * *', function() {
+    console.log("Cron job 5 minute raid reminder QZ")
     FiveMinRaidReminder();
 }, null, true, 'America/New_York');
-job.start();
+job3.start();
+
+var CronJob4 = require('cron').CronJob;
+var job4 = new CronJob('00 6,14,20 * * *', function() {
+    console.log("Cron job MIA cleanup QZ")
+    CleanMIA();
+}, null, true, 'America/New_York');
+job4.start();
 
 async function AddFlair(passedMember, row, Type, SpecialF){
     var OldNickname = passedMember.displayName
@@ -729,7 +769,7 @@ client.on('message', message => {
         else
         {
             const days = string[0].match(/\d+/g)
-            if(days <= 14)
+            if(days <= 13 && days >= 1)
             {
                 (async () => {
                     console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
@@ -743,18 +783,13 @@ client.on('message', message => {
             {
                 (async () => {
                     console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
-                    await message.channel.send("Error.  Maximum number of days for an MIA post is 14.");
+                    await message.channel.send("Error.  Maximum number of days for an MIA post is 13.");
                     await message.channel.messages.fetch({limit: 2}).then(messages => {
                         setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
                     })              
                 })()
             }
         }
-
-      //  console.log(string[0].match(/\d+/g))
-
-      //    const days = string[0].match(/\d+/g)
-      //    console.log(days)    
     }
 
    /* if(message.author.id == "198905950919196672")
@@ -1165,8 +1200,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-
-
+            CleanMIA();
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -1176,7 +1210,7 @@ client.on('message', message => {
                 var User =  await client.users.fetch(message.author.id)
                 var GuildMember =  await guild.members.fetch(User);
 
-                console.log(message.author.id + " asked for help. QZ")
+                console.log(message.author.username + " asked for help. QZ")
             
 
                 if(message.author.id == "406945430967156766")
@@ -1233,7 +1267,7 @@ client.on('message', message => {
             var StarWars = "";
             var Other = "";
 
-            console.log(message.author.id + " asked for GIF help. QZ")
+            console.log(message.author.username + " asked for GIF help. QZ")
 
             for(var i = 0; i < GIFData.length; i++)
             {
