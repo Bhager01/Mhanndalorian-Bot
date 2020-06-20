@@ -751,9 +751,9 @@ client.on('message', message => {
         })()
     }
 
-    if(message.channel.id == "584496478412734464"  && !bot && wookieGuild)
-    {
-        const regex = /-d\d{1,2}/g;
+    if(message.channel.id == "584496478412734464"  && !bot && wookieGuild) //676092306381602826 Mhann testing
+    {                                                                     //584496478412734464 Real MIA channel
+        const regex = /-d\d{1,3}/g;
         const string = message.content.match(regex);
 
         if(string == null)
@@ -761,6 +761,7 @@ client.on('message', message => {
             (async () => {
                 console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
                 await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
+                
                 await message.channel.messages.fetch({limit: 2}).then(messages => {
                     setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
                 })              
@@ -1356,8 +1357,21 @@ client.on('message', message => {
                         console.log(fetchedChannel.name + " has just been nuked by " + message.member.displayName + " QZ")
 
                         fetchedChannel2 = await guild.channels.create(message.channel.name, {type: 'text', parent: '585993212351479808'})
-                        fetchedChannel2.lockPermissions()
-                        
+                        await fetchedChannel2.lockPermissions()
+
+                        let role = guild.roles.cache.find(r => r.name == 'Officer Emaritus')
+                        fetchedChannel2.updateOverwrite(role, {
+                            VIEW_CHANNEL: false,
+                            SEND_MESSAGES: false,
+                            READ_MESSAGE_HISTORY: false,
+                            ADD_REACTIONS: false,
+                            SEND_TTS_MESSAGES: false,
+                            EMBED_LINKS: false,
+                            ATTACH_FILES: false,
+                            USE_EXTERNAL_EMOJIS: false,
+                            MENTION_EVERYONE: false,
+                        });
+
                         if(fetchedChannel2.name == "cynydes-barrel")
                             fetchedChannel2.setPosition(1)
                         else if (fetchedChannel2.name == "recruiting-room-1")
@@ -1940,8 +1954,8 @@ client.on('message', message => {
             }
         }
     }
-
-    else if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) &&  (wookieGuild || message.channel.type == 'dm'))
+//check this xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    else if (!message.content.includes(",,") && !bot && !message.content.startsWith(`${prefix}`) && message.channel.id != "584496478412734464" && (wookieGuild || message.channel.type == 'dm'))
     {
         var Key;
         var RE;
