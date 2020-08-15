@@ -492,10 +492,16 @@ job4.start();
 
 async function AddFlair(passedMember, row, Type, SpecialF){
     var OldNickname = passedMember.displayName
+
     var SpecialFlairString = '';
 
     var newNickname;
     newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'').replace(/⚔/g,'').replace(/🛡/g,'').replace(/👸/g,'');
+
+    if(newNickname.length > 26) //NEW!!!!!
+    {
+        newNickname = newNickname.substring(0, 26);
+    }
 
     if(SpecialF != undefined)
     {
@@ -1201,7 +1207,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            CleanMIA();
+            console.log(client.guilds.cache.size)
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
