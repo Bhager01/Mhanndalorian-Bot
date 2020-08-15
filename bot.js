@@ -1336,7 +1336,7 @@ client.on('message', message => {
             if(message.author.id == "406945430967156766")
             {
                 const guild = client.guilds.cache.get("505515654833504266");            
-                guild.roles.cache.get("713210691129049155").setPosition(28)
+                guild.roles.cache.get("713210691129049155").setPosition(29)
                 message.channel.send("Command Testing Activated")
             }
         }
