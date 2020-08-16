@@ -91,11 +91,14 @@ async function FiveMinRaidReminder()
                     {
                         if(rows[i][11] == 'Y')
                         {
-                            client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")).send(rows[i][0] + " Raid time in 5 minutes!!")
-                            .catch(error => {
-                                console.log(error)
-                                console.log("Catch6")
-                            });
+                            if(client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")) != undefined)
+                            {
+                                client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")).send(rows[i][0] + " Raid time in 5 minutes!!")
+                                .catch(error => {
+                                    console.log(error)
+                                    console.log("Catch6")
+                                });
+                            }
                         }
                     }
                 }
@@ -1342,7 +1345,7 @@ client.on('message', message => {
                 var d = new Date();
                 var n = d.getTimezoneOffset();
 
-                console.log(n)              
+                console.log(n)
             }
         }
 
