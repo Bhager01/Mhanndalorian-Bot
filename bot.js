@@ -1338,6 +1338,11 @@ client.on('message', message => {
                 const guild = client.guilds.cache.get("505515654833504266");            
                 guild.roles.cache.get("713210691129049155").setPosition(29)
                 message.channel.send("Command Testing Activated")
+
+                var d = new Date();
+                var n = d.getTimezoneOffset();
+
+                console.log(n)              
             }
         }
 
