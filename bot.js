@@ -1318,7 +1318,9 @@ client.on('message', message => {
                         + "__**" + prefix + "alert**__ __***arg1***__ __***arg2***__ - Subscribes or unsubscribes you from a reminder. "
                         + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
                         + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
+                        + "__**" + prefix + "full**__ - Receive all notifications and access to all channels. \n \n"
                         + "__**" + prefix + "help**__ - Display this help message. \n \n"
+                        + "__**" + prefix + "light**__ - Receive only essential notifications and access to a streamlined set of channels. \n \n"
                         + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
                         +"be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
                         + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
@@ -1387,6 +1389,24 @@ client.on('message', message => {
                 client.channels.cache.get("505515654837698563").send(messagetopost)
                 message.channel.send("The following has been sent: " + messagetopost)
             }
+        }
+
+        else if(message.content.toLowerCase().startsWith(`${prefix}info`)){
+            if(message.author.id == "406945430967156766")
+            {
+                const name = client.guilds.cache.map(g => [g.name, g.id, g.ownerID, g.memberCount])
+                var BotData = []
+                BotData.push("Mhanndalorian bot is installed on the following servers: \n")
+                for(var i = 0; i < name.length; i++)
+                {
+                    BotData.push("__**Name:**__ " + name[i][0] + '\n' + "__**Guild ID:**__ " +
+                     name[i][1] + '\n' + "__**Owner:**__ " + '<@' + name[i][2] + '>' +'\n' +
+                    "__**# Members:**__ " + name[i][3] + '\n' + '- - - - - - \n')
+                }
+                message.channel.send(BotData.join("") + "__**Total Servers:**__ " + client.guilds.cache.size)
+            }
+            else
+                message.channel.send("You do not have permission to execute this command")
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}promote`)){
