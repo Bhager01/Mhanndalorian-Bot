@@ -1138,7 +1138,7 @@ client.on('message', message => {
                 {
                     GuildMember.roles.add(role);
                     message.reply("You will now have access to all notifications and channels!")
-                    console.log(message.author.username + " is now receiving all channels and notifications")                   
+                    console.log(message.author.username + " is now receiving all channels and notifications QZ")                   
                 }
                 else
                 {
@@ -1163,7 +1163,7 @@ client.on('message', message => {
                 {
                     GuildMember.roles.remove(role);
                     message.reply("You will now only have access to essential channels and notifications!")
-                    console.log(message.author.username + " is now receiving only essential channels and notifications")
+                    console.log(message.author.username + " is now receiving only essential channels and notifications QZ")
                 }
             })()
         }
