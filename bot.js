@@ -593,8 +593,15 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
                 + "2. Register for the bots we use on the server.  To do this, you need your in game ally code. "
                 + "If your ally code was 123456789 you would type the following command in the <#706614410235347034> channel: \n"
                 + "       eb.123456789.register \n       Do not use dashes \n \n"
-                + "3. Read general rules in: \n       <#529197401626378241> \n       <#530675016916795400> \n \n"
-                + "4. Read raid, TW, and TB rules in: \n       <#530674764499517440> \n       <#530991189604958210> \n       <#530991579717173279> \n \n"
+                + "3. Choose your experience! We have many, many channels on the server!  You can choose to have the "
+                + "full experience with access to all channels and notifications or if you prefer a more streamlined experience "
+                + "you can have access to only essential channels and notifications. To set your preference, enter one of the "
+                + "following commands in the <#706614410235347034> channel: \n"
+                + "       For access to all channels and notifications type:  !Full \n"
+                + "       For access to only the essential channels and notifications type:  !Light \n"
+                + "You can change your preference at any time! \n \n"
+                + "4. Read general rules in: \n       <#529197401626378241> \n       <#530675016916795400> \n \n"
+                + "5. Read raid, TW, and TB rules in: \n       <#530674764499517440> \n       <#530991189604958210> \n       <#530991579717173279> \n \n"
                 + "Utilize the info, resources, and officers in the guild to maximize your gameplay.  Please contact officers (<@&505527335768948754>) "
                 + "or the guild leader (<@&528746539871371294>) with any comments, questions, or concerns.  Enjoy the game and this online family! \n \n - - - - - - - - - -")
         } 
@@ -1119,6 +1126,48 @@ client.on('message', message => {
             }       
         }
 
+        else if((message.content.toLowerCase().startsWith(`${prefix}full`)) && (wookieGuild)){
+            const guild = client.guilds.cache.get("505515654833504266");
+            const role = guild.roles.cache.find(role => role.name === 'Bandits+');
+
+            (async () => {
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
+
+                if(!GuildMember.roles.cache.has("746368348052258900"))
+                {
+                    GuildMember.roles.add(role);
+                    message.reply("You will now have access to all notifications and channels!")
+                    console.log(message.author.username + " is now receiving all channels and notifications")                   
+                }
+                else
+                {
+                    message.reply("You already have access to all notifications and channels!")
+                }
+            })()
+        }
+
+        else if((message.content.toLowerCase().startsWith(`${prefix}light`)) && (wookieGuild)){
+            const guild = client.guilds.cache.get("505515654833504266");
+            const role = guild.roles.cache.find(role => role.name === 'Bandits+');
+
+            (async () => {
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
+
+                if(!GuildMember.roles.cache.has("746368348052258900"))
+                {
+                    message.reply("You already have only the essential channels and notifications!")                    
+                }
+                else
+                {
+                    GuildMember.roles.remove(role);
+                    message.reply("You will now only have access to essential channels and notifications!")
+                    console.log(message.author.username + " is now receiving only essential channels and notifications")
+                }
+            })()
+        }
+
         else if((message.content.toLowerCase().startsWith(`${prefix}alert`)) && (wookieGuild || message.channel.type=='dm')){
             var CommandArray = message.content.toLowerCase().split(' ');
             var Proceed;
@@ -1342,10 +1391,10 @@ client.on('message', message => {
                 guild.roles.cache.get("713210691129049155").setPosition(29)
                 message.channel.send("Command Testing Activated")
 
-                var d = new Date();
-                var n = d.getTimezoneOffset();
+                //var d = new Date();  TIME ZONE
+                //var n = d.getTimezoneOffset();
 
-                console.log(n)
+                //console.log(n)
             }
         }
 
