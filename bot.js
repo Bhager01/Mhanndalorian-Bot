@@ -792,7 +792,12 @@ client.on('message', message => {
                     console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
                     await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
                     await message.channel.messages.fetch({limit: 1}).then(messages => {
-                        setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
+                        setTimeout(async function() {await message.channel.bulkDelete(messages)
+                            .catch(error => {
+                                console.log(error)
+                                console.log("Error deleting successful MIA reply. QZ")
+                            });
+                        }, 7000);
                     })              
                 })()
             }
@@ -2059,6 +2064,7 @@ client.on('message', message => {
         }
     } //for Kali
 })
+client.login(bottoken); //DELETE
 
 //LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
