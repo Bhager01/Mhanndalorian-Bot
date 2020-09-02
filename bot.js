@@ -27,6 +27,60 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function UpdateUsersAndAllycodes()
+{
+    var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+    authorize(content, listMajors);
+
+    function listMajors(auth)
+    {
+        const sheets = google.sheets({version: 'v4', auth});
+        const BaseURL = "https://swgoh.gg/api/guild/55879";
+
+        (async () => {
+            Result = await fetch(BaseURL,
+                {
+                    method: 'GET',
+                }).then(response => response.json())
+
+                var NamesAndCodes = new Array(54);
+
+                for (var i = 0; i < NamesAndCodes.length; i++) { 
+                    NamesAndCodes[i] = new Array(2);
+                    NamesAndCodes[i][0] = '';
+                    NamesAndCodes[i][1] = '';
+                }
+
+                for(var i = 0; i < Result.players.length; i++)
+                {
+                    NamesAndCodes[i][0] = Result.players[i].data.name
+                    NamesAndCodes[i][1] = Result.players[i].data.ally_code
+                }
+
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'XML Data!A3:B56',  
+                    valueInputOption: 'RAW',
+                    resource: {
+                        values: NamesAndCodes
+                    },
+                })
+
+                var time = new Date().toLocaleTimeString()
+                var date = new Date().toLocaleDateString()
+
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guild Members & Data!C122',  
+                    valueInputOption: 'RAW',
+                    resource: {
+                        values: [[date + " " + time]]
+                    },
+                })
+        })()
+    }
+}
+
 function CleanMIA()
 {
     console.log("In clean MIA function");
@@ -492,6 +546,13 @@ var job4 = new CronJob('00 6,14,20 * * *', function() {
     CleanMIA();
 }, null, true, 'America/New_York');
 job4.start();
+
+var CronJob5 = require('cron').CronJob;
+var job5 = new CronJob('45 5,17 * * *', function() {
+    console.log("Update Users & Allycodes from SWGOH.GG API")
+    UpdateUsersAndAllycodes();
+}, null, true, 'America/New_York');
+job5.start();
 
 async function AddFlair(passedMember, row, Type, SpecialF){
     var OldNickname = passedMember.displayName
@@ -1264,7 +1325,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            console.log(client.guilds.cache.size)
+            
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
