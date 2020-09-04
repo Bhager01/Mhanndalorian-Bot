@@ -1508,7 +1508,7 @@ client.on('message', message => {
                         fetchedChannel2 = await guild.channels.create(message.channel.name, {type: 'text', parent: '585993212351479808'})
                         await fetchedChannel2.lockPermissions()
 
-                        let role = guild.roles.cache.find(r => r.name == 'Officer Emaritus')
+                        /*let role = guild.roles.cache.find(r => r.name == 'Officer Emaritus')
                         fetchedChannel2.updateOverwrite(role, {
                             VIEW_CHANNEL: false,
                             SEND_MESSAGES: false,
@@ -1519,7 +1519,7 @@ client.on('message', message => {
                             ATTACH_FILES: false,
                             USE_EXTERNAL_EMOJIS: false,
                             MENTION_EVERYONE: false,
-                        });
+                        });*/
 
                         if(fetchedChannel2.name == "cynydes-barrel")
                             fetchedChannel2.setPosition(1)
