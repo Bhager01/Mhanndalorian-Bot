@@ -89,6 +89,12 @@ function CleanMIA()
         const guild = client.guilds.cache.get("505515654833504266"); 
 
         const fetchedChannel = guild.channels.cache.find(r => r.id == "584496478412734464"); //mhann command 676092306381602826
+        
+        await fetchedChannel.messages.fetch({ limit: 40 }).then(messages => { //NEW:  Deletes left over bot messages in MIA channel
+            const botMessages = messages.filter(msg => msg.author.bot);
+            await fetchedChannel.bulkDelete(botMessages);
+        })        
+        
         await fetchedChannel.messages.fetch({ limit: 40 }).then(messages => {                //MIA 584496478412734464
         var MessagesToDelete = new Array();
             messages.forEach(msg => {
@@ -828,7 +834,7 @@ client.on('message', message => {
         })()
     }
 
-    if(message.channel.id == "584496478412734464"  && !bot && wookieGuild) //676092306381602826 Mhann testing
+    if(message.channel.id == "58449647841273446"  && !bot && wookieGuild) //676092306381602826 Mhann testing
     {                                                                     //584496478412734464 Real MIA channel
         const regex = /-d\d{1,3}/g;
         const string = message.content.match(regex);
@@ -1448,8 +1454,8 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
             if(message.author.id == "406945430967156766"){
                 const messagetopost = message.content.substring(11)
-                client.channels.cache.get("505515654837698563").send(messagetopost)
-                message.channel.send("The following has been sent: " + messagetopost)
+                client.channels.cache.get("505515654833504266").send(messagetopost)    //MIA channel: 505515654833504266
+                message.channel.send("The following has been sent: " + messagetopost)  //Cantina:  505515654837698563
             }
         }
 
