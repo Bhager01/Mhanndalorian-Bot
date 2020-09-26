@@ -852,8 +852,9 @@ client.on('message', message => {
                 (async () => {
                     console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
                     await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
-                    await message.channel.messages.fetch({limit: 1}).then(messages => {
-                        setTimeout(async function() {await message.channel.bulkDelete(messages)
+                    await message.channel.messages.fetch({limit: 2}).then(messages => { //should only have to go back 1 on the limit, but this didn't always work
+                        const botMessages = messages.filter(msg => msg.author.bot);
+                        setTimeout(async function() {await message.channel.bulkDelete(botMessages)
                             .catch(error => {
                                 console.log(error)
                                 console.log("Error deleting successful MIA reply. QZ")
@@ -1508,7 +1509,7 @@ client.on('message', message => {
                         fetchedChannel2 = await guild.channels.create(message.channel.name, {type: 'text', parent: '585993212351479808'})
                         await fetchedChannel2.lockPermissions()
 
-                        /*let role = guild.roles.cache.find(r => r.name == 'Officer Emaritus')
+                     /*   let role = guild.roles.cache.find(r => r.name == 'Officer Emeritus')
                         fetchedChannel2.updateOverwrite(role, {
                             VIEW_CHANNEL: false,
                             SEND_MESSAGES: false,
@@ -1519,7 +1520,7 @@ client.on('message', message => {
                             ATTACH_FILES: false,
                             USE_EXTERNAL_EMOJIS: false,
                             MENTION_EVERYONE: false,
-                        });*/
+                        }); */
 
                         if(fetchedChannel2.name == "cynydes-barrel")
                             fetchedChannel2.setPosition(1)
