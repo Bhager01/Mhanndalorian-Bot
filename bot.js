@@ -834,7 +834,7 @@ client.on('message', message => {
         })()
     }
 
-    if(message.channel.id == "58449647841273446"  && !bot && wookieGuild) //676092306381602826 Mhann testing
+    if(message.channel.id == "584496478412734464"  && !bot && wookieGuild) //676092306381602826 Mhann testing
     {                                                                     //584496478412734464 Real MIA channel
         const regex = /-d\d{1,3}/g;
         const string = message.content.match(regex);
@@ -1454,7 +1454,7 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
             if(message.author.id == "406945430967156766"){
                 const messagetopost = message.content.substring(11) 
-                client.channels.cache.get("584496478412734464").send(messagetopost)    //MIA channel: 584496478412734464
+                client.channels.cache.get("505515654837698563").send(messagetopost)    //MIA channel: 584496478412734464
                 message.channel.send("The following has been sent: " + messagetopost)  //Cantina:  505515654837698563
             }
         }
