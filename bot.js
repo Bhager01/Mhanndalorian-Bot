@@ -95,7 +95,7 @@ function CleanMIA()
             fetchedChannel.bulkDelete(botMessages);
         })        
         
-        await fetchedChannel.messages.fetch({ limit: 40 }).then(messages => {                //MIA 584496478412734464
+        await fetchedChannel.messages.fetch({ limit: 40 }).then(messages => {                
         var MessagesToDelete = new Array();
             messages.forEach(msg => {
                 if(msg.id != "721885057853161583")
@@ -826,12 +826,25 @@ client.on('message', message => {
     else
         wookieGuild = false
  
-    if(message.channel.id == "709448648035008543"  && message.author.id != "470635832462540800")
+    if(message.channel.id == "709448648035008543")
     {
-        (async () => {
-            fetched = await message.channel.messages.fetch({ limit: 1 });
-            await message.channel.bulkDelete(fetched);
-        })()
+        var time = new Date()
+        var HMString = `${time.getHours()}${time.getMinutes()}`
+        var HMInt = parseInt(HMString, 10);
+
+        var Allowed = false
+        if((HMInt >= 1855 && HMInt <= 1859) || (HMInt >= 190 && HMInt <= 197) || (HMInt >= 2225 && HMInt <= 2235) || (HMInt >= 2323 && HMInt <= 2333))
+            Allowed = true  
+
+        if(message.author.id != "470635832462540800" || !Allowed)
+        {
+            (async () => {                
+                await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                    messages.delete();
+                })
+                
+            })()
+        }
     }
 
     if(message.channel.id == "584496478412734464"  && !bot && wookieGuild) //676092306381602826 Mhann testing
