@@ -1453,8 +1453,8 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
             if(message.author.id == "406945430967156766"){
-                const messagetopost = message.content.substring(11)
-                client.channels.cache.get("505515654833504266").send(messagetopost)    //MIA channel: 505515654833504266
+                const messagetopost = message.content.substring(11) 
+                client.channels.cache.get("584496478412734464").send(messagetopost)    //MIA channel: 584496478412734464
                 message.channel.send("The following has been sent: " + messagetopost)  //Cantina:  505515654837698563
             }
         }
