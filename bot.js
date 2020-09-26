@@ -826,7 +826,7 @@ client.on('message', message => {
     else
         wookieGuild = false
  
-    if(message.channel.id == "709448648035008543"  && !bot)
+    if(message.channel.id == "709448648035008543"  && message.author.id != "470635832462540800")
     {
         (async () => {
             fetched = await message.channel.messages.fetch({ limit: 1 });
