@@ -858,8 +858,13 @@ client.on('message', message => {
                 console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
                 await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
                 
+                await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
+                    setTimeout(async function() {await messages.delete();}, 7000);
+                })
+
                 await message.channel.messages.fetch({limit: 2}).then(messages => {
-                    setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
+                    const botMessages = messages.filter(msg => msg.author.bot);
+                    setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
                 })              
             })()
         }
@@ -887,8 +892,14 @@ client.on('message', message => {
                 (async () => {
                     console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
                     await message.channel.send("Error.  Maximum number of days for an MIA post is 13.");
+
+                    await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
+                        setTimeout(async function() {await messages.delete();}, 7000);
+                    })
+    
                     await message.channel.messages.fetch({limit: 2}).then(messages => {
-                        setTimeout(async function() {await message.channel.bulkDelete(messages);}, 7000);
+                        const botMessages = messages.filter(msg => msg.author.bot);
+                        setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
                     })              
                 })()
             }
