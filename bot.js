@@ -875,6 +875,7 @@ client.on('message', message => {
             {
                 (async () => {
                     console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
+                    client.channels.cache.get("528458206192599041").send("<@" + message.author.id + "> has posted in MIA.")
                     await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
                     await message.channel.messages.fetch({limit: 2}).then(messages => { //should only have to go back 1 on the limit, but this didn't always work
                         const botMessages = messages.filter(msg => msg.author.bot);
