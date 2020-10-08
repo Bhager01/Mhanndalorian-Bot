@@ -632,6 +632,10 @@ client.on('rateLimit', (RateLimitInfo) => {
     }
 })
 
+client.on("messageDelete", (message) => {  //Do more with this.  Call function if message is from MIA.
+    console.log("no")
+})
+
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
     if(newMember.guild.id == "505515654833504266")
     {
@@ -870,40 +874,74 @@ client.on('message', message => {
         }
         else
         {
-            const days = string[0].match(/\d+/g)
-            if(days <= 13 && days >= 1)
-            {
-                (async () => {
-                    console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
-                    client.channels.cache.get("528458206192599041").send("<@" + message.author.id + "> has posted in MIA.")
-                    await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
-                    await message.channel.messages.fetch({limit: 2}).then(messages => { //should only have to go back 1 on the limit, but this didn't always work
-                        const botMessages = messages.filter(msg => msg.author.bot);
-                        setTimeout(async function() {await message.channel.bulkDelete(botMessages)
-                            .catch(error => {
-                                console.log(error)
-                                console.log("Error deleting successful MIA reply. QZ")
-                            });
-                        }, 7000);
-                    })              
-                })()
-            }
-            else
-            {
-                (async () => {
-                    console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
-                    await message.channel.send("Error.  Maximum number of days for an MIA post is 13.");
+            var Continue = true;
 
-                    await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
-                        setTimeout(async function() {await messages.delete();}, 7000);
+            (async () => {
+                await message.channel.messages.fetch({ limit: 40 }).then(messages => {                
+                    messages.forEach(msg => {
+                        if(msg.id != "721885057853161583" && msg.id != message.id && Continue == true)
+                            if(message.author.id == msg.author.id)
+                            {
+                                Continue = false
+                            }
                     })
+                })
+                
+                if(Continue == true)
+                {
+                    const days = string[0].match(/\d+/g)
+                    if(days <= 13 && days >= 1)
+                    {
+                        (async () => {
+                            console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
+                            client.channels.cache.get("528458206192599041").send("<@" + message.author.id + "> has posted in MIA.")
+                            await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
+                            await message.channel.messages.fetch({limit: 2}).then(messages => { //should only have to go back 1 on the limit, but this didn't always work
+                                const botMessages = messages.filter(msg => msg.author.bot);
+                                setTimeout(async function() {await message.channel.bulkDelete(botMessages)
+                                    .catch(error => {
+                                        console.log(error)
+                                        console.log("Error deleting successful MIA reply. QZ")
+                                    });
+                                }, 7000);
+                            })              
+                        })()
+                    }
+                    else
+                    {
+                        (async () => {
+                            console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
+                            await message.channel.send("Error.  Maximum number of days for an MIA post is 13.");
     
-                    await message.channel.messages.fetch({limit: 2}).then(messages => {
-                        const botMessages = messages.filter(msg => msg.author.bot);
-                        setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
-                    })              
-                })()
-            }
+                            await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
+                                setTimeout(async function() {await messages.delete();}, 7000);
+                            })
+            
+                            await message.channel.messages.fetch({limit: 2}).then(messages => {
+                                const botMessages = messages.filter(msg => msg.author.bot);
+                                setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
+                            })              
+                        })()
+                    }
+                }
+                else
+                {
+                    (async () => {
+                        console.log("MIA Error:  Duplicate posting " + message.author.username + " QZ")
+                        await message.channel.send("Error.  You are already MIA.  Please edit your existing MIA post or delete your existing post and create a new one.");
+    
+                        await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
+                            setTimeout(async function() {await messages.delete();}, 7000);
+                        })
+        
+                        await message.channel.messages.fetch({limit: 2}).then(messages => {
+                            const botMessages = messages.filter(msg => msg.author.bot);
+                            setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
+                        })              
+                    })()
+                }
+
+            })()
         }
     }
 
