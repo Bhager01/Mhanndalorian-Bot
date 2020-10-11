@@ -18,11 +18,14 @@ var GphApiClient = require('giphy-js-sdk-core');
 giphy = GphApiClient(giffyToken)
 
 var GIFData;
+var BotUpTime;
+var BotUpDate
 
 client.once('ready', () => {
     console.log('Ready')
     client.channels.cache.get("584496478412734464").messages.fetch({ limit: 40 }) //Cache message from MIA channel
-    client.channels.cache.get("676092306381602826").messages.fetch({ limit: 40 }) //Cache message from testing channel
+    BotUpTime = new Date().toLocaleTimeString()
+    BotUpDate = new Date().toLocaleDateString()
 })
 
 function sleep(ms) {
@@ -1513,7 +1516,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            CleanMIA();
+            
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -1847,6 +1850,30 @@ client.on('message', message => {
                     else
                         message.channel.send("GIF keyword not found in database")
                 }
+            })()
+        }
+        
+        else if(message.content.toLowerCase().startsWith(`${prefix}status`) && (wookieGuild || message.channel.type == 'dm')){
+            (async () => {
+                const guild = client.guilds.cache.get("505515654833504266"); 
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
+                
+                if(!GuildMember.roles.cache.has("505527335768948754"))
+                {
+                    return message.channel.send("You do not have permission to execute this command.")
+                }
+                
+                let totalSeconds = client.uptime/1000;
+                let days = Math.floor(totalSeconds / 86400);
+                totalSeconds %= 86400;
+                let hours = Math.floor(totalSeconds / 3600);
+                totalSeconds %= 3600;
+                let minutes = Math.floor(totalSeconds / 60);
+                let seconds = Math.floor(totalSeconds % 60);
+
+                message.channel.send("Bot launched on " + BotUpDate + " at " + BotUpTime + "\n" +
+                "Total up time: " + days + " days  " + hours + " hours  " + minutes + " minutes  " + seconds + " seconds")
             })()
         }
 
