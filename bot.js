@@ -21,10 +21,197 @@ var GIFData;
 
 client.once('ready', () => {
     console.log('Ready')
+    client.channels.cache.get("584496478412734464").messages.fetch({ limit: 40 }) //Cache message from MIA channel
+    client.channels.cache.get("676092306381602826").messages.fetch({ limit: 40 }) //Cache message from testing channel
 })
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function processMIAAlertsMhannBot(message, status) //TESTING REQUIRED
+{
+    var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+    authorize(content, listMajors);
+
+    function listMajors(auth)
+    {
+        const sheets = google.sheets({version: 'v4', auth});
+        sheets.spreadsheets.values.get(
+        {
+            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+            range: 'Guild Members & Data!G66:R119',
+        }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                rows = res.data.values;
+                var UserRow;
+
+                for(var i = 0; i < rows.length; i++)
+                {
+                    if(rows[i][0].replace("<@","").replace(">","").replace(" ","") == message.author.id)
+                    {
+                        UserRow = i;
+                        i = rows.length
+                    }
+                }
+
+                if(status == "starting")
+                {
+                    if(rows[UserRow][11] == 'Y')
+                    {
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'Guild Members & Data!R' + (UserRow + 66),
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: [["NTemp"]]
+                            },
+                        })
+                        console.log(" Raid reminders temporarily suspended for " + message.author.username + " due to MIA.  QZ")
+                    }
+                }
+
+                if(status == "ending")
+                {
+                    if(rows[UserRow][11] == 'NTemp')
+                    {
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'Guild Members & Data!R' + (UserRow + 66),
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: [["Y"]]
+                            },
+                        })
+                        console.log(message.author.username + " has been resubscribed to raid reminders after being MIA.  QZ")
+                    }
+                }
+            }
+        )
+    }
+}
+
+function processMIAMessage(message){
+    const regex = /-d\d{1,3}/g;
+    const string = message.content.match(regex);
+
+    if(string == null)
+    {
+        (async () => {
+            console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
+            await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
+            processMIAAlertsMhannBot(message, "ending")
+            const msgs = new Discord.Collection();
+            await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                msgs.set(message.id, messages);            
+                //setTimeout(async function() {await messages.delete();}, 7000);
+            })
+
+            await message.channel.messages.fetch({limit: 2}).then(messages => {
+                const botMessages = messages.filter(msg => msg.author.bot);
+                const MessagesToDelete = botMessages.concat(msgs)
+                setTimeout(async function() {await message.channel.bulkDelete(MessagesToDelete)
+                    .catch(error => {
+                        console.log(error)
+                        console.log("Error deleting message that was missing -d#. QZ")
+                    });
+                }, 7000);
+            })              
+        })()
+    }
+    else
+    {
+        var Continue = true;
+
+        (async () => {
+            await message.channel.messages.fetch({ limit: 40 }).then(messages => {                
+                messages.forEach(msg => {
+                    if(msg.id != "721885057853161583" && msg.id != message.id && Continue == true)
+                        if(message.author.id == msg.author.id)
+                        {
+                            Continue = false
+                        }
+                })
+            })
+            
+            if(Continue == true)
+            {
+                const days = string[0].match(/\d+/g)
+                if(days <= 13 && days >= 1)
+                {
+                    (async () => {
+                        console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
+                        client.channels.cache.get("528458206192599041").send("<@" + message.author.id + "> has posted in MIA.")
+                        await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
+                        await message.channel.send("You will not receive alerts from Mhanndalorian Bot during your MIA period.");
+                        
+                        processMIAAlertsMhannBot(message, "starting")
+                        
+                        await message.channel.messages.fetch({limit: 2}).then(messages => { //should only have to go back 1 on the limit, but this didn't always work
+                            const botMessages = messages.filter(msg => msg.author.bot);
+                            setTimeout(async function() {await message.channel.bulkDelete(botMessages)
+                                .catch(error => {
+                                    console.log(error)
+                                    console.log("Error deleting successful MIA reply. QZ")
+                                });
+                            }, 7000);
+                        })              
+                    })()
+                }
+                else
+                {
+                    (async () => {
+                        console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
+                        await message.channel.send("Error.  Maximum number of days for an MIA post is 13.");
+                        
+                        processMIAAlertsMhannBot(message, "ending")
+                        
+                        const msgs = new Discord.Collection();
+                        await message.channel.messages.fetch(message.id).then(messages => { // Fetches the message                            
+                            msgs.set(message.id, messages);                      
+                            //setTimeout(async function() {await messages.delete();}, 7000);
+                        })
+        
+                        await message.channel.messages.fetch({limit: 2}).then(messages => {
+                            const botMessages = messages.filter(msg => msg.author.bot);
+                            const MessagesToDelete = botMessages.concat(msgs)
+                            setTimeout(async function() {await message.channel.bulkDelete(MessagesToDelete)
+                                .catch(error => {
+                                    console.log(error)
+                                    console.log("Error deleting MIA with days greater than 13. QZ")
+                                });
+                            }, 7000);
+                        })              
+                    })()
+                }
+            }
+            else
+            {
+                (async () => {
+                    console.log("MIA Error:  Duplicate posting " + message.author.username + " QZ")
+                    await message.channel.send("Error.  You are already MIA.  Please edit your existing MIA post or delete your existing post and create a new one.");
+
+                    const msgs = new Discord.Collection();
+                    await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                        msgs.set(message.id, messages);                     
+                        //setTimeout(async function() {await messages.delete();}, 7000);
+                    })
+    
+                    await message.channel.messages.fetch({limit: 2}).then(messages => {
+                        const botMessages = messages.filter(msg => msg.author.bot);
+                        const MessagesToDelete = botMessages.concat(msgs)
+                        setTimeout(async function() {await message.channel.bulkDelete(MessagesToDelete)
+                            .catch(error => {
+                                console.log(error)
+                                console.log("Error deleting duplicate MIA post. QZ")
+                            });
+                        }, 7000);
+                    })              
+                })()
+            }
+
+        })()
+    }
 }
 
 function UpdateUsersAndAllycodes()
@@ -92,7 +279,11 @@ function CleanMIA()
         
         await fetchedChannel.messages.fetch({ limit: 40 }).then(messages => { //NEW:  Deletes left over bot messages in MIA channel
             const botMessages = messages.filter(msg => msg.author.bot);
-            fetchedChannel.bulkDelete(botMessages);
+            fetchedChannel.bulkDelete(botMessages)
+            .catch(error => {
+                console.log(error)
+                console.log("Error deleting left over bot messages in MIA. QZ")
+            });
         })        
         
         await fetchedChannel.messages.fetch({ limit: 40 }).then(messages => {                
@@ -105,17 +296,28 @@ function CleanMIA()
                     if(string != null)
                     {
                         const days = string[0].match(/\d+/g)
-                        const timelapsedMS = now - msg.createdAt
+                        var timelapsedMS
+
+                        if(msg.editedAt == null)
+                            timelapsedMS = now - msg.createdAt
+                        else
+                            timelapsedMS = now - msg.editedAt
+
                         const timelapsedDays = timelapsedMS/86400000
                         if(timelapsedDays >= days) //FIX FOR TESTING
                         {
                             MessagesToDelete.push(msg)
                             console.log("Deleted MIA message from " + msg.author.username + " QZ")
+                            processMIAAlertsMhannBot(msg, "ending")
                         }
                     }
                 }
             })
             fetchedChannel.bulkDelete(MessagesToDelete)
+            .catch(error => {
+                console.log(error)
+                console.log("Error deleting expired MIA messages. QZ")
+            });
         })
     })()
 }
@@ -632,8 +834,14 @@ client.on('rateLimit', (RateLimitInfo) => {
     }
 })
 
-client.on("messageDelete", (message) => {  //Do more with this.  Call function if message is from MIA.
-    console.log("no")
+client.on("messageDelete", msg => {
+    if(msg.channel.id == "584496478412734464")
+        processMIAAlertsMhannBot(msg, "ending")
+  })
+
+client.on('messageUpdate', (oldMessage, newMessage) => {  //Handles an edit to a MIA message.  
+    if(newMessage.channel.id == "584496478412734464")
+        processMIAMessage(newMessage)
 })
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
@@ -852,97 +1060,8 @@ client.on('message', message => {
     }
 
     if(message.channel.id == "584496478412734464"  && !bot && wookieGuild) //676092306381602826 Mhann testing
-    {                                                                     //584496478412734464 Real MIA channel
-        const regex = /-d\d{1,3}/g;
-        const string = message.content.match(regex);
-
-        if(string == null)
-        {
-            (async () => {
-                console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
-                await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
-                
-                await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
-                    setTimeout(async function() {await messages.delete();}, 7000);
-                })
-
-                await message.channel.messages.fetch({limit: 2}).then(messages => {
-                    const botMessages = messages.filter(msg => msg.author.bot);
-                    setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
-                })              
-            })()
-        }
-        else
-        {
-            var Continue = true;
-
-            (async () => {
-                await message.channel.messages.fetch({ limit: 40 }).then(messages => {                
-                    messages.forEach(msg => {
-                        if(msg.id != "721885057853161583" && msg.id != message.id && Continue == true)
-                            if(message.author.id == msg.author.id)
-                            {
-                                Continue = false
-                            }
-                    })
-                })
-                
-                if(Continue == true)
-                {
-                    const days = string[0].match(/\d+/g)
-                    if(days <= 13 && days >= 1)
-                    {
-                        (async () => {
-                            console.log("MIA success: " + message.author.username + ": " + message.content + " QZ")
-                            client.channels.cache.get("528458206192599041").send("<@" + message.author.id + "> has posted in MIA.")
-                            await message.channel.send("Success!  Your MIA post will automatically be deleted in " + days + " day(s).");
-                            await message.channel.messages.fetch({limit: 2}).then(messages => { //should only have to go back 1 on the limit, but this didn't always work
-                                const botMessages = messages.filter(msg => msg.author.bot);
-                                setTimeout(async function() {await message.channel.bulkDelete(botMessages)
-                                    .catch(error => {
-                                        console.log(error)
-                                        console.log("Error deleting successful MIA reply. QZ")
-                                    });
-                                }, 7000);
-                            })              
-                        })()
-                    }
-                    else
-                    {
-                        (async () => {
-                            console.log("MIA error >= 14: " + message.author.username + ": " + message.content + " QZ")
-                            await message.channel.send("Error.  Maximum number of days for an MIA post is 13.");
-    
-                            await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
-                                setTimeout(async function() {await messages.delete();}, 7000);
-                            })
-            
-                            await message.channel.messages.fetch({limit: 2}).then(messages => {
-                                const botMessages = messages.filter(msg => msg.author.bot);
-                                setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
-                            })              
-                        })()
-                    }
-                }
-                else
-                {
-                    (async () => {
-                        console.log("MIA Error:  Duplicate posting " + message.author.username + " QZ")
-                        await message.channel.send("Error.  You are already MIA.  Please edit your existing MIA post or delete your existing post and create a new one.");
-    
-                        await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages                    
-                            setTimeout(async function() {await messages.delete();}, 7000);
-                        })
-        
-                        await message.channel.messages.fetch({limit: 2}).then(messages => {
-                            const botMessages = messages.filter(msg => msg.author.bot);
-                            setTimeout(async function() {await message.channel.bulkDelete(botMessages);}, 7000);
-                        })              
-                    })()
-                }
-
-            })()
-        }
+    {
+        processMIAMessage(message)                                                                  //584496478412734464 Real MIA channel   
     }
 
    /* if(message.author.id == "198905950919196672")
@@ -1395,7 +1514,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            
+            CleanMIA();
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
