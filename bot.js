@@ -67,7 +67,7 @@ function processMIAAlertsMhannBot(message, status) //TESTING REQUIRED
                                 values: [["NTemp"]]
                             },
                         })
-                        console.log(" Raid reminders temporarily suspended for " + message.author.username + " due to MIA.  QZ")
+                        console.log("Raid reminders temporarily suspended for " + message.author.username + " due to MIA.  QZ")
                     }
                 }
 
@@ -95,47 +95,46 @@ function processMIAMessage(message){
     const regex = /-d\d{1,3}/g;
     const string = message.content.match(regex);
 
-    if(string == null)
-    {
-        (async () => {
-            console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
-            await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
-            processMIAAlertsMhannBot(message, "ending")
-            const msgs = new Discord.Collection();
-            await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
-                msgs.set(message.id, messages);            
-                //setTimeout(async function() {await messages.delete();}, 7000);
-            })
+    var Continue = true;
 
-            await message.channel.messages.fetch({limit: 2}).then(messages => {
-                const botMessages = messages.filter(msg => msg.author.bot);
-                const MessagesToDelete = botMessages.concat(msgs)
-                setTimeout(async function() {await message.channel.bulkDelete(MessagesToDelete)
-                    .catch(error => {
-                        console.log(error)
-                        console.log("Error deleting message that was missing -d#. QZ")
-                    });
-                }, 7000);
-            })              
-        })()
-    }
-    else
-    {
-        var Continue = true;
-
-        (async () => {
-            await message.channel.messages.fetch({ limit: 40 }).then(messages => {                
-                messages.forEach(msg => {
-                    if(msg.id != "721885057853161583" && msg.id != message.id && Continue == true)
-                        if(message.author.id == msg.author.id)
-                        {
-                            Continue = false
-                        }
-                })
+    (async () => {
+        await message.channel.messages.fetch({ limit: 40 }).then(messages => {                
+            messages.forEach(msg => {
+                if(msg.id != "721885057853161583" && msg.id != message.id && Continue == true)
+                    if(message.author.id == msg.author.id)
+                        Continue = false
             })
-            
-            if(Continue == true)
+        })
+
+        if(Continue == true)
+        {
+            if(string == null)
             {
+                (async () => {
+                    console.log("MIA null error: " + message.author.username + ": " + message.content + " QZ")
+                    await message.channel.send("Error. Be sure to put  -d#  at the end of your post, where # is the number of days you are gone.");
+                    processMIAAlertsMhannBot(message, "ending")
+                    const msgs = new Discord.Collection();
+                    await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                        msgs.set(message.id, messages);            
+                        //setTimeout(async function() {await messages.delete();}, 7000);
+                    })
+    
+                    await message.channel.messages.fetch({limit: 2}).then(messages => {
+                        const botMessages = messages.filter(msg => msg.author.bot);
+                        const MessagesToDelete = botMessages.concat(msgs)
+                        setTimeout(async function() {await message.channel.bulkDelete(MessagesToDelete)
+                            .catch(error => {
+                                console.log(error)
+                                console.log("Error deleting message that was missing -d#. QZ")
+                            });
+                        }, 7000);
+                    })              
+                })()
+            }
+    
+            else
+            {                
                 const days = string[0].match(/\d+/g)
                 if(days <= 13 && days >= 1)
                 {
@@ -185,33 +184,33 @@ function processMIAMessage(message){
                     })()
                 }
             }
-            else
-            {
-                (async () => {
-                    console.log("MIA Error:  Duplicate posting " + message.author.username + " QZ")
-                    await message.channel.send("Error.  You are already MIA.  Please edit your existing MIA post or delete your existing post and create a new one.");
-
-                    const msgs = new Discord.Collection();
-                    await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
-                        msgs.set(message.id, messages);                     
-                        //setTimeout(async function() {await messages.delete();}, 7000);
-                    })
+        }
+        else
+        {
+            (async () => {
+                console.log("MIA Error:  Duplicate posting " + message.author.username + " QZ")
+                await message.channel.send("Error.  You are already MIA.  Please edit your existing MIA post or delete your existing post and create a new one.");
     
-                    await message.channel.messages.fetch({limit: 2}).then(messages => {
-                        const botMessages = messages.filter(msg => msg.author.bot);
-                        const MessagesToDelete = botMessages.concat(msgs)
-                        setTimeout(async function() {await message.channel.bulkDelete(MessagesToDelete)
-                            .catch(error => {
-                                console.log(error)
-                                console.log("Error deleting duplicate MIA post. QZ")
-                            });
-                        }, 7000);
-                    })              
-                })()
-            }
+                const msgs = new Discord.Collection();
+                await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                    msgs.set(message.id, messages);                     
+                    //setTimeout(async function() {await messages.delete();}, 7000);
+                })
+    
+                await message.channel.messages.fetch({limit: 2}).then(messages => {
+                    const botMessages = messages.filter(msg => msg.author.bot);
+                    const MessagesToDelete = botMessages.concat(msgs)
+                    setTimeout(async function() {await message.channel.bulkDelete(MessagesToDelete)
+                        .catch(error => {
+                            console.log(error)
+                            console.log("Error deleting duplicate MIA post. QZ")
+                        });
+                    }, 7000);
+                })              
+            })()
+        }
 
-        })()
-    }
+    })()
 }
 
 function UpdateUsersAndAllycodes()
