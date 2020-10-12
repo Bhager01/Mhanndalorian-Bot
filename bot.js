@@ -1538,6 +1538,7 @@ client.on('message', message => {
                             + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
                             + "__**" + prefix + "demote**__ - Restore regular role after command testing. \n \n"
                             + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
+                            + "__**" + prefix + "info**__ - Display information about the servers the bot is installed on. \n \n"
                             + "__**" + prefix + "promote**__ - Elevate role for command testing. \n \n"
                             + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
                     message.channel.send(Embed3)
@@ -1558,6 +1559,7 @@ client.on('message', message => {
                             + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
                             + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
                             + "remove \n \n"
+                            + "__**" + prefix + "status**__ - Displays date and time bot was launched along with total up time. \n \n "
                             + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
                             + "channels. \n");
                     message.channel.send(Embed2)
@@ -1872,7 +1874,7 @@ client.on('message', message => {
                 let minutes = Math.floor(totalSeconds / 60);
                 let seconds = Math.floor(totalSeconds % 60);
 
-                message.channel.send("Bot launched on " + BotUpDate + " at " + BotUpTime + "\n" +
+                message.channel.send("Bot launched on " + BotUpDate + " at " + BotUpTime + " (Eastern)\n" +
                 "Total up time: " + days + " days  " + hours + " hours  " + minutes + " minutes  " + seconds + " seconds")
             })()
         }
@@ -2311,11 +2313,17 @@ client.on('message', message => {
         }
         else
         {
-            if(message.guild.id == "505515654833504266")
-            {
-                message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
-                console.log("Unknown Command: " + message.content + " issued by " + message.author.username + ". QZ")
-            }
+            (async () => { 
+                const guild = client.guilds.cache.get("505515654833504266"); 
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
+
+                if(GuildMember.roles.cache.has("530083964380250116"))
+                {
+                    message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
+                    console.log("Unknown Command: " + message.content + " issued by " + message.author.username + ". QZ")
+                }
+            })()
         }
     }
 //check this xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
