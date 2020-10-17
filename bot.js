@@ -9,6 +9,9 @@ var newBronze = "";
 var newSilver = "";
 var newGold = "";
 var newDiamond = "";
+var newHolodisk = "";
+var newJediScroll = ""
+var newEye = "";
 var NewNoStatus = [];
 var BadWords =  ['fuck', 'shit', 'pissoff', 'dickhead', 'asshole', 'sonofabitch', 'bitch', 'bastard', 'cunt', 'goddamn', 
                 'motherfucker', 'hell', 'holyshit', 'dick', 'cock', 'pussy', 'ass', 'ballsack', 'blowjob', 'fag',
@@ -43,7 +46,7 @@ function processMIAAlertsMhannBot(message, status) //TESTING REQUIRED
         sheets.spreadsheets.values.get(
         {
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guild Members & Data!G66:R119',
+            range: 'Guild Members & Data!G66:U119',
         }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
                 rows = res.data.values;
@@ -60,11 +63,11 @@ function processMIAAlertsMhannBot(message, status) //TESTING REQUIRED
 
                 if(status == "starting")
                 {
-                    if(rows[UserRow][11] == 'Y')
+                    if(rows[UserRow][14] == 'Y')
                     {
                         sheets.spreadsheets.values.update({
                             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'Guild Members & Data!R' + (UserRow + 66),
+                            range: 'Guild Members & Data!U' + (UserRow + 66),
                             valueInputOption: 'USER_ENTERED',
                             resource: {
                                 values: [["NTemp"]]
@@ -76,11 +79,11 @@ function processMIAAlertsMhannBot(message, status) //TESTING REQUIRED
 
                 if(status == "ending")
                 {
-                    if(rows[UserRow][11] == 'NTemp')
+                    if(rows[UserRow][14] == 'NTemp')
                     {
                         sheets.spreadsheets.values.update({
                             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'Guild Members & Data!R' + (UserRow + 66),
+                            range: 'Guild Members & Data!U' + (UserRow + 66),
                             valueInputOption: 'USER_ENTERED',
                             resource: {
                                 values: [["Y"]]
@@ -346,14 +349,14 @@ async function FiveMinRaidReminder()
             sheets.spreadsheets.values.get(
             {
                 spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                range: 'Guild Members & Data!G66:R119',
+                range: 'Guild Members & Data!G66:U119',
             }, (err, res) => {
                     if (err) return console.log('The API returned an error: ' + err);
                     const rows = res.data.values;
 
                     for(var i=0; i < rows.length; i++)
                     {
-                        if(rows[i][11] == 'Y')
+                        if(rows[i][14] == 'Y')
                         {
                             if(client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")) != undefined)
                             {
@@ -676,7 +679,16 @@ async function newFlairAnncouncment(){
         client.channels.cache.get("505515654837698563").send("Excellent!!! Let's congratulate the following members on just earning gold raid status. " + newGold)
     
     if (newDiamond != "")
-        client.channels.cache.get("505515654837698563").send("Amazing! 100 days with no raid missed!! Let's congratulate the following members on just earning diamond raid status. " + newDiamond)
+        client.channels.cache.get("505515654837698563").send("Amazing! 100 days with no raid missed!! Let's congratulate the following members on just earning diamond raid status. Now, the journey begins..." + newDiamond)
+
+    if (newHolodisk != "")
+        client.channels.cache.get("505515654837698563").send("Very good young padawan.  You have discovered the holodisk which will lead you to the ancient Jedi scrolls. " + newHolodisk)
+
+    if (newJediScroll != "")
+        client.channels.cache.get("505515654837698563").send("You are now in possession of the ancient Jedi scrolls.  The knowledge contained in these scrolls will lead you to the most powerful Jedi artifact ever created. " + newJediScroll)
+
+    if (newEye != "")
+        client.channels.cache.get("505515654837698563").send("You have found the most powerful Jedi artifact ever created: The Eye of the Sun. Use this artifact to defeat the Sith Lord Darth Mhann. " + newEye)
 }
 
 function FlairUpdate(Type, callback){
@@ -685,6 +697,9 @@ function FlairUpdate(Type, callback){
     newSilver = "";
     newGold = "";
     newDiamond = "";
+    newHolodisk = "";
+    newJediScroll = "";
+    newEye = "";
     NewNoStatus = [];
 
     content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
@@ -770,7 +785,7 @@ async function AddFlair(passedMember, row, Type, SpecialF){
     var SpecialFlairString = '';
 
     var newNickname;
-    newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'').replace(/⚔/g,'').replace(/🛡/g,'').replace(/👸/g,'');
+    newNickname = passedMember.displayName.replace(/🥉/g,'').replace(/🥈/g,'').replace(/🥇/g,'').replace(/💎/g,'').replace(/📀/g,'').replace(/📜/g,'').replace(/🔆/g,'').replace(/⚔/g,'').replace(/🛡/g,'').replace(/👸/g,'');
 
     if(newNickname.length > 26) //NEW!!!!!
     {
@@ -817,11 +832,29 @@ async function AddFlair(passedMember, row, Type, SpecialF){
         if(Type == "Manual" || Type == "Cron")
             newGold = newGold + "<@" + passedMember.id + "> "
     }
-    else if(row >= 100 && OldNickname != newNickname + SpecialFlairString +'💎'){
+    else if(row >= 100 && row <= 199 && OldNickname != newNickname + SpecialFlairString +'💎'){
         await passedMember.setNickname(newNickname + SpecialFlairString +'💎')
         console.log(Type + " - " + passedMember.displayName + " Diamond QZ")
         if(Type == "Manual" || Type == "Cron")
             newDiamond = newDiamond + "<@" + passedMember.id + "> "
+    }
+    else if(row >= 200 && row <= 324 && OldNickname != newNickname + SpecialFlairString +'📀'){
+        await passedMember.setNickname(newNickname + SpecialFlairString +'📀')
+        console.log(Type + " - " + passedMember.displayName + " Holodisk QZ")
+        if(Type == "Manual" || Type == "Cron")
+            newHolodisk = newHolodisk + "<@" + passedMember.id + "> "
+    }
+    else if(row >= 325 && row <= 499 && OldNickname != newNickname + SpecialFlairString +'📜'){
+        await passedMember.setNickname(newNickname + SpecialFlairString +'📜')
+        console.log(Type + " - " + passedMember.displayName + " Jedi Scroll QZ")
+        if(Type == "Manual" || Type == "Cron")
+            newJediScroll = newJediScroll + "<@" + passedMember.id + "> "
+    }
+    else if(row >= 500 && OldNickname != newNickname + SpecialFlairString +'🔆'){
+        await passedMember.setNickname(newNickname + SpecialFlairString +'🔆')
+        console.log(Type + " - " + passedMember.displayName + " Jedi Eye QZ")
+        if(Type == "Manual" || Type == "Cron")
+            newEye = newEye + "<@" + passedMember.id + "> "
     }
     else{
         console.log(Type + " - " + passedMember.displayName + " No update needed")
@@ -859,7 +892,8 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
                 + "commands, and humor. I will assign you flair (an emoji added to your username), for oustanding performance in territory wars and for your participation in "
                 + "raids (you only need to sign up, doing damage is optional): \n \n"
                 + "Bronze (🥉) - 14 days of no missed raids \nSilver (🥈) - 30 days of no missed raids \n"
-                + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n \n"
+                + "Gold(🥇) - 60 days of no missed raids \nDiamond (💎) - 100 days of no missed raids \n"
+                + "?????? - Beyond 100 days you will begin a Jedi quest...\n \n"
                 + "The following command will allow you to check your raid flair status at any time \n!flair \n \n"
                 + "If you have any questions about my services please contact my employer, <@406945430967156766>. \n \nI have spoken. \n"
                 + "This is the way.")
@@ -1371,8 +1405,17 @@ client.on('message', message => {
                             if(row[0] >= 60 && row[0] <= 99){
                                 message.channel.send("You are at gold level!! You have had " + row[0] + " days without missing raids.  Diamond level status is at 100 days.");
                             }
-                            if(row[0] >= 100){
+                            if(row[0] >= 100 && row[0] <= 199){
                                 message.channel.send("Congratulations!! You have had " + row[0] + " days without missing raids.  You are diamond status!!!!!");
+                            }
+                            if(row[0] >= 200 && row[0] <= 324){
+                                message.channel.send("You are now in possession of the Jedi holodisk.  Use the information on this disc to find the ancient Jedi Scrolls. You have had " + row[0] + " days without missing raids.");
+                            }
+                            if(row[0] >= 325 && row[0] <= 499){
+                                message.channel.send("You now have the ancient Jedi scrolls.  These will lead you to the most powerful Jedi artifact ever created. You have had " + row[0] + " days without missing raids.");
+                            }
+                            if(row[0] >= 500){
+                                message.channel.send("You have found the ancient Jedi artifact:  The eye of the Sun.  Use this artifact to defeat Darth Mhann. You have had " + row[0] + " days without missing raids.");
                             }
                         }
                     });
@@ -1456,7 +1499,7 @@ client.on('message', message => {
                     sheets.spreadsheets.values.get(
                     {
                         spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                        range: 'Guild Members & Data!G66:R119',
+                        range: 'Guild Members & Data!G66:U119',
                     }, (err, res) => {
                             if (err) return console.log('The API returned an error: ' + err);
                             rows = res.data.values;
@@ -1470,13 +1513,13 @@ client.on('message', message => {
                                 }
                             if(CommandArray[2] == "subscribe")
                             {
-                                if(rows[UserRow][11] == 'Y')
+                                if(rows[UserRow][14] == 'Y')
                                     message.channel.send("You are already subscribed to 5 minute raid reminder.")
                                 else
                                 {
                                     sheets.spreadsheets.values.update({
                                         spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                        range: 'Guild Members & Data!R' + (UserRow + 66),
+                                        range: 'Guild Members & Data!U' + (UserRow + 66),
                                         valueInputOption: 'USER_ENTERED',
                                         resource: {
                                             values: [["Y"]]
@@ -1490,13 +1533,13 @@ client.on('message', message => {
                             
                             if(CommandArray[2] == "unsubscribe")
                             {
-                                if(rows[UserRow][11] == 'N')
+                                if(rows[UserRow][14] == 'N')
                                     message.channel.send("You are already unsubscribed from the 5 minute raid reminder.")
                                 else
                                 {
                                 sheets.spreadsheets.values.update({
                                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'Guild Members & Data!R' + (UserRow + 66),
+                                    range: 'Guild Members & Data!U' + (UserRow + 66),
                                     valueInputOption: 'USER_ENTERED',
                                     resource: {
                                         values: [["N"]]
