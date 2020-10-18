@@ -679,7 +679,8 @@ async function newFlairAnncouncment(){
         client.channels.cache.get("505515654837698563").send("Excellent!!! Let's congratulate the following members on just earning gold raid status. " + newGold)
     
     if (newDiamond != "")
-        client.channels.cache.get("505515654837698563").send("Amazing! 100 days with no raid missed!! Let's congratulate the following members on just earning diamond raid status. Now, the journey begins..." + newDiamond)
+        client.channels.cache.get("505515654837698563").send("Amazing! 100 days with no raids missed!! Let's congratulate the following members on just earning diamond raid status. "
+        +"You have proven yourself to be an able warrior.  Now, the journey begins..." + newDiamond)
 
     if (newHolodisk != "")
         client.channels.cache.get("505515654837698563").send("Very good young padawan.  You have discovered the holodisk which will lead you to the ancient Jedi scrolls. " + newHolodisk)
