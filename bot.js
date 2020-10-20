@@ -1710,8 +1710,9 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}promote`)){
             if(message.author.id == "406945430967156766")
             {
-                const guild = client.guilds.cache.get("505515654833504266");            
-                guild.roles.cache.get("713210691129049155").setPosition(29)
+                const guild = client.guilds.cache.get("505515654833504266");
+
+                guild.roles.cache.get("713210691129049155").setPosition(guild.roles.cache.get("528746539871371294").rawPosition - 1) //set position to 1 below Wookie Master
                 message.channel.send("Command Testing Activated")
 
                 //var d = new Date();  TIME ZONE
