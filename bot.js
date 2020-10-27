@@ -618,15 +618,15 @@ function gifPost(message, searchString, tagLine) {
                 var ResponseAttribution = "";
 
                 if(ResponseFinal.user != null)
-                    ResponseAttribution = "GIF by: " + ResponseFinal.user.username
+                    ResponseAttribution = "GIF By: " + ResponseFinal.user.username
                 else
-                    ResponseAttribution = "GIF by: Unknown"
+                    ResponseAttribution = "GIF By: Unknown"
 
                 const exampleEmbed = new Discord.MessageEmbed()
                 .setTitle(tagLine)
                 .setImage(ResponseFinal.images.fixed_height.url)
 
-               .setFooter('POWERED BY GIPHY  |  ' + ResponseAttribution, 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg') //MINE
+               .setFooter('POWERED BY GIPHY\n' + ResponseAttribution, 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg') //MINE
               // .setFooter(ResponseAttribution)
 
               // .setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg') //PROPER
