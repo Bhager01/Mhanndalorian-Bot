@@ -615,12 +615,21 @@ function gifPost(message, searchString, tagLine) {
                 var TotalResponses = response.data.length;
                 var ResponseIndex = Math.floor((Math.random() * 10) + 1) % TotalResponses;
                 var ResponseFinal = response.data[ResponseIndex];
+                var ResponseAttribution = "";
+
+                if(ResponseFinal.user != null)
+                    ResponseAttribution = "GIF by: " + ResponseFinal.user.username
+                else
+                    ResponseAttribution = "GIF by: Unknown"
 
                 const exampleEmbed = new Discord.MessageEmbed()
                 .setTitle(tagLine)
                 .setImage(ResponseFinal.images.fixed_height.url)
-                .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
-              //.setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
+
+               .setFooter('POWERED BY GIPHY  |  ' + ResponseAttribution, 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg') //MINE
+              // .setFooter(ResponseAttribution)
+
+              // .setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg') //PROPER
                 message.channel.send(exampleEmbed);
             }).catch(() => {
                 message.channel.send("You mentioned " + searchString + ", but a gif was not available!")
@@ -630,8 +639,9 @@ function gifPost(message, searchString, tagLine) {
         const exampleEmbed = new Discord.MessageEmbed()
         .setTitle(tagLine)
         .setImage(specificGIF(searchString))
-        .setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')
-        //.setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')
+        //.setFooter('POWERED BY GIPHY', 'https://i.postimg.cc/RZbkMxLt/GIPHY.jpg')  //MINE (not really powered by Giphy when special = true)
+            
+        //.setThumbnail('https://i.postimg.cc/Wzbg0cj7/GIPHY-Thumbnail-2.jpg')  //PROPER
         message.channel.send(exampleEmbed);
     }
 }
