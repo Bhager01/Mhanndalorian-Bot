@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const {google} = require('googleapis');
 const fetch = require('node-fetch');
+const bottoken   = "Njc4NzQ4MzM0OTA2NjcxMTQ1.XuQZxA.8XO-HVKMD-xNfiBx0o2JZnIwGKE"; //DELETE
 const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
 const client = new Discord.Client();
 const prefix = "!"
@@ -338,7 +339,7 @@ async function FiveMinRaidReminder()
     lastMessage = fetched.first()
     MSSinceLastMsg = now - lastMessage.createdAt
 
-    if((lastMessage.content.includes("have successfully joined") || lastMessage.content.includes("notifications have been sent")) && MSSinceLastMsg <= 3600000)
+    if((lastMessage.content.includes("have successfully joined") || lastMessage.content.includes("notifications have been sent") || lastMessage.content.includes("could not be resolved")) && MSSinceLastMsg <= 3600000)
     {
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
@@ -1570,7 +1571,9 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            
+                var d = new Date();
+                var n = d.getTimezoneOffset();
+                message.reply(n)
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -1724,11 +1727,6 @@ client.on('message', message => {
 
                 guild.roles.cache.get("713210691129049155").setPosition(guild.roles.cache.get("528746539871371294").rawPosition - 1) //set position to 1 below Wookie Master
                 message.channel.send("Command Testing Activated")
-
-                //var d = new Date();  TIME ZONE
-                //var n = d.getTimezoneOffset();
-
-                //console.log(n)
             }
         }
 
@@ -2423,6 +2421,7 @@ client.on('message', message => {
         }
     } //for Kali
 })
+client.login(bottoken); //DELETE
 
 //LEAVE THIS WAY
 client.login(process.env.BOT_TOKEN);
