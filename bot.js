@@ -1088,11 +1088,17 @@ client.on('message', message => {
     if(message.channel.id == "709448648035008543")
     {
         var time = new Date()
+        var Offset = time.getTimezoneOffset();
+        var Adjustment = 0;
+
+        if(Offset == 300)
+            Adjustment = 100
+
         var HMString = `${time.getHours()}${time.getMinutes()}`
         var HMInt = parseInt(HMString, 10);
 
         var Allowed = false
-        if((HMInt >= 1855 && HMInt <= 1859) || (HMInt >= 190 && HMInt <= 197) || (HMInt >= 2225 && HMInt <= 2235) || (HMInt >= 2323 && HMInt <= 2333))
+        if((HMInt >= (1849 - Adjustment) && HMInt <= (1859 - Adjustment)) || (HMInt >= (2225 - Adjustment) && HMInt <= (2235 - Adjustment)) || (HMInt >= (2323 - Adjustment) && HMInt <= (2333 - Adjustment)))
             Allowed = true  
 
         if(message.author.id != "470635832462540800" || !Allowed)
