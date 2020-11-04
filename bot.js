@@ -338,7 +338,7 @@ async function FiveMinRaidReminder()
     lastMessage = fetched.first()
     MSSinceLastMsg = now - lastMessage.createdAt
 
-    if((lastMessage.content.includes("have successfully joined") || lastMessage.content.includes("notifications have been sent") || lastMessage.content.includes("could not be resolved")) && MSSinceLastMsg <= 3600000)
+    if((lastMessage.content.includes("have successfully joined") || lastMessage.content.includes("notifications have been sent") || lastMessage.content.includes("could not be resolved")) && MSSinceLastMsg <= 3960000)
     {
         var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
@@ -767,14 +767,28 @@ var job2 = new CronJob('05 9,21 * * *', function() {
     console.log("Cron job DMusers who miss raids executed QZ")
     dmUsersMissedRaids();
 }, null, true, 'America/New_York');
-job2.start(); //async function FiveMinRaidReminder()
+job2.start();
 
-var CronJob3 = require('cron').CronJob;
-var job3 = new CronJob('55 19 * * *', function() {
-    console.log("Cron job 5 minute raid reminder QZ")
-    FiveMinRaidReminder();
-}, null, true, 'America/New_York');
-job3.start();
+var time = new Date()
+if(time.getTimezoneOffset() == 240)
+{
+    var CronJob3 = require('cron').CronJob;
+    var job3 = new CronJob('55 19 * * *', function() {
+        console.log("Cron job 5 minute raid reminder QZ")
+        FiveMinRaidReminder();
+    }, null, true, 'America/New_York');
+    job3.start();
+}
+
+else
+{
+    var CronJob3 = require('cron').CronJob;
+    var job3 = new CronJob('55 18 * * *', function() {
+        console.log("Cron job 5 minute raid reminder QZ")
+        FiveMinRaidReminder();
+    }, null, true, 'America/New_York');
+    job3.start();
+}
 
 var CronJob4 = require('cron').CronJob;
 var job4 = new CronJob('00 6,14,20 * * *', function() {
@@ -1084,6 +1098,19 @@ client.on('message', message => {
     }
     else
         wookieGuild = false
+
+    if(message.channel.id == "767844286028840960" || message.channel.id == "674049431594729472")
+    {
+        if(message.webhookID == null)
+        {
+            (async () => {                
+                await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                    messages.delete();
+                })
+                
+            })()
+        }
+    }
  
     if(message.channel.id == "709448648035008543")
     {
