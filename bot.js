@@ -360,7 +360,7 @@ async function FiveMinRaidReminder()
                         {
                             if(client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")) != undefined)
                             {
-                                client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")).send(rows[i][0] + " Raid time in 5 minutes!!  Also, please vote on the poll in the vote-discussion channel on our server.  Voting is open until 5:20 pm (EST) on 11/6")
+                                client.users.cache.get(rows[i][0].replace("<@","").replace(">","").replace(" ","")).send(rows[i][0] + " Raid time in 5 minutes!!")
                                 .catch(error => {
                                     console.log(error)
                                     console.log("Catch6")
