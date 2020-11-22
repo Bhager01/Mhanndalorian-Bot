@@ -2460,3 +2460,5 @@ client.on('message', message => {
         }
     } //for Kali
 })
+
+client.login(process.env.BOT_TOKEN);
