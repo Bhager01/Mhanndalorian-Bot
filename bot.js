@@ -2451,7 +2451,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().search(/\bjoey\b/) >= 0)
         {
-            gifPost(message, "joey", "Joey")
+            gifPost(message, "joey",  "Joey")
         }
 
         else if(message.content.toLowerCase().search(/\brogue\b/) >= 0)
