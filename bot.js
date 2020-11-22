@@ -777,17 +777,17 @@ var job2 = new CronJob('05 9,21 * * *', function() {
 job2.start();
 
 var time = new Date()
-if(time.getTimezoneOffset() == 240)
-{
+//if(time.getTimezoneOffset() == 240)  Uncomment the lines for CronJob3 to have a differnt raid time during DST
+//{
     var CronJob3 = require('cron').CronJob;
     var job3 = new CronJob('55 19 * * *', function() {
         console.log("Cron job 5 minute raid reminder QZ")
         FiveMinRaidReminder();
     }, null, true, 'America/New_York');
     job3.start();
-}
+//}
 
-else
+/*else
 {
     var CronJob3 = require('cron').CronJob;
     var job3 = new CronJob('55 18 * * *', function() {
@@ -795,7 +795,7 @@ else
         FiveMinRaidReminder();
     }, null, true, 'America/New_York');
     job3.start();
-}
+}*/
 
 var CronJob4 = require('cron').CronJob;
 var job4 = new CronJob('00 6,14,20 * * *', function() {
@@ -2460,6 +2460,3 @@ client.on('message', message => {
         }
     } //for Kali
 })
-
-//LEAVE THIS WAY
-client.login(process.env.BOT_TOKEN);
