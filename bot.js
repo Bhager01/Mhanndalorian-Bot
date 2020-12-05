@@ -2360,7 +2360,7 @@ client.on('message', message => {
                         {
                             for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
                             {
-                                if(rows[i][6].match(/\d+/g) == DiscordSWGOHNameIDArray[j][0])
+                                if(rows[i][6] != undefined && rows[i][6].match(/\d+/g) == DiscordSWGOHNameIDArray[j][0])
                                 {
                                     DiscordSWGOHNameIDArray[j].push(rows[i][0])
                                     DiscordSWGOHNameIDArray[j].push(rows[i][1])
