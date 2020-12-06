@@ -1,5 +1,7 @@
 const { Intents } = require("discord.js");
 const Discord = require('discord.js');
+const {MessageAttachment} = require('discord.js');
+const {CanvasRenderService} = require('chartjs-node-canvas')
 const intents = new Intents([
     Intents.NON_PRIVILEGED, // include all non-privileged intents, would be better to specify which ones you actually need
     "GUILD_MEMBERS", // lets you request guild members (i.e. fixes the issue)
@@ -40,6 +42,149 @@ client.once('ready', () => {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function toColumnName(num) {
+    for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
+      ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
+    }
+    return ret;
+}
+
+function UpdateTotalGP() {
+    var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+    authorize(content, listMajors);
+
+    function listMajors(auth)
+    {
+        const sheets = google.sheets({version: 'v4', auth});
+        const BaseURL = "https://swgoh.gg/api/guild/55879";
+
+        (async () => {
+            var NextAvailableRow;
+            var NextAvailableColumn;
+
+            Result = await fetch(BaseURL,
+                {
+                    method: 'GET',
+                }).then(response => response.json())
+
+                var AllyCodeAndGP = new Array(Result.players.length);
+
+                for (var i = 0; i < AllyCodeAndGP.length; i++) { 
+                    AllyCodeAndGP[i] = new Array(3);
+                    AllyCodeAndGP[i][0] = '';
+                    AllyCodeAndGP[i][1] = '';
+                    AllyCodeAndGP[i][2] = 'Y';
+                }
+
+                for(var i = 0; i < Result.players.length; i++)
+                {
+                    AllyCodeAndGP[i][0] = Result.players[i].data.ally_code
+                    AllyCodeAndGP[i][1] = Result.players[i].data.galactic_power
+                }
+
+                const sheets = google.sheets({version: 'v4', auth});
+
+                sheets.spreadsheets.values.get({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'TotalGP!A:A',
+                    }, async (err, res) => {
+                        if (err) return console.log('The API returned an error: ' + err);
+                        const rows = res.data.values;
+
+                        if(rows != undefined)
+                            NextAvailableRow = rows.length + 1
+                        else
+                            NextAvailableRow = 2
+
+                        var Today = new Date().toLocaleDateString()                            
+
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'TotalGP!A' + NextAvailableRow,  
+                            valueInputOption: 'RAW',
+                            resource: {
+                                values: [[Today]]
+                            },
+                        })
+
+                        sheets.spreadsheets.values.get({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'TotalGP!B1:1',
+                            }, async (err, res) => {
+                                if (err) return console.log('The API returned an error: ' + err);
+                                const rows = res.data.values;
+
+                                if(rows != undefined)
+                                    NextAvailableColumn = rows[0].length + 2
+                                else
+                                    NextAvailableColumn = 2
+
+                                var UpdateGPData = [];
+                                var NewGPDataAllyCode = []
+                                var NewGPDataGP = []
+
+                                if(rows != undefined)
+                                {
+                                    for(var i = 0; i < rows[0].length; i++)
+                                    {
+                                        for(var j = 0; j < AllyCodeAndGP.length; j++)
+                                        {
+                                            //console.log(j)
+                                            //console.log("ID from sheet " + rows[0][i] + "    ID from SWGOH " + AllyCodeAndGP[j][0])
+                                            if(rows[0][i] == AllyCodeAndGP[j][0])
+                                            {
+                                                UpdateGPData[i] = AllyCodeAndGP[j][1]
+                                                AllyCodeAndGP[j][2] = 'N'
+                                                j = AllyCodeAndGP.length;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'TotalGP!B' + NextAvailableRow,  
+                                    valueInputOption: 'RAW',
+                                    resource: {
+                                        values: [UpdateGPData]
+                                    },
+                                })
+
+                                for(var i = 0; i < AllyCodeAndGP.length; i++)
+                                    if(AllyCodeAndGP[i][2] == 'Y')
+                                    {
+                                        NewGPDataAllyCode.push(AllyCodeAndGP[i][0])
+                                        NewGPDataGP.push(AllyCodeAndGP[i][1])
+                                    }
+
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'TotalGP!' + toColumnName(NextAvailableColumn) + '1',  
+                                    valueInputOption: 'RAW',
+                                    resource: {
+                                        values: [NewGPDataAllyCode]
+                                    },
+                                })
+
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'TotalGP!' + toColumnName(NextAvailableColumn) + NextAvailableRow,  
+                                    valueInputOption: 'RAW',
+                                    resource: {
+                                        values: [NewGPDataGP]
+                                    },
+                                })
+
+
+
+                                //console.log(UpdateGPData)
+                            })
+                    }
+                )
+        })()
+    }
 }
 
 function processMIAAlertsMhannBot(message, status) //TESTING REQUIRED
@@ -810,6 +955,13 @@ var job5 = new CronJob('45 5,17 * * *', function() {
     UpdateUsersAndAllycodes();
 }, null, true, 'America/New_York');
 job5.start();
+
+//var CronJob6 = require('cron').CronJob;
+var job6 = new CronJob('50 18 * * *', function() {
+    console.log("Update Total GP")
+    UpdateTotalGP()
+}, null, true, 'America/New_York');
+job6.start();
 
 async function AddFlair(passedMember, row, Type, SpecialF){
     var OldNickname = passedMember.displayName
@@ -1615,9 +1767,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-                var d = new Date();
-                var n = d.getTimezoneOffset();
-                message.reply(n)
+            
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -1681,6 +1831,190 @@ client.on('message', message => {
                         + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
                 message.channel.send(Embed)
             })()
+        }
+
+        else if((message.content.toLowerCase().startsWith(`${prefix}gp`)) && (wookieGuild || message.channel.type=='dm')){
+
+            //const GP = [300, 400, 550, 800, 1005]
+            //const dates = ["12/1/20", "12/2/20", "12/3/20", "12/4/20", "12/5/20"]
+
+            content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+            authorize(content, listMajors);
+
+            async function listMajors(auth)
+            {  
+                const sheets = google.sheets({version: 'v4', auth});
+
+                sheets.spreadsheets.values.get({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guild Members & Data!A66:G119',
+                }, (err, res) => {
+                        if (err) return console.log('The API returned an error: ' + err);
+                        const rows = res.data.values;
+                        var Continue = false
+
+                        var Name = ''
+
+                        for(var i = 0; i < rows.length; i++) //Match discord ID of author to SWGOH Ally code
+                        {
+                            if(rows[i][6] != undefined && message.author.id == rows[i][6].replace("<@","").replace(">","").replace(" ",""))
+                            {
+                                Allycode = rows[i][0];
+                                Name = rows[i][1];
+                                i = rows.length
+                                Continue = true
+                            }
+                        }
+                        if(Continue == true)
+                        {
+                            Continue = false
+
+                            sheets.spreadsheets.values.get({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'TotalGP!1:1',
+                            }, (err, res) => {
+                                    if (err) return console.log('The API returned an error: ' + err);
+                                    const rows = res.data.values;
+                                    for(var i = 0; i < rows[0].length; i++) //Match Allycode to column letter
+                                    {
+                                        if(Allycode == rows[0][i])
+                                        {
+                                            var ColumnNumber = i + 1
+                                            var ColumnName = toColumnName(ColumnNumber)
+                                            i = rows[0].length
+                                            Continue = true
+                                        }
+                                    }
+
+                                    if(Continue == true)
+                                    {
+                                        sheets.spreadsheets.values.get({
+                                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                            range: 'TotalGP!' + ColumnName + '2:' + ColumnName,
+                                        }, (err, res) => {
+                                                if (err) return console.log('The API returned an error: ' + err);
+                                                const RawGP = res.data.values;
+
+                                                if(RawGP != undefined)
+                                                {
+                                                    sheets.spreadsheets.values.get({
+                                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                                        range: 'TotalGP!A2:A',
+                                                    }, (err, res) => {
+                                                            if (err) return console.log('The API returned an error: ' + err);
+                                                            const RawDates = res.data.values;
+                                                            
+                                                            var GP = []
+                                                            var Dates = []
+
+                                                            for(var i = 0; i < RawGP.length; i++)
+                                                            {
+                                                                GP[i] = RawGP[i][0]/1000000
+                                                            }
+
+                                                            for(var i = 0; i < RawDates.length; i++)
+                                                            {
+                                                                Dates[i] = RawDates[i][0]
+                                                            }
+
+                                                            Dates.splice(GP.length, 5000);
+
+                                                            (async () => {
+
+                                                                const width = 800
+                                                                const height = 600
+
+                                                                const chartCallback = (ChartJS) => {
+                                                                    ChartJS.plugins.register({
+                                                                        beforeDraw: (chartInstance) => {
+                                                                            const { ctx } = chartInstance.chart
+                                                                            ctx.fillStyle = 'white'
+                                                                            ctx.fillRect(0,0, chartInstance.chart.width, chartInstance.chart.height)
+                                                                        }
+                                                                    })
+                                                                }
+
+                                                                const canvas = new CanvasRenderService(width, height, chartCallback)
+
+                                                                const configuration = {
+                                                                    type: 'line',
+                                                                    data: {
+                                                                        labels: Dates,
+                                                                        datasets: [
+                                                                            {
+                                                                                label: 'Small',
+                                                                                data: GP,
+                                                                                backgroundColor: '#7289d9',
+                                                                                borderColor: '#000000',
+                                                                                fill: 'no',
+                                                                                borderWidth: '3',
+                                                                                pointBorderWidth: '15',
+                                                                            }
+                                                                        ]
+                                                                    },
+
+                                                                    options: {
+                                                                        title: {
+                                                                            display: true,
+                                                                            text: 'Graph of galactic power for ' + Name,
+                                                                            fontSize: 28,
+                                                                            fontColor: '#000000'
+                                                                        },
+                                                                        legend: {
+                                                                            display: false,
+                                                                        },
+                                                                        scales: {
+                                                                            yAxes: [{
+                                                                                scaleLabel: {
+                                                                                    display: true,
+                                                                                    labelString: 'Galactic Power (in Millions)',
+                                                                                    fontSize: 24,
+                                                                                    fontColor: '#000000'
+                                                                                },
+                                                                                ticks: {
+                                                                                    fontSize: 24,
+                                                                                    fontColor: '#000000'
+                                                                                }
+                                                                            }],
+                                                                            xAxes: [{
+                                                                                scaleLabel: {
+                                                                                    display: true,
+                                                                                    labelString: 'Date',
+                                                                                    fontSize: 24,
+                                                                                    fontColor: '#000000'
+                                                                                },
+                                                                                ticks: {
+                                                                                    fontSize: 24,
+                                                                                    fontColor: '#000000'
+                                                                                }
+                                                                            }]
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                                const image = await canvas.renderToBuffer(configuration)
+                                                                const attachment = new MessageAttachment(image)
+
+                                                                message.channel.send(attachment)
+                                                            })()    
+                                                        }
+                                                    )
+                                                }
+                                                else
+                                                    message.channel.send("No GP data returned for user")
+                                            }
+                                        )
+                                    }
+                                    else
+                                        message.channel.send("Allycode not found within the GP data in the Mhanndalorian database")
+                                }
+                            )
+                        }
+                        else
+                            message.channel.send("Discord user ID not found in Mhanndalorian database")
+                    }
+                )
+            }
         }
 
         else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && (wookieGuild || message.channel.type=='dm')){
