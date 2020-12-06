@@ -957,7 +957,7 @@ var job5 = new CronJob('45 5,17 * * *', function() {
 job5.start();
 
 //var CronJob6 = require('cron').CronJob;
-var job6 = new CronJob('50 18 * * *', function() {
+var job6 = new CronJob('52 18 * * *', function() {
     console.log("Update Total GP")
     UpdateTotalGP()
 }, null, true, 'America/New_York');
