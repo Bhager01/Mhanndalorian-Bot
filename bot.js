@@ -44,6 +44,298 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function GP(message, DiscordIDParam){
+    content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+    authorize(content, listMajors);
+
+    async function listMajors(auth)
+    {  
+        const sheets = google.sheets({version: 'v4', auth});
+        const DiscordID = DiscordIDParam;
+
+        sheets.spreadsheets.values.get({
+            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+            range: 'Guild Members & Data!A66:G119',
+        }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                const rows = res.data.values;
+                var Continue = false
+
+                var Name = ''
+
+                if(DiscordIDParam != 'guildGP')
+                {
+                    for(var i = 0; i < rows.length; i++) //Match discord ID of author to SWGOH Ally code
+                    {
+                        if(rows[i][6] != undefined && DiscordID == rows[i][6].replace("<@","").replace(">","").replace(" ",""))
+                        {
+                            Allycode = rows[i][0];
+                            Name = rows[i][1];
+                            i = rows.length
+                            Continue = true
+                        }
+                    }
+                }
+                else
+                {
+                    Allycode = 999
+                    Name = 'entire guild'
+                    Continue = true
+                }
+
+                if(Continue == true)
+                {
+                    Continue = false
+
+                    sheets.spreadsheets.values.get({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'TotalGP!1:1',
+                    }, (err, res) => {
+                            if (err) return console.log('The API returned an error: ' + err);
+                            const rows = res.data.values;
+                            for(var i = 0; i < rows[0].length; i++) //Match Allycode to column letter
+                            {
+                                if(Allycode == rows[0][i])
+                                {
+                                    var ColumnNumber = i + 1
+                                    var ColumnName = toColumnName(ColumnNumber)
+                                    i = rows[0].length
+                                    Continue = true
+                                }
+                            }
+
+                            if(Continue == true)
+                            {
+                                sheets.spreadsheets.values.get({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'TotalGP!' + ColumnName + '2:' + ColumnName,
+                                }, (err, res) => {
+                                        if (err) return console.log('The API returned an error: ' + err);
+                                        const RawGP = res.data.values;
+
+                                        if(RawGP != undefined)
+                                        {
+                                            sheets.spreadsheets.values.get({
+                                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                                range: 'TotalGP!A2:A',
+                                            }, (err, res) => {
+                                                    if (err) return console.log('The API returned an error: ' + err);
+                                                    const RawDates = res.data.values;
+                                                    
+                                                    var GP = []
+                                                    var Dates = []
+
+                                                    for(var i = 0; i < RawGP.length; i++)
+                                                    {
+                                                        GP[i] = RawGP[i][0]/1000000
+                                                    }
+
+                                                    for(var i = 0; i < RawDates.length; i++)
+                                                    {
+                                                        Dates[i] = RawDates[i][0]
+                                                    }
+
+                                                    Dates.splice(GP.length, 5000);
+
+                                                    (async () => {
+
+                                                        const width = 800
+                                                        const height = 600
+
+                                                        const chartCallback = (ChartJS) => {
+                                                            ChartJS.plugins.register({
+                                                                beforeDraw: (chartInstance) => {
+                                                                    const { ctx } = chartInstance.chart
+                                                                    ctx.fillStyle = 'white'
+                                                                    ctx.fillRect(0,0, chartInstance.chart.width, chartInstance.chart.height)
+                                                                }
+                                                            })
+                                                        }
+
+                                                        const canvas = new CanvasRenderService(width, height, chartCallback)
+
+                                                        const configuration = {
+                                                            type: 'line',
+                                                            data: {
+                                                                labels: Dates,
+                                                                datasets: [
+                                                                    {
+                                                                        label: 'Small',
+                                                                        data: GP,
+                                                                        backgroundColor: '#7289d9',
+                                                                        borderColor: '#000000',
+                                                                        fill: 'no',
+                                                                        borderWidth: '3',
+                                                                        pointBorderWidth: '15',
+                                                                    }
+                                                                ]
+                                                            },
+
+                                                            options: {
+                                                                title: {
+                                                                    display: true,
+                                                                    text: 'Graph of galactic power for ' + Name,
+                                                                    fontSize: 28,
+                                                                    fontColor: '#000000'
+                                                                },
+                                                                legend: {
+                                                                    display: false,
+                                                                },
+                                                                scales: {
+                                                                    yAxes: [{
+                                                                        scaleLabel: {
+                                                                            display: true,
+                                                                            labelString: 'Galactic Power (in Millions)',
+                                                                            fontSize: 24,
+                                                                            fontColor: '#000000'
+                                                                        },
+                                                                        ticks: {
+                                                                            fontSize: 24,
+                                                                            fontColor: '#000000'
+                                                                        }
+                                                                    }],
+                                                                    xAxes: [{
+                                                                        scaleLabel: {
+                                                                            display: true,
+                                                                            labelString: 'Date',
+                                                                            fontSize: 24,
+                                                                            fontColor: '#000000'
+                                                                        },
+                                                                        ticks: {
+                                                                            fontSize: 24,
+                                                                            fontColor: '#000000'
+                                                                        }
+                                                                    }]
+                                                                }
+                                                            }
+                                                        }
+
+                                                        const image = await canvas.renderToBuffer(configuration)
+                                                        const attachment = new MessageAttachment(image)
+
+                                                        message.channel.send(attachment)
+                                                    })()    
+                                                }
+                                            )
+                                        }
+                                        else
+                                            message.channel.send("No GP data returned for user")
+                                    }
+                                )
+                            }
+                            else
+                                message.channel.send("Allycode not found within the GP data in the Mhanndalorian database")
+                        }
+                    )
+                }
+                else
+                    message.channel.send("Discord user ID not found in Mhanndalorian database")
+            }
+        )
+    }
+}
+
+function Lookup(message, CallingFunction)
+{
+    var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+    authorize(content, listMajors);
+
+    if(CallingFunction == 'lookup')
+        console.log(message.author.username + " issued lookup command. QZ")
+    
+    function listMajors(auth)
+    {
+        const guild = client.guilds.cache.get("505515654833504266");
+        
+        const sheets = google.sheets({version: 'v4', auth});
+        sheets.spreadsheets.values.get({
+            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+            range: 'Guild Members & Data!A66:G119',
+        }, (err, res) => {
+            if (err) return console.log('The API returned an error: ' + err);
+        const rows = res.data.values;
+        if (rows.length)
+        {
+            CommandArray = message.content.split(/ (.+)/)
+            if(CommandArray[1] == undefined)
+            {
+                message.channel.send("Please specify an allycode, discord name, or SWGOH name")
+            }
+            else
+            {
+                var RowFound;
+                var DiscordSWGOHNameIDArray;
+                var Found = false;
+                
+                (async () => { 
+                    await guild.members.fetch()                    
+                })()
+
+                DiscordSWGOHNameIDArray  = guild.roles.cache.get('530083964380250116').members.map(m => [m.id, m.displayName])
+
+                for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)  //no longer used
+                {
+                    DiscordSWGOHNameIDArray[i][1] = DiscordSWGOHNameIDArray[i][1].replace(/([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                }
+
+                for(var i = 0; i < rows.length; i++)
+                {
+                    for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
+                    {
+                        if(rows[i][6] != undefined && rows[i][6].match(/\d+/g) == DiscordSWGOHNameIDArray[j][0])
+                        {
+                            DiscordSWGOHNameIDArray[j].push(rows[i][0])
+                            DiscordSWGOHNameIDArray[j].push(rows[i][1])
+                            j = DiscordSWGOHNameIDArray.length
+                        }
+                    }
+                }
+
+                for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
+                {
+                    if(DiscordSWGOHNameIDArray[j][2] == undefined || DiscordSWGOHNameIDArray[j][3] == undefined)
+                    DiscordSWGOHNameIDArray.splice(j,1)
+                }
+            
+                for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
+                {
+                //  if(DiscordSWGOHNameIDArray[i][1].toLowerCase() == CommandArray[1].toLowerCase() || DiscordSWGOHNameIDArray[i][2] == CommandArray[1] || DiscordSWGOHNameIDArray[i][3].toLowerCase() == CommandArray[1].toLowerCase())
+                    if(DiscordSWGOHNameIDArray[i][1].toLowerCase().includes(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().includes(CommandArray[1].toLowerCase()))
+                    {
+                        RowFound = i;
+                        i = DiscordSWGOHNameIDArray.length
+                        Found = true
+                    }
+                }
+
+                if(Found == true)
+                {
+                    if(CallingFunction == 'lookup')
+                    {
+                        (async () => { 
+                            User =  await client.users.fetch(DiscordSWGOHNameIDArray[RowFound][0])                         
+                            GuildMember =  await guild.members.fetch(User)
+                            DisplayNamed = GuildMember.displayName
+                            message.channel.send
+                                ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
+                                + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n"
+                                + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[RowFound][0] + ">")
+                        })()
+                    }
+                    else if(CallingFunction == 'GP')
+                        GP(message, DiscordSWGOHNameIDArray[RowFound][0])
+                }
+
+                else
+                    message.channel.send("User not found.")
+            }
+        }
+        else
+            console.log('No data found.');
+        });
+    }
+}
+
 function toColumnName(num) {
     for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
       ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
@@ -109,9 +401,18 @@ function UpdateTotalGP() {
                             },
                         })
 
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'TotalGP!PP' + NextAvailableRow,  
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
+                            },
+                        })
+
                         sheets.spreadsheets.values.get({
                             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'TotalGP!B1:1',
+                            range: 'TotalGP!B1:PO1',
                             }, async (err, res) => {
                                 if (err) return console.log('The API returned an error: ' + err);
                                 const rows = res.data.values;
@@ -957,7 +1258,7 @@ var job5 = new CronJob('45 5,17 * * *', function() {
 job5.start();
 
 //var CronJob6 = require('cron').CronJob;
-var job6 = new CronJob('25 19 * * *', function() {
+var job6 = new CronJob('00 19 * * *', function() {
     console.log("Update Total GP")
     UpdateTotalGP()
 }, null, true, 'America/New_York');
@@ -1767,7 +2068,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            
+            UpdateTotalGP();
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -1833,188 +2134,24 @@ client.on('message', message => {
             })()
         }
 
-        else if((message.content.toLowerCase().startsWith(`${prefix}gp`)) && (wookieGuild || message.channel.type=='dm')){
+        else if((message.content.toLowerCase().startsWith(`${prefix}gp`)) && (wookieGuild || message.channel.type=='dm'))
+        {
+            var CommandArray = message.content.split(' ');
 
-            //const GP = [300, 400, 550, 800, 1005]
-            //const dates = ["12/1/20", "12/2/20", "12/3/20", "12/4/20", "12/5/20"]
-
-            content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-            authorize(content, listMajors);
-
-            async function listMajors(auth)
-            {  
-                const sheets = google.sheets({version: 'v4', auth});
-
-                sheets.spreadsheets.values.get({
-                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'Guild Members & Data!A66:G119',
-                }, (err, res) => {
-                        if (err) return console.log('The API returned an error: ' + err);
-                        const rows = res.data.values;
-                        var Continue = false
-
-                        var Name = ''
-
-                        for(var i = 0; i < rows.length; i++) //Match discord ID of author to SWGOH Ally code
-                        {
-                            if(rows[i][6] != undefined && message.author.id == rows[i][6].replace("<@","").replace(">","").replace(" ",""))
-                            {
-                                Allycode = rows[i][0];
-                                Name = rows[i][1];
-                                i = rows.length
-                                Continue = true
-                            }
-                        }
-                        if(Continue == true)
-                        {
-                            Continue = false
-
-                            sheets.spreadsheets.values.get({
-                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                range: 'TotalGP!1:1',
-                            }, (err, res) => {
-                                    if (err) return console.log('The API returned an error: ' + err);
-                                    const rows = res.data.values;
-                                    for(var i = 0; i < rows[0].length; i++) //Match Allycode to column letter
-                                    {
-                                        if(Allycode == rows[0][i])
-                                        {
-                                            var ColumnNumber = i + 1
-                                            var ColumnName = toColumnName(ColumnNumber)
-                                            i = rows[0].length
-                                            Continue = true
-                                        }
-                                    }
-
-                                    if(Continue == true)
-                                    {
-                                        sheets.spreadsheets.values.get({
-                                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                            range: 'TotalGP!' + ColumnName + '2:' + ColumnName,
-                                        }, (err, res) => {
-                                                if (err) return console.log('The API returned an error: ' + err);
-                                                const RawGP = res.data.values;
-
-                                                if(RawGP != undefined)
-                                                {
-                                                    sheets.spreadsheets.values.get({
-                                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                                        range: 'TotalGP!A2:A',
-                                                    }, (err, res) => {
-                                                            if (err) return console.log('The API returned an error: ' + err);
-                                                            const RawDates = res.data.values;
-                                                            
-                                                            var GP = []
-                                                            var Dates = []
-
-                                                            for(var i = 0; i < RawGP.length; i++)
-                                                            {
-                                                                GP[i] = RawGP[i][0]/1000000
-                                                            }
-
-                                                            for(var i = 0; i < RawDates.length; i++)
-                                                            {
-                                                                Dates[i] = RawDates[i][0]
-                                                            }
-
-                                                            Dates.splice(GP.length, 5000);
-
-                                                            (async () => {
-
-                                                                const width = 800
-                                                                const height = 600
-
-                                                                const chartCallback = (ChartJS) => {
-                                                                    ChartJS.plugins.register({
-                                                                        beforeDraw: (chartInstance) => {
-                                                                            const { ctx } = chartInstance.chart
-                                                                            ctx.fillStyle = 'white'
-                                                                            ctx.fillRect(0,0, chartInstance.chart.width, chartInstance.chart.height)
-                                                                        }
-                                                                    })
-                                                                }
-
-                                                                const canvas = new CanvasRenderService(width, height, chartCallback)
-
-                                                                const configuration = {
-                                                                    type: 'line',
-                                                                    data: {
-                                                                        labels: Dates,
-                                                                        datasets: [
-                                                                            {
-                                                                                label: 'Small',
-                                                                                data: GP,
-                                                                                backgroundColor: '#7289d9',
-                                                                                borderColor: '#000000',
-                                                                                fill: 'no',
-                                                                                borderWidth: '3',
-                                                                                pointBorderWidth: '15',
-                                                                            }
-                                                                        ]
-                                                                    },
-
-                                                                    options: {
-                                                                        title: {
-                                                                            display: true,
-                                                                            text: 'Graph of galactic power for ' + Name,
-                                                                            fontSize: 28,
-                                                                            fontColor: '#000000'
-                                                                        },
-                                                                        legend: {
-                                                                            display: false,
-                                                                        },
-                                                                        scales: {
-                                                                            yAxes: [{
-                                                                                scaleLabel: {
-                                                                                    display: true,
-                                                                                    labelString: 'Galactic Power (in Millions)',
-                                                                                    fontSize: 24,
-                                                                                    fontColor: '#000000'
-                                                                                },
-                                                                                ticks: {
-                                                                                    fontSize: 24,
-                                                                                    fontColor: '#000000'
-                                                                                }
-                                                                            }],
-                                                                            xAxes: [{
-                                                                                scaleLabel: {
-                                                                                    display: true,
-                                                                                    labelString: 'Date',
-                                                                                    fontSize: 24,
-                                                                                    fontColor: '#000000'
-                                                                                },
-                                                                                ticks: {
-                                                                                    fontSize: 24,
-                                                                                    fontColor: '#000000'
-                                                                                }
-                                                                            }]
-                                                                        }
-                                                                    }
-                                                                }
-
-                                                                const image = await canvas.renderToBuffer(configuration)
-                                                                const attachment = new MessageAttachment(image)
-
-                                                                message.channel.send(attachment)
-                                                            })()    
-                                                        }
-                                                    )
-                                                }
-                                                else
-                                                    message.channel.send("No GP data returned for user")
-                                            }
-                                        )
-                                    }
-                                    else
-                                        message.channel.send("Allycode not found within the GP data in the Mhanndalorian database")
-                                }
-                            )
-                        }
-                        else
-                            message.channel.send("Discord user ID not found in Mhanndalorian database")
+            if(CommandArray[1] != undefined)
+            {
+                if(isNaN(CommandArray[1]))
+                {
+                    if(CommandArray[1].toLowerCase() != 'guild')
+                    {
+                        Lookup(message, 'GP')
                     }
-                )
+                    else //First argument was the word guild
+                        GP(message, 'guildGP')
+                }
             }
+            else //no argument provided
+                GP(message, message.author.id)
         }
 
         else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && (wookieGuild || message.channel.type=='dm')){
@@ -2650,97 +2787,7 @@ client.on('message', message => {
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  (wookieGuild || message.channel.type=='dm')){
-            var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-            authorize(content, listMajors);
-
-            console.log(message.author.username + " issued lookup command. QZ")
-            
-            function listMajors(auth)
-            {
-                const guild = client.guilds.cache.get("505515654833504266");
-                
-                const sheets = google.sheets({version: 'v4', auth});
-                sheets.spreadsheets.values.get({
-                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'Guild Members & Data!A66:G119',
-                }, (err, res) => {
-                    if (err) return console.log('The API returned an error: ' + err);
-                const rows = res.data.values;
-                if (rows.length)
-                {
-                    CommandArray = message.content.split(/ (.+)/)
-                    if(CommandArray[1] == undefined)
-                    {
-                        message.channel.send("Please specify an allycode, discord name, or SWGOH name")
-                    }
-                    else
-                    {
-                        var RowFound;
-                        var DiscordSWGOHNameIDArray;
-                        var Found = false;
-                        
-                        (async () => { 
-                            await guild.members.fetch()                    
-                        })()
-
-                        DiscordSWGOHNameIDArray  = guild.roles.cache.get('530083964380250116').members.map(m => [m.id, m.displayName])
-
-                        for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)  //no longer used
-                        {
-                            DiscordSWGOHNameIDArray[i][1] = DiscordSWGOHNameIDArray[i][1].replace(/([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
-                        }
-
-                        for(var i = 0; i < rows.length; i++)
-                        {
-                            for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
-                            {
-                                if(rows[i][6] != undefined && rows[i][6].match(/\d+/g) == DiscordSWGOHNameIDArray[j][0])
-                                {
-                                    DiscordSWGOHNameIDArray[j].push(rows[i][0])
-                                    DiscordSWGOHNameIDArray[j].push(rows[i][1])
-                                    j = DiscordSWGOHNameIDArray.length
-                                }
-                            }
-                        }
-
-                        for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
-                        {
-                            if(DiscordSWGOHNameIDArray[j][2] == undefined || DiscordSWGOHNameIDArray[j][3] == undefined)
-                            DiscordSWGOHNameIDArray.splice(j,1)
-                        }
-                    
-                        for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
-                        {
-                        //  if(DiscordSWGOHNameIDArray[i][1].toLowerCase() == CommandArray[1].toLowerCase() || DiscordSWGOHNameIDArray[i][2] == CommandArray[1] || DiscordSWGOHNameIDArray[i][3].toLowerCase() == CommandArray[1].toLowerCase())
-                            if(DiscordSWGOHNameIDArray[i][1].toLowerCase().includes(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().includes(CommandArray[1].toLowerCase()))
-                            {
-                                RowFound = i;
-                                i = DiscordSWGOHNameIDArray.length
-                                Found = true
-                            }
-                        }
-
-                        if(Found == true)
-                        {
-                            (async () => { 
-                                User =  await client.users.fetch(DiscordSWGOHNameIDArray[RowFound][0])                         
-                                GuildMember =  await guild.members.fetch(User)
-                                DisplayNamed = GuildMember.displayName
-                                message.channel.send
-                                    ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
-                                    + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n"
-                                    + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[RowFound][0] + ">")
-                            })()
-                        }
-
-                        else
-                            message.channel.send("User not found.")
-                    }
-                }
-                else
-                    console.log('No data found.');
-                });
-            }
+            Lookup(message, "lookup")
         }
         else
         {
