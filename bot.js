@@ -44,7 +44,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function GP(message, DiscordIDParam){
+function GP(message, DiscordIDParam, DaysBack){
     content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     authorize(content, listMajors);
 
@@ -135,7 +135,18 @@ function GP(message, DiscordIDParam){
                                                         Dates[i] = RawDates[i][0]
                                                     }
 
-                                                    Dates.splice(GP.length, 5000);
+                                                    Dates.splice(GP.length, 5000);  //No need to have dates if there is no GP data for that date
+
+                                                    if(DaysBack != undefined)
+                                                    {
+                                                        Dates.splice(0, Dates.length-DaysBack)
+                                                        GP.splice(0, GP.length-DaysBack)
+
+                                                        if(DaysBack > Dates.length)
+                                                        {
+                                                            message.channel.send("You requested the most recent " + DaysBack + " day(s) of data, but only " + Dates.length + " day(s) of data exist.  Displaying all available data.")
+                                                        }
+                                                    }
 
                                                     (async () => {
 
@@ -214,7 +225,18 @@ function GP(message, DiscordIDParam){
                                                         const attachment = new MessageAttachment(image)
 
                                                         message.channel.send(attachment)
-                                                    })()    
+                                                    })()
+
+                                                    var IncreaseorDecrease;
+                                                    if(GP[GP.length-1] >= GP[0])
+                                                        IncreaseorDecrease = "increased"
+                                                    else    
+                                                        IncreaseorDecrease = "decreased"
+
+                                                    var PercentChange = Math.round((((GP[GP.length-1])-GP[0])/GP[0])*10000) / 100
+                                                    
+                                                    message.channel.send("From " + Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease +
+                                                    " by " + PercentChange + "%.")
                                                 }
                                             )
                                         }
@@ -2136,22 +2158,42 @@ client.on('message', message => {
 
         else if((message.content.toLowerCase().startsWith(`${prefix}gp`)) && (wookieGuild || message.channel.type=='dm'))
         {
-            var CommandArray = message.content.split(' ');
+            (async () => {
+                
+                const guild = client.guilds.cache.get("505515654833504266"); 
+                var User =  await client.users.fetch(message.author.id)
+                var GuildMember =  await guild.members.fetch(User);
 
-            if(CommandArray[1] != undefined)
-            {
-                if(isNaN(CommandArray[1]))
+                if(GuildMember.roles.cache.has("530083964380250116")) //Must be a bandit
                 {
-                    if(CommandArray[1].toLowerCase() != 'guild')
+                    var CommandArray = message.content.split(' ');
+
+                    if(CommandArray[1] != undefined)
                     {
-                        Lookup(message, 'GP')
+                        if(isNaN(CommandArray[1]))
+                        {
+                            if(CommandArray[1].toLowerCase() != 'guild')
+                            {
+                                if(GuildMember.roles.cache.has("505527335768948754")) //must have wooktang role
+                                    Lookup(message, 'GP')
+                                else
+                                    message.channel.send("You do not have sufficient prividleges to execute this command.")
+                            }
+                            else //First argument was the word guild
+                                GP(message, 'guildGP')
+                        }
+                        else
+                            if(CommandArray[1] > 0)
+                                GP(message, message.author.id, CommandArray[1])
+                            else
+                                message.channel.send("Please specify a number of days greater than 0.")
                     }
-                    else //First argument was the word guild
-                        GP(message, 'guildGP')
+                    else //no argument provided
+                        GP(message, message.author.id)
                 }
-            }
-            else //no argument provided
-                GP(message, message.author.id)
+                else
+                    message.channel.send("You must be have the role of bandit to execute this command.")
+            })()
         }
 
         else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && (wookieGuild || message.channel.type=='dm')){
