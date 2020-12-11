@@ -178,7 +178,7 @@ function GP(message, DiscordIDParam, DaysBack){
                                                                         fill: 'no',
                                                                         borderWidth: '3',
                                                                         pointBorderWidth: '15',
-                                                                        lineTension: '1',
+                                                                        lineTension: '0',
                                                                     }
                                                                 ]
                                                             },
