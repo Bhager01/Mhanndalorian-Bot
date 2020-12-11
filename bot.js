@@ -279,6 +279,7 @@ function Lookup(message, CallingFunction)
         if (rows.length)
         {
             CommandArray = message.content.split(/ (.+)/)
+
             if(CommandArray[1] == undefined)
             {
                 message.channel.send("Please specify an allycode, discord name, or SWGOH name")
@@ -288,6 +289,16 @@ function Lookup(message, CallingFunction)
                 var RowFound;
                 var DiscordSWGOHNameIDArray;
                 var Found = false;
+                var DaysBack;
+
+                if(CommandArray[1].match(/[\s](\d+)($)/))
+                {
+                    temp = message.content.split(/[\s](\d+)($)/)
+                    DaysBack = temp[1]
+
+                    temp2 = temp[0].split(/ (.+)/)
+                    CommandArray[1] = temp2[1]
+                }
                 
                 (async () => { 
                     await guild.members.fetch()                    
@@ -345,7 +356,7 @@ function Lookup(message, CallingFunction)
                         })()
                     }
                     else if(CallingFunction == 'GP')
-                        GP(message, DiscordSWGOHNameIDArray[RowFound][0])
+                        GP(message, DiscordSWGOHNameIDArray[RowFound][0], DaysBack)
                 }
 
                 else
@@ -2147,11 +2158,18 @@ client.on('message', message => {
                         + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
                         + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
                         + "__**" + prefix + "full**__ - Receive all notifications and access to all channels. \n \n"
+                        + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image. \n \n"
+                        + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
+
+                        + "> __**" + prefix + "gp**__ - Your entire GP history will be displayed. \n"
+                        + "> __**" + prefix + "gp n**__ - Will display your GP history back up to n days (replace n with a counting number). \n "
+                        + "> __**" + prefix + "gp guild**__ - Display all GP history for the entire guild. \n "
+                        + "> __**" + prefix + "gp guild n**__ - Display GP history back up to n days for entire guild (replace n with a counting number). \n \n"
+
                         + "__**" + prefix + "help**__ - Display this help message. \n \n"
                         + "__**" + prefix + "light**__ - Receive only essential notifications and access to a streamlined set of channels. \n \n"
                         + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
-                        +"be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
-                        + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image.");
+                        + "be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n");
                 message.channel.send(Embed)
             })()
         }
@@ -2180,7 +2198,7 @@ client.on('message', message => {
                                     message.channel.send("You do not have sufficient prividleges to execute this command.")
                             }
                             else //First argument was the word guild
-                                GP(message, 'guildGP')
+                                GP(message, 'guildGP', CommandArray[2])
                         }
                         else
                             if(CommandArray[1] > 0)
