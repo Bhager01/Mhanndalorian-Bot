@@ -419,13 +419,18 @@ function UpdateTotalGP() {
 
             Result = await fetch(BaseURL,
                 {
-                    method: 'GET',
+               /*     method: 'GET',
                 }).then(function (response) {
                     var response2 = response.clone();
                     response.json().then(function(ParsedJSON) {
                         console.log(ParsedJSON)
                     })
                     return response2.json()
+                })*/
+                    method: 'GET',
+                }).then(function (response) {
+                    console.log(response)
+                    return response.json()
                 })
 
                 var AllyCodeAndGP = new Array(Result.players.length);
@@ -753,15 +758,13 @@ function UpdateUsersAndAllycodes()
             Result = await fetch(BaseURL,
                /* {
                     method: 'GET',
-                }).then(response => response.json())*/  //OLD
+                }).then(response => response.json())*/
+
                 {
                     method: 'GET',
                 }).then(function (response) {
-                    var response2 = response.clone();
-                    response.json().then(function(ParsedJSON) {
-                        console.log(ParsedJSON)
-                    })
-                    return response2.json()
+                    console.log(response)
+                    return response.json()
                 })
 
                 var NamesAndCodes = new Array(54);
