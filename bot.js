@@ -420,7 +420,13 @@ function UpdateTotalGP() {
             Result = await fetch(BaseURL,
                 {
                     method: 'GET',
-                }).then(response => response.json())
+                }).then(function (response) {
+                    var response2 = response.clone();
+                    response.json().then(function(ParsedJSON) {
+                        console.log(ParsedJSON)
+                    })
+                    return response2.json()
+                })
 
                 var AllyCodeAndGP = new Array(Result.players.length);
 
@@ -745,9 +751,18 @@ function UpdateUsersAndAllycodes()
 
         (async () => {
             Result = await fetch(BaseURL,
+               /* {
+                    method: 'GET',
+                }).then(response => response.json())*/  //OLD
                 {
                     method: 'GET',
-                }).then(response => response.json())
+                }).then(function (response) {
+                    var response2 = response.clone();
+                    response.json().then(function(ParsedJSON) {
+                        console.log(ParsedJSON)
+                    })
+                    return response2.json()
+                })
 
                 var NamesAndCodes = new Array(54);
 
@@ -2137,6 +2152,7 @@ client.on('message', message => {
         {
             UpdateTotalGP();
             //PostWeeklyGuildGP();
+            //UpdateUsersAndAllycodes();
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
