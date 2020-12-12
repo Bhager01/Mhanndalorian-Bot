@@ -79,7 +79,7 @@ function GP(message, DiscordIDParam, DaysBack){
                 else
                 {
                     Allycode = 999
-                    Name = 'entire guild'
+                    Name = 'the guild'
                     Continue = true
                 }
 
@@ -144,7 +144,8 @@ function GP(message, DiscordIDParam, DaysBack){
 
                                                         if(DaysBack > Dates.length)
                                                         {
-                                                            message.channel.send("You requested the most recent " + DaysBack + " day(s) of data, but only " + Dates.length + " day(s) of data exist.  Displaying all available data.")
+                                                            if(message != 'GuildWeekly')
+                                                                message.channel.send("You requested the most recent " + DaysBack + " day(s) of data, but only " + Dates.length + " day(s) of data exist.  Displaying all available data.")
                                                         }
                                                     }
 
@@ -225,7 +226,10 @@ function GP(message, DiscordIDParam, DaysBack){
                                                         const image = await canvas.renderToBuffer(configuration)
                                                         const attachment = new MessageAttachment(image)
 
-                                                        message.channel.send(attachment)
+                                                        if(message != 'GuildWeekly')
+                                                            message.channel.send(attachment)
+                                                        else
+                                                            client.channels.cache.get("676092306381602826").send(attachment)
                                                     })()
 
                                                     var IncreaseorDecrease;
@@ -234,25 +238,38 @@ function GP(message, DiscordIDParam, DaysBack){
                                                     else    
                                                         IncreaseorDecrease = "decreased"
 
-                                                    var PercentChange = Math.round((((GP[GP.length-1])-GP[0])/GP[0])*10000) / 100
+                                                    var PercentChange = Math.abs(Math.round((((GP[GP.length-1])-GP[0])/GP[0])*10000) / 100)
                                                     
-                                                    message.channel.send("From " + Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease +
-                                                    " by " + PercentChange + "%.")
+                                                    if(message != 'GuildWeekly')                                                    
+                                                        message.channel.send("From " + Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease +
+                                                        " by " + PercentChange + "%.")
+                                                    
+                                                    else
+                                                    {
+                                                        var TwoDaysAgo = new Date();
+                                                        TwoDaysAgo.setDate(TwoDaysAgo.getDate() - 2);
+                                                        client.channels.cache.get("676092306381602826").send("<@&530083964380250116> Weekly Galactic Power Update for week of " + TwoDaysAgo.toLocaleDateString("en-US") + "." +
+                                                        "  The graph below will eventually contain data for the previous 90 days.\n\n From " +
+                                                        Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease + " by " + PercentChange + "%.")
+                                                    }
                                                 }
                                             )
                                         }
                                         else
-                                            message.channel.send("No GP data returned for user")
+                                            if(message != 'GuildWeekly')
+                                                message.channel.send("No GP data returned for user")
                                     }
                                 )
                             }
                             else
-                                message.channel.send("Allycode not found within the GP data in the Mhanndalorian database")
+                                if(message != 'GuildWeekly')
+                                    message.channel.send("Allycode not found within the GP data in the Mhanndalorian database")
                         }
                     )
                 }
                 else
-                    message.channel.send("Discord user ID not found in Mhanndalorian database")
+                    if(message != 'GuildWeekly')
+                        message.channel.send("Discord user ID not found in Mhanndalorian database")
             }
         )
     }
@@ -299,6 +316,12 @@ function Lookup(message, CallingFunction)
 
                     temp2 = temp[0].split(/ (.+)/)
                     CommandArray[1] = temp2[1]
+
+                    if(DaysBack <= 0)
+                    {
+                        message.channel.send("Please specify a number of days greater than 0.")
+                        return 0;
+                    }
                 }
                 
                 (async () => { 
@@ -375,6 +398,10 @@ function toColumnName(num) {
       ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
     }
     return ret;
+}
+
+function PostWeeklyGuildGP(){
+    GP('GuildWeekly', 'guildGP', 90)
 }
 
 function UpdateTotalGP() {
@@ -1242,14 +1269,14 @@ function FlairUpdate(Type, callback){
     }
 }
 
-var CronJob = require('cron').CronJob;
+//var CronJob = require('cron').CronJob;
 var job = new CronJob('0 9,21 * * *', function() {
     console.log("Cron job FlairUpdate executed QZ")
     FlairUpdate("Cron", newFlairAnncouncment)
 }, null, true, 'America/New_York');
 job.start();
 
-var CronJob2 = require('cron').CronJob;
+//var CronJob2 = require('cron').CronJob;
 var job2 = new CronJob('05 9,21 * * *', function() {
     console.log("Cron job DMusers who miss raids executed QZ")
     dmUsersMissedRaids();
@@ -1259,7 +1286,7 @@ job2.start();
 var time = new Date()
 //if(time.getTimezoneOffset() == 240)  Uncomment the lines for CronJob3 to have a differnt raid time during DST
 //{
-    var CronJob3 = require('cron').CronJob;
+    //var CronJob3 = require('cron').CronJob;
     var job3 = new CronJob('55 19 * * *', function() {
         console.log("Cron job 5 minute raid reminder QZ")
         FiveMinRaidReminder();
@@ -1277,26 +1304,32 @@ var time = new Date()
     job3.start();
 }*/
 
-var CronJob4 = require('cron').CronJob;
+//var CronJob4 = require('cron').CronJob;
 var job4 = new CronJob('00 6,14,20 * * *', function() {
     console.log("Cron job MIA cleanup QZ")
     CleanMIA();
 }, null, true, 'America/New_York');
 job4.start();
 
-var CronJob5 = require('cron').CronJob;
-var job5 = new CronJob('45 5,19 * * *', function() {
+//var CronJob5 = require('cron').CronJob;
+var job5 = new CronJob('45 5,17 * * *', function() {
     console.log("Update Users & Allycodes from SWGOH.GG API")
     UpdateUsersAndAllycodes();
 }, null, true, 'America/New_York');
 job5.start();
 
 //var CronJob6 = require('cron').CronJob;
-var job6 = new CronJob('47 19 * * *', function() {
+var job6 = new CronJob('24 19 * * *', function() {
     console.log("Update Total GP")
     UpdateTotalGP()
 }, null, true, 'America/New_York');
 job6.start();
+
+var job7 = new CronJob('15 19 * * 3', function() {
+    console.log("Weekly Guild GP Update")
+    PostWeeklyGuildGP()
+}, null, true, 'America/New_York');
+job7.start();
 
 async function AddFlair(passedMember, row, Type, SpecialF){
     var OldNickname = passedMember.displayName
@@ -2103,6 +2136,7 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
             UpdateTotalGP();
+            //PostWeeklyGuildGP();
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -2163,9 +2197,9 @@ client.on('message', message => {
                         + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
 
                         + "> __**" + prefix + "gp**__ - Your entire GP history will be displayed. \n"
-                        + "> __**" + prefix + "gp n**__ - Will display your GP history back up to n days (replace n with a counting number). \n "
+                        + "> __**" + prefix + "gp n**__ - Will display your GP history back up to n days (replace n with a number of days). \n "
                         + "> __**" + prefix + "gp guild**__ - Display all GP history for the entire guild. \n "
-                        + "> __**" + prefix + "gp guild n**__ - Display GP history back up to n days for entire guild (replace n with a counting number). \n \n"
+                        + "> __**" + prefix + "gp guild n**__ - Display GP history back up to n days for entire guild (replace n with a number of days). \n \n"
 
                         + "__**" + prefix + "help**__ - Display this help message. \n \n"
                         + "__**" + prefix + "light**__ - Receive only essential notifications and access to a streamlined set of channels. \n \n"
@@ -2199,7 +2233,11 @@ client.on('message', message => {
                                     message.channel.send("You do not have sufficient prividleges to execute this command.")
                             }
                             else //First argument was the word guild
-                                GP(message, 'guildGP', CommandArray[2])
+                                if(CommandArray[2] > 0)
+                                    GP(message, 'guildGP', CommandArray[2])
+                                else
+                                    message.channel.send("Please specify a number of days greater than 0.")
+                                
                         }
                         else
                             if(CommandArray[1] > 0)
