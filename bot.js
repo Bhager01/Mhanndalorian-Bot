@@ -229,7 +229,7 @@ function GP(message, DiscordIDParam, DaysBack){
                                                         if(message != 'GuildWeekly')
                                                             message.channel.send(attachment)
                                                         else
-                                                            client.channels.cache.get("676092306381602826").send(attachment)
+                                                            client.channels.cache.get("532618076705783809").send(attachment)
                                                     })()
 
                                                     var IncreaseorDecrease;
@@ -248,7 +248,7 @@ function GP(message, DiscordIDParam, DaysBack){
                                                     {
                                                         var TwoDaysAgo = new Date();
                                                         TwoDaysAgo.setDate(TwoDaysAgo.getDate() - 2);
-                                                        client.channels.cache.get("676092306381602826").send("<@&530083964380250116> Weekly Galactic Power Update for week of " + TwoDaysAgo.toLocaleDateString("en-US") + "." +
+                                                        client.channels.cache.get("532618076705783809").send("<@&530083964380250116> Weekly Galactic Power Update for week of " + TwoDaysAgo.toLocaleDateString("en-US") + "." +
                                                         "  The graph below will eventually contain data for the previous 90 days.\n\n From " +
                                                         Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease + " by " + PercentChange + "%.")
                                                     }
