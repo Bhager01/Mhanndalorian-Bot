@@ -1269,7 +1269,7 @@ function FlairUpdate(Type, callback){
     }
 }
 
-//var CronJob = require('cron').CronJob;
+var CronJob = require('cron').CronJob;
 var job = new CronJob('0 9,21 * * *', function() {
     console.log("Cron job FlairUpdate executed QZ")
     FlairUpdate("Cron", newFlairAnncouncment)
