@@ -1285,14 +1285,14 @@ var job4 = new CronJob('00 6,14,20 * * *', function() {
 job4.start();
 
 var CronJob5 = require('cron').CronJob;
-var job5 = new CronJob('45 5,17 * * *', function() {
+var job5 = new CronJob('45 5,19 * * *', function() {
     console.log("Update Users & Allycodes from SWGOH.GG API")
     UpdateUsersAndAllycodes();
 }, null, true, 'America/New_York');
 job5.start();
 
 //var CronJob6 = require('cron').CronJob;
-var job6 = new CronJob('41 19 * * *', function() {
+var job6 = new CronJob('47 19 * * *', function() {
     console.log("Update Total GP")
     UpdateTotalGP()
 }, null, true, 'America/New_York');
