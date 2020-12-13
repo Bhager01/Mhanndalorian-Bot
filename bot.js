@@ -1337,7 +1337,7 @@ var job5 = new CronJob('45 5,17 * * *', function() {
 job5.start();
 
 //var CronJob6 = require('cron').CronJob;
-var job6 = new CronJob('24 19 * * *', function() {
+var job6 = new CronJob('01 19 * * *', function() {
     console.log("Update Total GP")
     UpdateTotalGP()
 }, null, true, 'America/New_York');
@@ -2252,10 +2252,15 @@ client.on('message', message => {
                                     message.channel.send("You do not have sufficient prividleges to execute this command.")
                             }
                             else //First argument was the word guild
-                                if(CommandArray[2] > 0)
+                                if(CommandArray[2] == undefined)
                                     GP(message, 'guildGP', CommandArray[2])
                                 else
-                                    message.channel.send("Please specify a number of days greater than 0.")
+                                {
+                                    if(!isNaN(CommandArray[2]) && CommandArray[2] > 0)
+                                        GP(message, 'guildGP', CommandArray[2])
+                                    else
+                                        message.channel.send("Please specify a number of days greater than 0.")
+                                }
                                 
                         }
                         else
