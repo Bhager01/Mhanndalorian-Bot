@@ -784,7 +784,7 @@ function UpdateUsersAndAllycodes()
                 sheets.spreadsheets.values.update({
                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
                     range: 'XML Data!A3:B56',  
-                    valueInputOption: 'RAW',
+                    valueInputOption: 'USER_ENTERED',
                     resource: {
                         values: NamesAndCodes
                     },
@@ -1337,7 +1337,7 @@ var job5 = new CronJob('45 5,17 * * *', function() {
 job5.start();
 
 //var CronJob6 = require('cron').CronJob;
-var job6 = new CronJob('10 19 * * *', function() {
+var job6 = new CronJob('01 19 * * *', function() {
     console.log("Update Total GP")
     UpdateTotalGP()
 }, null, true, 'America/New_York');
