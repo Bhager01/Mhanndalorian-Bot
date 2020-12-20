@@ -348,10 +348,13 @@ function Lookup(message, CallingFunction)
                     }
                 }
 
-                for(var j = 0; j < DiscordSWGOHNameIDArray.length; j++)
+
+                for(var j = DiscordSWGOHNameIDArray.length - 1; j >= 0; j--) //remove array entried that did not have all the data (not found in Mhann database)
                 {
                     if(DiscordSWGOHNameIDArray[j][2] == undefined || DiscordSWGOHNameIDArray[j][3] == undefined)
-                    DiscordSWGOHNameIDArray.splice(j,1)
+                    {
+                        DiscordSWGOHNameIDArray.splice(j,1)
+                    }
                 }
             
                 for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
@@ -410,7 +413,6 @@ function UpdateTotalGP() {
 
     function listMajors(auth)
     {
-        const sheets = google.sheets({version: 'v4', auth});
         const BaseURL = "https://swgoh.gg/api/guild/55879";
 
         (async () => {
@@ -549,10 +551,6 @@ function UpdateTotalGP() {
                                         values: [NewGPDataGP]
                                     },
                                 })
-
-
-
-                                //console.log(UpdateGPData)
                             })
                     }
                 )
@@ -2969,5 +2967,3 @@ client.on('message', message => {
         }
     } //for Kali
 })
-
-client.login(process.env.BOT_TOKEN);
