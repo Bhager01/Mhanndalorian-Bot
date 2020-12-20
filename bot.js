@@ -125,17 +125,17 @@ function GP(message, DiscordIDParam, DaysBack){
                                                     var GP = []
                                                     var Dates = []
 
-                                                    for(var i = 0; i < RawGP.length; i++)
-                                                    {
-                                                        GP[i] = RawGP[i][0]/1000000
-                                                    }
+                                                    var k = 0
 
-                                                    for(var i = 0; i < RawDates.length; i++)
+                                                    for(var i = 0; i < RawDates.length; i++) //Only use dates that have data
                                                     {
-                                                        Dates[i] = RawDates[i][0]
+                                                        if(!isNaN(RawGP[i][0]))
+                                                        {
+                                                            GP[k] = RawGP[i][0]/1000000
+                                                            Dates[k] = RawDates[i]
+                                                            k++
+                                                        }
                                                     }
-
-                                                    Dates.splice(GP.length, 5000);  //No need to have dates if there is no GP data for that date
 
                                                     if(DaysBack != undefined)
                                                     {
@@ -178,13 +178,18 @@ function GP(message, DiscordIDParam, DaysBack){
                                                                         borderColor: '#000000',
                                                                         fill: 'no',
                                                                         borderWidth: '3',
-                                                                        pointBorderWidth: '15',
+                                                                        pointBorderWidth: '1',
                                                                         lineTension: '0',
                                                                     }
                                                                 ]
                                                             },
 
                                                             options: {
+                                                                elements: {
+                                                                    point:{
+                                                                        radius: 0
+                                                                    }
+                                                                },
                                                                 title: {
                                                                     display: true,
                                                                     text: 'Graph of galactic power for ' + Name,
