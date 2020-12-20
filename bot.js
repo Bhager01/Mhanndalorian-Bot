@@ -2330,6 +2330,10 @@ client.on('message', message => {
             }
         }
 
+        else if(message.content.toLowerCase().startsWith(`${prefix}santa`)){
+                message.channel.send("https://www.noradsanta.org/")
+        }
+
         else if(message.content.toLowerCase().startsWith(`${prefix}broadcast`)){
             if(message.author.id == "406945430967156766"){
                 const messagetopost = message.content.substring(11) 
@@ -2967,6 +2971,5 @@ client.on('message', message => {
         }
     } //for Kali
 })
-
 
 client.login(process.env.BOT_TOKEN);
