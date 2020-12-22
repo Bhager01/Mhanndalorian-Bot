@@ -2156,9 +2156,12 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            UpdateTotalGP();
-            //PostWeeklyGuildGP();
-            //UpdateUsersAndAllycodes();
+            //UpdateTotalGP();
+
+            //const connection = await message.member.voice.channel.join();
+
+           // const SkynetChannel = client.channels.cache.get("790686339518562344")
+           // SkynetChannel.join();
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
@@ -2461,6 +2464,12 @@ client.on('message', message => {
                 }
                 else
                     message.channel.send("Are you nuts?  Why are you trying to nuke this room?!?!?") */
+        
+        else if(message.content.toLowerCase().startsWith(`${prefix}skynet`) && (wookieGuild || message.channel.type == 'dm')){
+            const attachment = new MessageAttachment('https://github.com/Bhager01/Mhanndalorian-Bot/raw/master/Skynet.mp4')
+            message.channel.send("Please turn your volume up.");
+            message.channel.send(attachment);
+        }
         
         else if(message.content.toLowerCase().startsWith(`${prefix}delgif`) && (wookieGuild || message.channel.type == 'dm')){
             (async () => {
