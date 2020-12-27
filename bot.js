@@ -436,7 +436,7 @@ function UpdateTotalGP() {
                 })*/
                     method: 'GET',
                 }).then(function (response) {
-                    console.log(response)
+                    //console.log(response)
                     return response.json()
                 })
 
@@ -485,7 +485,8 @@ function UpdateTotalGP() {
                             range: 'TotalGP!PP' + NextAvailableRow,  
                             valueInputOption: 'USER_ENTERED',
                             resource: {
-                                values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
+                                //values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
+                                values: [[Result.data.galactic_power]]
                             },
                         })
 
@@ -2156,7 +2157,7 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            //UpdateTotalGP();
+            UpdateTotalGP();
 
             //const connection = await message.member.voice.channel.join();
 
