@@ -11,8 +11,10 @@ const client = new Discord.Client({ ws: { intents } });
 
 const {google} = require('googleapis');
 const fetch = require('node-fetch');
+const bottoken   = "Njc4NzQ4MzM0OTA2NjcxMTQ1.XknTpQ.C2GFK7uk9jf2SuMdawu7LKcOuxw"; //DELETE
 const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
 const prefix = "!"
+const GuildLeader = 350289089582596097n
 
 var newBronze = "";
 var newSilver = "";
@@ -45,6 +47,7 @@ function sleep(ms) {
 }
 
 function GP(message, DiscordIDParam, DaysBack){
+    console.log(message.author.username + " executed GP command. QZ")
     content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     authorize(content, listMajors);
 
@@ -767,7 +770,7 @@ function UpdateUsersAndAllycodes()
                 {
                     method: 'GET',
                 }).then(function (response) {
-                    console.log(response)
+                    //console.log(response)
                     return response.json()
                 })
 
@@ -1269,7 +1272,7 @@ function FlairUpdate(Type, callback){
             for (let i=0; i<rows.length; i++){
                 if(typeof rows[i][1] != 'undefined' && rows[i][1] != "" && rows[i][0].length >= 1){
                     discordID = rows[i][1].replace("<","").replace(">","").replace("@","");
-                    if(discordID != 378053516067078149){
+                    if(discordID != GuildLeader){
                         User =  await client.users.fetch(discordID)
                         GuildMember =  await guild.members.fetch(User)
                         .then(value =>{
@@ -1508,7 +1511,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
                 const rows = res.data.values;
                 if (rows.length) {
                     rows.map((row) => {
-                        if(String(row[1]).match(/\d+/) == newMember.user.id && String(row[1]).match(/\d+/) != "378053516067078149"){
+                        if(String(row[1]).match(/\d+/) == newMember.user.id && String(row[1]).match(/\d+/) != GuildLeader.toString()){
                             AddFlair(newMember, row[0], "User Name Change",row[6]);
                         }
                     });
@@ -2205,6 +2208,13 @@ client.on('message', message => {
                             + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
                             + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
                             + "remove \n \n"
+
+                            + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  In addition to the ways this command can be "
+                            + "run as a regular guild member, officers have access to the following 2 command options: \n"
+
+                            + "> __**" + prefix + "gp @user**__ - The entire GP history for a specific user will be displayed. \n"
+                            + "> __**" + prefix + "gp @user n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n"
+                            
                             + "__**" + prefix + "status**__ - Displays date and time bot was launched along with total up time. \n \n "
                             + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
                             + "channels. \n");
@@ -2230,7 +2240,9 @@ client.on('message', message => {
                         + "__**" + prefix + "help**__ - Display this help message. \n \n"
                         + "__**" + prefix + "light**__ - Receive only essential notifications and access to a streamlined set of channels. \n \n"
                         + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
-                        + "be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n");
+                        + "be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
+                        + "__**" + prefix + "santa**__ - Display a link to a live Santa tracker. \n \n "
+                        + "__**" + prefix + "skynet**__ - Propaganda video for skynet. \n \n ");
                 message.channel.send(Embed)
             })()
         }
@@ -2806,7 +2818,7 @@ client.on('message', message => {
                                         {
                                             SpecialFlair[i][0] = SpecialFlair[i][0].replace(SpecificFlairRegEx,'')
 
-                                            if(rows[i][1] != "<@378053516067078149> " && null != (rows[i][1].match(/\d+/g)))
+                                            if(rows[i][1] != "<@" + GuildLeader.toString() + "> " && null != (rows[i][1].match(/\d+/g)))
                                             {
                                                 User =  await client.users.fetch(rows[i][1].match(/\d+/g))
 
@@ -2838,7 +2850,7 @@ client.on('message', message => {
                                                 User =  await client.users.fetch(TempUser2[0])
                                                 GuildMember =  await guild.members.fetch(User)
                                                 .then(value =>{
-                                                    if(TempUser2[0] != 378053516067078149)
+                                                    if(TempUser2[0] != GuildLeader)
                                                     {
                                                         AddFlair(value,rows[j][0],"SpecialAdd", SpecialFlair[j][0]);
                                                     }
@@ -2986,5 +2998,6 @@ client.on('message', message => {
         }
     } //for Kali
 })
+client.login(bottoken); //DELETE
 
 client.login(process.env.BOT_TOKEN);
