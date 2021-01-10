@@ -11,7 +11,6 @@ const client = new Discord.Client({ ws: { intents } });
 
 const {google} = require('googleapis');
 const fetch = require('node-fetch');
-const bottoken   = "Njc4NzQ4MzM0OTA2NjcxMTQ1.XknTpQ.C2GFK7uk9jf2SuMdawu7LKcOuxw"; //DELETE
 const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
 const prefix = "!"
 const GuildLeader = 350289089582596097n
@@ -2998,6 +2997,5 @@ client.on('message', message => {
         }
     } //for Kali
 })
-client.login(bottoken); //DELETE
 
 client.login(process.env.BOT_TOKEN);
