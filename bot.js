@@ -46,7 +46,9 @@ function sleep(ms) {
 }
 
 function GP(message, DiscordIDParam, DaysBack){
-    console.log(message.author.username + " executed GP command. QZ")
+    if(message.author != undefined)
+        console.log(message.author.username + " executed GP command. QZ")
+
     content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     authorize(content, listMajors);
 
@@ -2159,7 +2161,8 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            UpdateTotalGP();
+           // UpdateTotalGP();
+            PostWeeklyGuildGP();
 
             //const connection = await message.member.voice.channel.join();
 
