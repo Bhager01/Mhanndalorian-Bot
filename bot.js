@@ -29,7 +29,7 @@ var BadWords =  ['fuck', 'shit', 'pissoff', 'dickhead', 'asshole', 'sonofabitch'
                 'motherfucker', 'hell', 'holyshit', 'dick', 'cock', 'pussy', 'ass', 'ballsack', 'blowjob', 'fag',
                 'tit', 'vagina', 'screwyou']
 
-var GphApiClient = require('giphy-js-sdk-core');
+var GphApiClient = require('giphy-js-sdk-core'); 
 giphy = GphApiClient(giffyToken)
 
 var GIFData;
