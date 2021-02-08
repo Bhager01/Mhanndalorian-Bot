@@ -1670,8 +1670,8 @@ client.on('message', message => {
     {
         if(!message.content.toLowerCase().startsWith("[rancor"))
         {
-            message.reply("Error damage not recorded.  You typed: **" + message.content + "**  Please use the following format:  [rancor 5.4    "  +
-            "Replace 5.4 with the percent damage you did.");
+            message.reply("Error damage not recorded.  You typed: **" + message.content + "**  Please use one of the following commands:  \n**[rancor 5.43**    "  +
+            "Replace 5.43 with the percent damage you did. \n**[rancor abort**   This will cancel your held damage.");
 
             (async () => {                
                 await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
@@ -2965,9 +2965,21 @@ client.on('message', message => {
         else
         {
             (async () => { 
-                const guild = client.guilds.cache.get("505515654833504266"); 
-                var User =  await client.users.fetch(message.author.id)
-                var GuildMember =  await guild.members.fetch(User);
+                const guild = client.guilds.cache.get("505515654833504266");
+
+                try {var User =  await client.users.fetch(message.author.id)}
+                catch(e) {
+                    console.log(e)
+                    console.log("Error setting User from fetching message.author.id. QZ")
+                    return;
+                };
+
+                try {var GuildMember =  await guild.members.fetch(User)}
+                catch(e) {
+                    console.log(e)
+                    console.log("Error setting GuildMember from fetching User. QZ")
+                    return;
+                };
 
                 if(GuildMember.roles.cache.has("530083964380250116"))
                 {
