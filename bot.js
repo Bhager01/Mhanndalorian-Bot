@@ -25,16 +25,14 @@ var newHolodisk = "";
 var newJediScroll = ""
 var newEye = "";
 var NewNoStatus = [];
-var BadWords =  ['fuck', 'shit', 'pissoff', 'dickhead', 'asshole', 'sonofabitch', 'bitch', 'bastard', 'cunt', 'goddamn', 
-                'motherfucker', 'hell', 'holyshit', 'dick', 'cock', 'pussy', 'ass', 'ballsack', 'blowjob', 'fag',
-                'tit', 'vagina', 'screwyou']
 
 var GphApiClient = require('giphy-js-sdk-core');
 giphy = GphApiClient(giffyToken)
 
 var GIFData;
 var BotUpTime;
-var BotUpDate
+var BotUpDate;
+var GuildsUsingBot;
 
 client.once('ready', () => {
     console.log('Ready')
@@ -43,9 +41,6 @@ client.once('ready', () => {
     BotUpDate = new Date().toLocaleDateString()
 })
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 function GP(message, DiscordIDParam, DaysBack){
     if(message.author != undefined)
@@ -424,149 +419,153 @@ function UpdateTotalGP() {
 
     function listMajors(auth)
     {
-        const BaseURL = "https://swgoh.gg/api/guild/55879";
+        for(var k = 0; k < GuildsUsingBot.length; k++)
+        {
+            const BaseURL = GuildsUsingBot[k][2];
+            const SheetID = GuildsUsingBot[k][3];
 
-        (async () => {
-            var NextAvailableRow;
-            var NextAvailableColumn;
+            (async () => {
+                var NextAvailableRow;
+                var NextAvailableColumn;
 
-            Result = await fetch(BaseURL,
-                {
-               /*     method: 'GET',
-                }).then(function (response) {
-                    var response2 = response.clone();
-                    response.json().then(function(ParsedJSON) {
-                        console.log(ParsedJSON)
+                Result = await fetch(BaseURL,
+                    {
+                /*     method: 'GET',
+                    }).then(function (response) {
+                        var response2 = response.clone();
+                        response.json().then(function(ParsedJSON) {
+                            console.log(ParsedJSON)
+                        })
+                        return response2.json()
+                    })*/
+                        method: 'GET',
+                    }).then(function (response) {
+                        //console.log(response)
+                        return response.json()
                     })
-                    return response2.json()
-                })*/
-                    method: 'GET',
-                }).then(function (response) {
-                    //console.log(response)
-                    return response.json()
-                })
 
-                var AllyCodeAndGP = new Array(Result.players.length);
+                    var AllyCodeAndGP = new Array(Result.players.length);
 
-                for (var i = 0; i < AllyCodeAndGP.length; i++) { 
-                    AllyCodeAndGP[i] = new Array(3);
-                    AllyCodeAndGP[i][0] = '';
-                    AllyCodeAndGP[i][1] = '';
-                    AllyCodeAndGP[i][2] = 'Y';
-                }
+                    for (var i = 0; i < AllyCodeAndGP.length; i++) { 
+                        AllyCodeAndGP[i] = new Array(3);
+                        AllyCodeAndGP[i][0] = '';
+                        AllyCodeAndGP[i][1] = '';
+                        AllyCodeAndGP[i][2] = 'Y';
+                    }
 
-                for(var i = 0; i < Result.players.length; i++)
-                {
-                    AllyCodeAndGP[i][0] = Result.players[i].data.ally_code
-                    AllyCodeAndGP[i][1] = Result.players[i].data.galactic_power
-                }
+                    for(var i = 0; i < Result.players.length; i++)
+                    {
+                        AllyCodeAndGP[i][0] = Result.players[i].data.ally_code
+                        AllyCodeAndGP[i][1] = Result.players[i].data.galactic_power
+                    }
 
-                const sheets = google.sheets({version: 'v4', auth});
+                    const sheets = google.sheets({version: 'v4', auth});
 
-                sheets.spreadsheets.values.get({
-                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'TotalGP!A:A',
-                    }, async (err, res) => {
-                        if (err) return console.log('The API returned an error: ' + err);
-                        const rows = res.data.values;
+                    sheets.spreadsheets.values.get({
+                        spreadsheetId: SheetID,
+                        range: 'TotalGP!A:A',
+                        }, async (err, res) => {
+                            if (err) return console.log('The API returned an error: ' + err);
+                            const rows = res.data.values;
 
-                        if(rows != undefined)
-                            NextAvailableRow = rows.length + 1
-                        else
-                            NextAvailableRow = 2
+                            if(rows != undefined)
+                                NextAvailableRow = rows.length + 1
+                            else
+                                NextAvailableRow = 2
 
-                        var Today = new Date().toLocaleDateString()                            
+                            var Today = new Date().toLocaleDateString()                            
 
-                        sheets.spreadsheets.values.update({
-                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'TotalGP!A' + NextAvailableRow,  
-                            valueInputOption: 'RAW',
-                            resource: {
-                                values: [[Today]]
-                            },
-                        })
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: SheetID,
+                                range: 'TotalGP!A' + NextAvailableRow,  
+                                valueInputOption: 'RAW',
+                                resource: {
+                                    values: [[Today]]
+                                },
+                            })
 
-                        sheets.spreadsheets.values.update({
-                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'TotalGP!PP' + NextAvailableRow,  
-                            valueInputOption: 'USER_ENTERED',
-                            resource: {
-                                //values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
-                                values: [[Result.data.galactic_power]]
-                            },
-                        })
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: SheetID,
+                                range: 'TotalGP!PP' + NextAvailableRow,  
+                                valueInputOption: 'USER_ENTERED',
+                                resource: {
+                                    //values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
+                                    values: [[Result.data.galactic_power]]
+                                },
+                            })
 
-                        sheets.spreadsheets.values.get({
-                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'TotalGP!B1:PO1',
-                            }, async (err, res) => {
-                                if (err) return console.log('The API returned an error: ' + err);
-                                const rows = res.data.values;
+                            sheets.spreadsheets.values.get({
+                                spreadsheetId: SheetID,
+                                range: 'TotalGP!B1:PO1',
+                                }, async (err, res) => {
+                                    if (err) return console.log('The API returned an error: ' + err);
+                                    const rows = res.data.values;
 
-                                if(rows != undefined)
-                                    NextAvailableColumn = rows[0].length + 2
-                                else
-                                    NextAvailableColumn = 2
+                                    if(rows != undefined)
+                                        NextAvailableColumn = rows[0].length + 2
+                                    else
+                                        NextAvailableColumn = 2
 
-                                var UpdateGPData = [];
-                                var NewGPDataAllyCode = []
-                                var NewGPDataGP = []
+                                    var UpdateGPData = [];
+                                    var NewGPDataAllyCode = []
+                                    var NewGPDataGP = []
 
-                                if(rows != undefined)
-                                {
-                                    for(var i = 0; i < rows[0].length; i++)
+                                    if(rows != undefined)
                                     {
-                                        for(var j = 0; j < AllyCodeAndGP.length; j++)
+                                        for(var i = 0; i < rows[0].length; i++)
                                         {
-                                            //console.log(j)
-                                            //console.log("ID from sheet " + rows[0][i] + "    ID from SWGOH " + AllyCodeAndGP[j][0])
-                                            if(rows[0][i] == AllyCodeAndGP[j][0])
+                                            for(var j = 0; j < AllyCodeAndGP.length; j++)
                                             {
-                                                UpdateGPData[i] = AllyCodeAndGP[j][1]
-                                                AllyCodeAndGP[j][2] = 'N'
-                                                j = AllyCodeAndGP.length;
+                                                //console.log(j)
+                                                //console.log("ID from sheet " + rows[0][i] + "    ID from SWGOH " + AllyCodeAndGP[j][0])
+                                                if(rows[0][i] == AllyCodeAndGP[j][0])
+                                                {
+                                                    UpdateGPData[i] = AllyCodeAndGP[j][1]
+                                                    AllyCodeAndGP[j][2] = 'N'
+                                                    j = AllyCodeAndGP.length;
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'TotalGP!B' + NextAvailableRow,  
-                                    valueInputOption: 'RAW',
-                                    resource: {
-                                        values: [UpdateGPData]
-                                    },
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: SheetID,
+                                        range: 'TotalGP!B' + NextAvailableRow,  
+                                        valueInputOption: 'RAW',
+                                        resource: {
+                                            values: [UpdateGPData]
+                                        },
+                                    })
+
+                                    for(var i = 0; i < AllyCodeAndGP.length; i++)
+                                        if(AllyCodeAndGP[i][2] == 'Y')
+                                        {
+                                            NewGPDataAllyCode.push(AllyCodeAndGP[i][0])
+                                            NewGPDataGP.push(AllyCodeAndGP[i][1])
+                                        }
+
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: SheetID,
+                                        range: 'TotalGP!' + toColumnName(NextAvailableColumn) + '1',  
+                                        valueInputOption: 'RAW',
+                                        resource: {
+                                            values: [NewGPDataAllyCode]
+                                        },
+                                    })
+
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: SheetID,
+                                        range: 'TotalGP!' + toColumnName(NextAvailableColumn) + NextAvailableRow,  
+                                        valueInputOption: 'RAW',
+                                        resource: {
+                                            values: [NewGPDataGP]
+                                        },
+                                    })
                                 })
-
-                                for(var i = 0; i < AllyCodeAndGP.length; i++)
-                                    if(AllyCodeAndGP[i][2] == 'Y')
-                                    {
-                                        NewGPDataAllyCode.push(AllyCodeAndGP[i][0])
-                                        NewGPDataGP.push(AllyCodeAndGP[i][1])
-                                    }
-
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'TotalGP!' + toColumnName(NextAvailableColumn) + '1',  
-                                    valueInputOption: 'RAW',
-                                    resource: {
-                                        values: [NewGPDataAllyCode]
-                                    },
-                                })
-
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'TotalGP!' + toColumnName(NextAvailableColumn) + NextAvailableRow,  
-                                    valueInputOption: 'RAW',
-                                    resource: {
-                                        values: [NewGPDataGP]
-                                    },
-                                })
-                            })
-                    }
-                )
-        })()
+                        }
+                    )
+            })()
+        }
     }
 }
 
@@ -762,56 +761,61 @@ function UpdateUsersAndAllycodes()
     function listMajors(auth)
     {
         const sheets = google.sheets({version: 'v4', auth});
-        const BaseURL = "https://swgoh.gg/api/guild/55879";
 
-        (async () => {
-            Result = await fetch(BaseURL,
-               /* {
-                    method: 'GET',
-                }).then(response => response.json())*/
+        for(var k = 0; k < GuildsUsingBot.length; k++)
+        {
+            const BaseURL = GuildsUsingBot[k][2];
+            const SheetID = GuildsUsingBot[k][3];
 
-                {
-                    method: 'GET',
-                }).then(function (response) {
-                    //console.log(response)
-                    return response.json()
-                })
+            (async () => {
+                Result = await fetch(BaseURL,
+                /* {
+                        method: 'GET',
+                    }).then(response => response.json())*/
 
-                var NamesAndCodes = new Array(54);
+                    {
+                        method: 'GET',
+                    }).then(function (response) {
+                        //console.log(response)
+                        return response.json()
+                    })
 
-                for (var i = 0; i < NamesAndCodes.length; i++) { 
-                    NamesAndCodes[i] = new Array(2);
-                    NamesAndCodes[i][0] = '';
-                    NamesAndCodes[i][1] = '';
-                }
+                    var NamesAndCodes = new Array(54);
 
-                for(var i = 0; i < Result.players.length; i++)
-                {
-                    NamesAndCodes[i][0] = Result.players[i].data.name
-                    NamesAndCodes[i][1] = Result.players[i].data.ally_code
-                }
+                    for (var i = 0; i < NamesAndCodes.length; i++) { 
+                        NamesAndCodes[i] = new Array(2);
+                        NamesAndCodes[i][0] = '';
+                        NamesAndCodes[i][1] = '';
+                    }
 
-                sheets.spreadsheets.values.update({
-                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'XML Data!A3:B56',  
-                    valueInputOption: 'USER_ENTERED',
-                    resource: {
-                        values: NamesAndCodes
-                    },
-                })
+                    for(var i = 0; i < Result.players.length; i++)
+                    {
+                        NamesAndCodes[i][0] = Result.players[i].data.name
+                        NamesAndCodes[i][1] = Result.players[i].data.ally_code
+                    }
 
-                var time = new Date().toLocaleTimeString()
-                var date = new Date().toLocaleDateString()
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: SheetID,
+                        range: 'XML Data!A3:B56',  
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: NamesAndCodes
+                        },
+                    })
 
-                sheets.spreadsheets.values.update({
-                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'Guild Members & Data!C122',  
-                    valueInputOption: 'RAW',
-                    resource: {
-                        values: [[date + " " + time]]
-                    },
-                })
-        })()
+                    var time = new Date().toLocaleTimeString()
+                    var date = new Date().toLocaleDateString()
+
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: SheetID,
+                        range: 'Guild Members & Data!C122',  
+                        valueInputOption: 'RAW',
+                        resource: {
+                            values: [[date + " " + time]]
+                        },
+                    })
+            })()
+        }
     }
 }
 
@@ -916,25 +920,6 @@ async function FiveMinRaidReminder()
     }
 }
 
-async function nuke(fetched, message) {
-    fetched = await message.channel.messages.fetch({limit: 20});
-    promise = fetched.clear()
-
-    await sleep(60000).then((values) => {
-        FinalPromise = Promise.all(promise)
-    })
-
-    FinalPromise.then((values) => {
-        (async () => {
-            console.log("Nuke Function")
-            fetched = await message.channel.messages.fetch({limit: 20});
-            console.log("fetched=" + fetched.size)
-            if(fetched.size >= 1)
-                nuke(fetched, message)
-        })()
-    })
-}
-
 authorize(content, InitializeGIFArray); //Initialize GIFdata array on bot launch
 
 function InitializeGIFArray(auth)
@@ -949,6 +934,16 @@ function InitializeGIFArray(auth)
             GIFData = res.data.values;
         }
     )
+
+    sheets.spreadsheets.values.get(
+        {
+            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+            range: 'Guilds!A1:D2',
+        }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                GuildsUsingBot = res.data.values;
+            }
+        )
 }
 
 function specificGIF(searchString){
@@ -1059,7 +1054,6 @@ function dmUsersMissedRaids() {
    
     function listMajors(auth) {
         const sheets = google.sheets({version: 'v4', auth});
-        const guild = client.guilds.cache.get("505515654833504266");
         sheets.spreadsheets.values.get({
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
             range: 'Guild Members & Data!A66:K119',
@@ -1267,7 +1261,6 @@ function FlairUpdate(Type, callback){
           const rows = res.data.values;
           if (rows.length) {
 
-          var GuildMember;
           var User;
           var discordID;
 
@@ -1714,25 +1707,6 @@ client.on('message', message => {
         processMIAMessage(message)                                                                  //584496478412734464 Real MIA channel   
     }
 
-   /* if(message.author.id == "198905950919196672")
-    {
-        for(var i=0; i <= BadWords.length; i++)
-        {
-            if(message.content.toLowerCase().replace(/\w\s\w/g, "").includes(BadWords[i]))
-            {
-              //  (async () => {
-              //  fetched = await message.channel.messages.fetch({limit: 1});
-              //  fetched.clear();
-              //  })()
-
-                message.channel.send("You said a bad word Cynyde.  This had been recorded.")
-                message.react('👎');
-                message.react('❌');
-                console.log("Bad word QZ")
-            }
-        }
-    } */
-
     if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && wookieGuild){
         if(message.member.roles.cache.has("530083964380250116"))
         {
@@ -2178,10 +2152,12 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-           // UpdateTotalGP();
+            //UpdateTotalGP();
            // PostWeeklyGuildGP();
 
-           console.log(message.channel.parent.id)
+           UpdateUsersAndAllycodes();
+
+           //console.log(message.channel.parent.id)
 
             //const connection = await message.member.voice.channel.join();
 
