@@ -1,7 +1,7 @@
 const { Intents } = require("discord.js");
 const Discord = require('discord.js');
 const {MessageAttachment} = require('discord.js');
-const {CanvasRenderService} = require('chartjs-node-canvas')
+const {ChartJSNodeCanvas} = require('chartjs-node-canvas')
 const intents = new Intents([
     Intents.NON_PRIVILEGED, // include all non-privileged intents, would be better to specify which ones you actually need
     "GUILD_MEMBERS", // lets you request guild members (i.e. fixes the issue)
@@ -29,7 +29,7 @@ var BadWords =  ['fuck', 'shit', 'pissoff', 'dickhead', 'asshole', 'sonofabitch'
                 'motherfucker', 'hell', 'holyshit', 'dick', 'cock', 'pussy', 'ass', 'ballsack', 'blowjob', 'fag',
                 'tit', 'vagina', 'screwyou']
 
-var GphApiClient = require('giphy-js-sdk-core'); 
+var GphApiClient = require('giphy-js-sdk-core');
 giphy = GphApiClient(giffyToken)
 
 var GIFData;
@@ -170,7 +170,7 @@ function GP(message, DiscordIDParam, DaysBack){
                                                             })
                                                         }
 
-                                                        const canvas = new CanvasRenderService(width, height, chartCallback)
+                                                        const chartJSNodeCanvas = new ChartJSNodeCanvas({width, height, chartCallback});
 
                                                         const configuration = {
                                                             type: 'line',
@@ -234,7 +234,7 @@ function GP(message, DiscordIDParam, DaysBack){
                                                             }
                                                         }
 
-                                                        const image = await canvas.renderToBuffer(configuration)
+                                                        const image = await chartJSNodeCanvas.renderToBuffer(configuration)
                                                         const attachment = new MessageAttachment(image)
 
                                                         if(message != 'GuildWeekly')
