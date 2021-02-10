@@ -428,7 +428,7 @@ function UpdateTotalGP() {
                 var NextAvailableRow;
                 var NextAvailableColumn;
 
-                Result = await fetch(BaseURL,
+                var Result = await fetch(BaseURL,
                     {
                 /*     method: 'GET',
                     }).then(function (response) {
@@ -483,6 +483,8 @@ function UpdateTotalGP() {
                                     values: [[Today]]
                                 },
                             })
+
+                            console.log(Result.data.galactic_power)
 
                             sheets.spreadsheets.values.update({
                                 spreadsheetId: SheetID,
@@ -2152,10 +2154,10 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            //UpdateTotalGP();
-           // PostWeeklyGuildGP();
+            UpdateTotalGP();
+            //PostWeeklyGuildGP();
 
-           UpdateUsersAndAllycodes();
+           //UpdateUsersAndAllycodes();
 
            //console.log(message.channel.parent.id)
 
