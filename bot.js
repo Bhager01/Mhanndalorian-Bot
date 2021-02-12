@@ -940,7 +940,7 @@ function InitializeGIFArray(auth)
     sheets.spreadsheets.values.get(
         {
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guilds!A1:D2',
+            range: 'Guilds!B2:F30',
         }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
                 GuildsUsingBot = res.data.values;
