@@ -32,7 +32,7 @@ giphy = GphApiClient(giffyToken)
 var GIFData;
 var BotUpTime;
 var BotUpDate;
-var GuildsUsingBot;
+var AllGuildData;
 
 client.once('ready', () => {
     console.log('Ready')
@@ -41,6 +41,19 @@ client.once('ready', () => {
     BotUpDate = new Date().toLocaleDateString()
 })
 
+function GuildSearch(GuildID)
+{
+
+    for(var i = 0; i < AllGuildData.length; i++)
+    {
+        if(AllGuildData[i][1] == GuildID)
+        {
+            return i
+        }
+    }
+
+    return -1
+}
 
 function GP(message, DiscordIDParam, DaysBack){
     if(message.author != undefined)
@@ -419,10 +432,12 @@ function UpdateTotalGP() {
 
     function listMajors(auth)
     {
-        for(var k = 0; k < GuildsUsingBot.length; k++)
+        for(var k = 0; k < AllGuildData.length; k++)
         {
-            const BaseURL = GuildsUsingBot[k][2];
-            const SheetID = GuildsUsingBot[k][3];
+            const BaseURL = AllGuildData[k][2];
+            const SheetID = AllGuildData[k][3];
+
+            console.log(BaseURL);
 
             (async () => {
                 var NextAvailableRow;
@@ -764,10 +779,10 @@ function UpdateUsersAndAllycodes()
     {
         const sheets = google.sheets({version: 'v4', auth});
 
-        for(var k = 0; k < GuildsUsingBot.length; k++)
+        for(var k = 0; k < AllGuildData.length; k++)
         {
-            const BaseURL = GuildsUsingBot[k][2];
-            const SheetID = GuildsUsingBot[k][3];
+            const BaseURL = AllGuildData[k][2];
+            const SheetID = AllGuildData[k][3];
 
             (async () => {
                 Result = await fetch(BaseURL,
@@ -940,10 +955,38 @@ function InitializeGIFArray(auth)
     sheets.spreadsheets.values.get(
         {
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guilds!B2:F30',
+            range: 'Guilds!A2:F30',
         }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
-                GuildsUsingBot = res.data.values;
+                AllGuildData = res.data.values;
+
+                const GuildsWithBotInstalled = client.guilds.cache.map(g => [g.id, g.ownerID])
+                for(var i = 0; i < AllGuildData.length; i++)
+                {
+                    if(AllGuildData[i][4] == undefined) //If owner is undefined
+                    {
+                        for(var k = 0; k < GuildsWithBotInstalled.length; k++)
+                        {
+                            if(AllGuildData[i][1] == GuildsWithBotInstalled[k][0]) //If guild Ids match
+                            {
+                                AllGuildData[i][4] = GuildsWithBotInstalled[k][1] //set owner ID
+                                
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    range: 'Guilds!E' + (i + 2),
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: {
+                                        values: [[GuildsWithBotInstalled[k][1]]]
+                                    },
+                                }, (err, res) => {
+                                    if (err) return console.log('The API returned an error: ' + err);
+                                });
+
+                                k = GuildsWithBotInstalled.length
+                            }
+                        }
+                    }
+                }
             }
         )
 }
@@ -2019,6 +2062,89 @@ client.on('message', message => {
                 }
                 });
             }       
+        }
+        else if(message.content.toLowerCase().startsWith(`${prefix}setofficer`)){
+
+            if(message.channel.type =='dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
+            
+            var GuildFoundRow = -1
+            var GuildID
+            var Officer = false
+            var OfficerRoleID
+            var GuildOwner = false
+            var GuildOwnerID
+
+            var CommandArray = message.content.toLowerCase().split(' ');
+
+            if(CommandArray[1] == undefined)
+            {
+                message.channel.send("Please specify a role after !setofficer.  For example:  !setofficer @leaders")
+                return 0;
+            }
+
+            if(!CommandArray[1].startsWith("<@&"))
+            {
+                message.channel.send("You must specify a role after !setofficer.")
+                return 0;
+            }
+
+            var OfficerRoleIDArgument = CommandArray[1].replace("<@&","").replace(">","")
+
+            GuildFoundRow = GuildSearch(message.guild.id)
+
+            if(GuildFoundRow >= 0)
+            {
+                GuildOwnerID = AllGuildData[GuildFoundRow][4]
+                OfficerRoleID = AllGuildData[GuildFoundRow][5]
+                GuildID = AllGuildData[GuildFoundRow][1];
+
+                (async () => {
+                    if(GuildOwnerID == message.author.id)
+                        GuildOwner = true
+                    
+                    if(OfficerRoleID != undefined)
+                    {
+                        const guild = client.guilds.cache.get(GuildID);            
+
+                        var User =  await client.users.fetch(message.author.id)
+                        var GuildMember =  await guild.members.fetch(User);
+        
+                        if(GuildMember.roles.cache.has(OfficerRoleID))
+                            Officer = true
+                    }
+
+                    if(GuildOwner == true || Officer == true)
+                    {
+                        AllGuildData[GuildFoundRow][5] = OfficerRoleIDArgument
+                        
+                        authorize(content, listMajors);
+                        function listMajors(auth)
+                        {
+                            const sheets = google.sheets({version: 'v4', auth});
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'Guilds!F' + (GuildFoundRow + 2),
+                                valueInputOption: 'USER_ENTERED',
+                                resource: {
+                                    values: [[OfficerRoleIDArgument]]
+                                },
+                            })
+                        }
+                        message.channel.send("Officer role has been set to: <@&" + OfficerRoleIDArgument + ">")
+                    }
+
+                    else
+                        message.channel.send("You do not have permission to execute this command.")
+
+                })();
+            }
+            else
+                message.channel.send("Error:  Bot is either not installed on server or your data is not setup in master database.  Contact Mhann.")
+
         }
 
         else if((message.content.toLowerCase().startsWith(`${prefix}full`)) && (wookieGuild)){
