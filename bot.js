@@ -12,7 +12,7 @@ const client = new Discord.Client({ ws: { intents } });
 const {google} = require('googleapis');
 const fetch = require('node-fetch');
 const giffyToken = "s5PcPTErWAqH6dU57Bfk1WXF5n6F4DTY";
-const prefix = "!"
+//const prefix = "!"
 const GuildLeader = 350289089582596097n
 
 var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
@@ -51,15 +51,60 @@ function GuildSearch(GuildID)
             return i
         }
     }
-
     return -1
 }
 
-function GP(message, DiscordIDParam, DaysBack){
+async function DetermineIfOwnerOrOfficer(GuildOwnerID, OfficerRoleID, GuildID, message)
+{
+    if(GuildOwnerID == message.author.id)
+        return true;
+    
+    else if(OfficerRoleID != undefined)
+    {
+        const guild = client.guilds.cache.get(GuildID);            
+
+        var User =  await client.users.fetch(message.author.id)
+        var GuildMember =  await guild.members.fetch(User);
+
+        if(GuildMember.roles.cache.has(OfficerRoleID))
+            return true;
+    }
+
+    return false;
+}
+
+async function DetermineIfGuildMember(UserRoleID, GuildID, message)
+{  
+    if(UserRoleID != undefined)
+    {
+        const guild = client.guilds.cache.get(GuildID);            
+
+        var User =  await client.users.fetch(message.author.id)
+        var GuildMember =  await guild.members.fetch(User);
+
+        if(GuildMember.roles.cache.has(UserRoleID))
+            return true;
+    }
+
+    return false;
+}
+
+function CheckIfBlankOrUndefined()
+{
+    for (var i = 0; i < arguments.length; i++)
+    {
+        if(arguments[i] == undefined || arguments[i] == "")
+            return true
+    }
+    return false
+}
+
+
+function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow){
     if(message.author != undefined)
         console.log(message.author.username + " executed GP command. QZ")
 
-    content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+    //content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     authorize(content, listMajors);
 
     async function listMajors(auth)
@@ -68,7 +113,7 @@ function GP(message, DiscordIDParam, DaysBack){
         const DiscordID = DiscordIDParam;
 
         sheets.spreadsheets.values.get({
-            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+            spreadsheetId: AllGuildData[GuildFoundRow][3],
             range: 'Guild Members & Data!A66:G119',
         }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
@@ -93,7 +138,7 @@ function GP(message, DiscordIDParam, DaysBack){
                 else
                 {
                     Allycode = 999
-                    Name = 'the guild'
+                    Name = AllGuildData[GuildFoundRow][0]
                     Continue = true
                 }
 
@@ -102,7 +147,7 @@ function GP(message, DiscordIDParam, DaysBack){
                     Continue = false
 
                     sheets.spreadsheets.values.get({
-                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        spreadsheetId: AllGuildData[GuildFoundRow][3],
                         range: 'TotalGP!1:1',
                     }, (err, res) => {
                             if (err) return console.log('The API returned an error: ' + err);
@@ -121,7 +166,7 @@ function GP(message, DiscordIDParam, DaysBack){
                             if(Continue == true)
                             {
                                 sheets.spreadsheets.values.get({
-                                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                    spreadsheetId: AllGuildData[GuildFoundRow][3],
                                     range: 'TotalGP!' + ColumnName + '2:' + ColumnName,
                                 }, (err, res) => {
                                         if (err) return console.log('The API returned an error: ' + err);
@@ -130,7 +175,7 @@ function GP(message, DiscordIDParam, DaysBack){
                                         if(RawGP != undefined)
                                         {
                                             sheets.spreadsheets.values.get({
-                                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                                spreadsheetId: AllGuildData[GuildFoundRow][3],
                                                 range: 'TotalGP!A2:A',
                                             }, (err, res) => {
                                                     if (err) return console.log('The API returned an error: ' + err);
@@ -248,7 +293,15 @@ function GP(message, DiscordIDParam, DaysBack){
                                                         if(message != 'GuildWeekly')
                                                             message.channel.send(attachment)
                                                         else
-                                                            client.channels.cache.get("532618076705783809").send(attachment)
+                                                        {
+                                                            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][7]))
+                                                            {
+                                                                client.users.cache.get(AllGuildData[GuildFoundRow][4]).send("Standard user role and/or user announcement channel not set.  "
+                                                                + "Please run " + AllGuildData[GuildFoundRow][6] + "setuserrole and/or " + AllGuildData[GuildFoundRow][6] + "setuserchannel. ")
+                                                                return 0;
+                                                            }
+                                                            client.channels.cache.get(AllGuildData[GuildFoundRow][8]).send(attachment)
+                                                        }
                                                     })()
 
                                                     var IncreaseorDecrease;
@@ -265,11 +318,17 @@ function GP(message, DiscordIDParam, DaysBack){
                                                     
                                                     else
                                                     {
-                                                        var TwoDaysAgo = new Date();
-                                                        TwoDaysAgo.setDate(TwoDaysAgo.getDate() - 2);
-                                                        client.channels.cache.get("532618076705783809").send("<@&530083964380250116> Weekly Galactic Power Update for week of " + TwoDaysAgo.toLocaleDateString("en-US") + "." +
-                                                        "  The graph below will eventually contain data for the previous 90 days.\n\n From " +
-                                                        Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease + " by " + PercentChange + "%.")
+                                                        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][7]))
+                                                            return 0;
+
+                                                        else
+                                                        {
+                                                            var TwoDaysAgo = new Date();
+                                                            TwoDaysAgo.setDate(TwoDaysAgo.getDate() - 2);
+                                                            client.channels.cache.get(AllGuildData[GuildFoundRow][8]).send("<@&" + AllGuildData[GuildFoundRow][7] + "> Weekly Galactic Power Update for week of " + TwoDaysAgo.toLocaleDateString("en-US") + "." +
+                                                            "  The graph below will eventually contain data for the previous 90 days.\n\n From " +
+                                                            Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease + " by " + PercentChange + "%.")
+                                                        }
                                                     }
                                                 }
                                             )
@@ -294,21 +353,27 @@ function GP(message, DiscordIDParam, DaysBack){
     }
 }
 
-function Lookup(message, CallingFunction)
+function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
 {
     //var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     authorize(content, listMajors);
 
     if(CallingFunction == 'lookup')
         console.log(message.author.username + " issued lookup command. QZ")
+
+    if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][7]))
+    {
+        message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setuserrole before using this command.")
+        return 0;
+    }
     
     function listMajors(auth)
     {
-        const guild = client.guilds.cache.get("505515654833504266");
+        const guild = client.guilds.cache.get(AllGuildData[GuildFoundRow][1]);
         
         const sheets = google.sheets({version: 'v4', auth});
         sheets.spreadsheets.values.get({
-            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+            spreadsheetId: AllGuildData[GuildFoundRow][3],
             range: 'Guild Members & Data!A66:G119',
         }, (err, res) => {
             if (err) return console.log('The API returned an error: ' + err);
@@ -347,7 +412,7 @@ function Lookup(message, CallingFunction)
                     await guild.members.fetch()                    
                 })()
 
-                DiscordSWGOHNameIDArray  = guild.roles.cache.get('530083964380250116').members.map(m => [m.id, m.displayName])
+                DiscordSWGOHNameIDArray  = guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).members.map(m => [m.id, m.displayName])
 
                 for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)  //no longer used
                 {
@@ -402,7 +467,7 @@ function Lookup(message, CallingFunction)
                         })()
                     }
                     else if(CallingFunction == 'GP')
-                        GP(message, DiscordSWGOHNameIDArray[RowFound][0], DaysBack)
+                        GP(message, DiscordSWGOHNameIDArray[RowFound][0], DaysBack, AllGuildData, GuildFoundRow)
                 }
 
                 else
@@ -423,7 +488,10 @@ function toColumnName(num) {
 }
 
 function PostWeeklyGuildGP(){
-    GP('GuildWeekly', 'guildGP', 90)
+    for(var i = 0; i < AllGuildData.length; i++)
+    {
+        GP('GuildWeekly', 'guildGP', 90, AllGuildData, i)
+    }
 }
 
 function UpdateTotalGP() {
@@ -436,8 +504,6 @@ function UpdateTotalGP() {
         {
             const BaseURL = AllGuildData[k][2];
             const SheetID = AllGuildData[k][3];
-
-            console.log(BaseURL);
 
             (async () => {
                 var NextAvailableRow;
@@ -498,8 +564,6 @@ function UpdateTotalGP() {
                                     values: [[Today]]
                                 },
                             })
-
-                            console.log(Result.data.galactic_power)
 
                             sheets.spreadsheets.values.update({
                                 spreadsheetId: SheetID,
@@ -955,7 +1019,7 @@ function InitializeGIFArray(auth)
     sheets.spreadsheets.values.get(
         {
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guilds!A2:F30',
+            range: 'Guilds!A2:I30',
         }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
                 AllGuildData = res.data.values;
@@ -963,7 +1027,7 @@ function InitializeGIFArray(auth)
                 const GuildsWithBotInstalled = client.guilds.cache.map(g => [g.id, g.ownerID])
                 for(var i = 0; i < AllGuildData.length; i++)
                 {
-                    if(AllGuildData[i][4] == undefined) //If owner is undefined
+                    if(CheckIfBlankOrUndefined(AllGuildData[i][4])) //If owner is undefined
                     {
                         for(var k = 0; k < GuildsWithBotInstalled.length; k++)
                         {
@@ -986,6 +1050,23 @@ function InitializeGIFArray(auth)
                             }
                         }
                     }
+
+                    if(CheckIfBlankOrUndefined(AllGuildData[i][6]))
+                    {
+                        AllGuildData[i][6] = '!' //Set default prefix
+
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'Guilds!G' + (i + 2),
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: [["!"]]
+                            },
+                        }, (err, res) => {
+                            if (err) return console.log('The API returned an error: ' + err);
+                        });
+                    }
+
                 }
             }
         )
@@ -1369,21 +1450,18 @@ var time = new Date()
     job3.start();
 }*/
 
-//var CronJob4 = require('cron').CronJob;
 var job4 = new CronJob('00 6,14,20 * * *', function() {
     console.log("Cron job MIA cleanup QZ")
     CleanMIA();
 }, null, true, 'America/New_York');
 job4.start();
 
-//var CronJob5 = require('cron').CronJob;
 var job5 = new CronJob('45 5,17 * * *', function() {
     console.log("Update Users & Allycodes from SWGOH.GG API")
     UpdateUsersAndAllycodes();
 }, null, true, 'America/New_York');
 job5.start();
 
-//var CronJob6 = require('cron').CronJob;
 var job6 = new CronJob('01 19 * * *', function() {
     console.log("Update Total GP")
     UpdateTotalGP()
@@ -1704,6 +1782,22 @@ client.on('message', message => {
         }
     }
 
+    var GuildFoundRow = -1;
+
+    if(message.channel.type != 'dm')
+        GuildFoundRow = GuildSearch(message.guild.id)
+
+    if(GuildFoundRow == -1 && !bot && message.channel.type != 'dm')
+    {
+        console.log("Guild data not setup in Master Database.  Error 1.  Contact Mhann.  Guild ID: " + message.guild.id)
+        return 0;
+    }
+
+    if(message.channel.type != 'dm')
+        prefix = AllGuildData[GuildFoundRow][6]
+    else
+        prefix = ""
+
     if(message.channel.id == "804864706200076329" && message.author.id != "470635832462540800" && message.author.id != "678748334906671145")
     {
         if(!message.content.toLowerCase().startsWith("[rancor"))
@@ -1752,8 +1846,22 @@ client.on('message', message => {
         processMIAMessage(message)                                                                  //584496478412734464 Real MIA channel   
     }
 
-    if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && !bot && wookieGuild){
-        if(message.member.roles.cache.has("530083964380250116"))
+    if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && (message.content.toLowerCase().startsWith("eb")) &&!bot){
+        if(message.channel.type == 'dm')
+        {
+            message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+            return 0;
+        }
+
+
+        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][7], AllGuildData[GuildFoundRow][5]))
+        {
+            message.channel.send("Officer role and/or user role not set.  An officer must set these values using the commands " + AllGuildData[GuildFoundRow][6] + "setuserrole and "
+            + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
+            return 0;
+        }
+
+        if(message.member.roles.cache.has(AllGuildData[GuildFoundRow][7]))
         {
             var allyCode = String(message.content.slice(3,12));
             var officer;
@@ -1762,7 +1870,7 @@ client.on('message', message => {
 
             if(message.content.includes("@"))
             {
-                if(message.member.roles.cache.has("505527335768948754"))
+                if(message.member.roles.cache.has(AllGuildData[GuildFoundRow][5]))
                 {
                     var discordID = String(message.content.split('@')[1].match(/\d+/g));
                     officer = true;
@@ -1799,69 +1907,71 @@ client.on('message', message => {
             else //Discord user was found on server
             {
                 //*********REGISTER FOR HOT BOT**************//
-        
-            (async () => {
-                    const guild = client.guilds.cache.get("505515654833504266");
-                    const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
-                
-                    var User;
-                    var GuildMember;
+                if(message.guild.id == 505515654833504266)
+                {        
+                    (async () => {
+                        const guild = client.guilds.cache.get("505515654833504266");
+                        const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
+                    
+                        var User;
+                        var GuildMember;
 
-                    var DiscordDiscriminator;
-                    var DiscordName;
-                    var Color;
-                    var Title;
+                        var DiscordDiscriminator;
+                        var DiscordName;
+                        var Color;
+                        var Title;
 
-                    User =  await client.users.fetch(discordID);
-                    GuildMember =  await guild.members.fetch(User);
+                        User =  await client.users.fetch(discordID);
+                        GuildMember =  await guild.members.fetch(User);
 
-                //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
-                //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
+                    //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
+                    //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
 
-                    DiscordDiscriminator = "#" + GuildMember.user.discriminator
-                    DiscordName = GuildMember.user.username
+                        DiscordDiscriminator = "#" + GuildMember.user.discriminator
+                        DiscordName = GuildMember.user.username
 
-                    var headers = {
-                        "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
-                        "Accept": "application/json",
-                        "Content-Type": "application/json"
-                    };
+                        var headers = {
+                            "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
+                        };
 
-                    var body = {
-                        "discordTag": DiscordName + DiscordDiscriminator,
-                        "discordId": discordID,
-                        "allyCode": allyCode                };
+                        var body = {
+                            "discordTag": DiscordName + DiscordDiscriminator,
+                            "discordId": discordID,
+                            "allyCode": allyCode                };
 
-                //  Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode OLD API
+                    //  Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode OLD API
 
-                //  Result = await fetch(Server, { headers: headers}).then(response => response.json()) OLD API
+                    //  Result = await fetch(Server, { headers: headers}).then(response => response.json()) OLD API
 
-                    Result = await fetch(BaseURL,
-                    {
-                        method: 'POST',
-                        headers: headers,
-                        body: JSON.stringify(body)
-                    }).then(response => response.json())
+                        Result = await fetch(BaseURL,
+                        {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(body)
+                        }).then(response => response.json())
 
-                    var JSONResponse = (JSON.parse(Result));
+                        var JSONResponse = (JSON.parse(Result));
 
-                    if(JSONResponse.ResponseCode == 0)
-                    {
-                        Color = "#ff0000"
-                        Title = "Error - HotBot"
-                    }
-                    else if (JSONResponse.ResponseCode == 1)
-                    {
-                        Color = "00ff00"
-                        Title = "Success - HotBot"
-                    }
+                        if(JSONResponse.ResponseCode == 0)
+                        {
+                            Color = "#ff0000"
+                            Title = "Error - HotBot"
+                        }
+                        else if (JSONResponse.ResponseCode == 1)
+                        {
+                            Color = "00ff00"
+                            Title = "Success - HotBot"
+                        }
 
-                    const Embed = new Discord.MessageEmbed()
-                        .setColor(Color)
-                        .setTitle(Title)
-                        .setDescription(JSONResponse.ResponseMessage);
-                    message.channel.send(Embed) 
-                })()
+                        const Embed = new Discord.MessageEmbed()
+                            .setColor(Color)
+                            .setTitle(Title)
+                            .setDescription(JSONResponse.ResponseMessage);
+                        message.channel.send(Embed) 
+                    })()
+                }
 
                 //**************BELOW IS TO REGISTER FOR MHANN BOT***************
 
@@ -1877,7 +1987,7 @@ client.on('message', message => {
                 function listMajors(auth) {
                     const sheets = google.sheets({version: 'v4', auth});
                     sheets.spreadsheets.values.get({
-                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        spreadsheetId: AllGuildData[GuildFoundRow][3],
                         range: 'Guild Members & Data!A66:G119',
                     }, (err, res) => {
                         if (err) return console.log('The API returned an error: ' + err);
@@ -1904,7 +2014,7 @@ client.on('message', message => {
                                 if(row[0] == allyCode){ //ally code found and set discord ID
                                     allyCodeFound = true;
                                     sheets.spreadsheets.values.update({
-                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                        spreadsheetId: AllGuildData[GuildFoundRow][3],
                                         range: 'Guild Members & Data!G' + (i+66),
                                         valueInputOption: 'USER_ENTERED',
                                         resource: {
@@ -1929,7 +2039,7 @@ client.on('message', message => {
                         // message.channel.send("Ally code " + allyCode +" was not found in Mhanndalorian database")
                             const sheets = google.sheets({version: 'v4', auth});
                             sheets.spreadsheets.values.get({
-                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                spreadsheetId: AllGuildData[GuildFoundRow][3],
                                 range: 'Guild Members & Data!A57:A63',
                             }, (err, res) => {
                                 if (err) return console.log('The API returned an error: ' + err);
@@ -1974,7 +2084,7 @@ client.on('message', message => {
 
                                 //  message.channel.send("Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database.")
                                     sheets.spreadsheets.values.update({
-                                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                        spreadsheetId: AllGuildData[GuildFoundRow][3],
                                         range: 'Guild Members & Data!A' + (i+57) + ':C' + (i+57),
                                         valueInputOption: 'USER_ENTERED',
                                         resource: {
@@ -2007,11 +2117,12 @@ client.on('message', message => {
             }
         }
         else
-            message.channel.send("You must have the role of Bandit to execute this command");
+            message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).name + " role to execute this command.")
     }
 
-    else if(message.content.startsWith(`${prefix}`) && !bot)
+    else if(message.content.startsWith(prefix) && !bot)
     {
+
         if((message.content.toLowerCase().startsWith(`${prefix}flair`)) && (wookieGuild || message.channel.type=='dm')){
             //var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
             authorize(content, listMajors);
@@ -2063,88 +2174,219 @@ client.on('message', message => {
                 });
             }       
         }
-        else if(message.content.toLowerCase().startsWith(`${prefix}setofficer`)){
+        else if(message.content.toLowerCase().startsWith(prefix + 'setprefix')){
 
-            if(message.channel.type =='dm')
-            {
-                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
-                return 0;
-            }
-            
-            var GuildFoundRow = -1
-            var GuildID
-            var Officer = false
-            var OfficerRoleID
-            var GuildOwner = false
-            var GuildOwnerID
+            (async () => {
+                if(message.channel.type =='dm')
+                {
+                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                    return 0;
+                }
 
-            var CommandArray = message.content.toLowerCase().split(' ');
+                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
+                {
+                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
+                    return 0;
+                }
+                
+                if(!await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message))
+                {
+                    message.channel.send("You must be an officer to execute setprefix command")
+                    return 0;
+                }            
 
-            if(CommandArray[1] == undefined)
-            {
-                message.channel.send("Please specify a role after !setofficer.  For example:  !setofficer @leaders")
-                return 0;
-            }
+                var CommandArray = message.content.toLowerCase().split(' ');
 
-            if(!CommandArray[1].startsWith("<@&"))
-            {
-                message.channel.send("You must specify a role after !setofficer.")
-                return 0;
-            }
+                if(CommandArray[1] == undefined)
+                {
+                    message.channel.send("Please specify a prefix after " + prefix + "setprefix.  For example:  " + prefix + "setprefix ?")
+                    return 0;
+                }
 
-            var OfficerRoleIDArgument = CommandArray[1].replace("<@&","").replace(">","")
+                if(CommandArray[1].length != 1)
+                {
+                    message.channel.send("Prefix must be a single character.")
+                    return 0;
+                }
 
-            GuildFoundRow = GuildSearch(message.guild.id)
+                AllGuildData[GuildFoundRow][6] = CommandArray[1] //set prefix in memory
 
-            if(GuildFoundRow >= 0)
-            {
-                GuildOwnerID = AllGuildData[GuildFoundRow][4]
-                OfficerRoleID = AllGuildData[GuildFoundRow][5]
-                GuildID = AllGuildData[GuildFoundRow][1];
+                authorize(content, listMajors);
+                function listMajors(auth)
+                {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!G' + (GuildFoundRow + 2),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[CommandArray[1]]]
+                        },
+                    })
+                }
+                message.channel.send("Command prefix has been set to: " + CommandArray[1])
+            })();
+        }
 
-                (async () => {
-                    if(GuildOwnerID == message.author.id)
-                        GuildOwner = true
-                    
-                    if(OfficerRoleID != undefined)
-                    {
-                        const guild = client.guilds.cache.get(GuildID);            
+        else if(message.content.toLowerCase().startsWith(prefix + 'setuserchannel')){
+            (async () => {
+                if(message.channel.type =='dm')
+                {
+                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                    return 0;
+                }
 
-                        var User =  await client.users.fetch(message.author.id)
-                        var GuildMember =  await guild.members.fetch(User);
-        
-                        if(GuildMember.roles.cache.has(OfficerRoleID))
-                            Officer = true
-                    }
+                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
+                {
+                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
+                    return 0;
+                }
 
-                    if(GuildOwner == true || Officer == true)
-                    {
-                        AllGuildData[GuildFoundRow][5] = OfficerRoleIDArgument
-                        
-                        authorize(content, listMajors);
-                        function listMajors(auth)
-                        {
-                            const sheets = google.sheets({version: 'v4', auth});
-                            sheets.spreadsheets.values.update({
-                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                range: 'Guilds!F' + (GuildFoundRow + 2),
-                                valueInputOption: 'USER_ENTERED',
-                                resource: {
-                                    values: [[OfficerRoleIDArgument]]
-                                },
-                            })
-                        }
-                        message.channel.send("Officer role has been set to: <@&" + OfficerRoleIDArgument + ">")
-                    }
+                if(!await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message))
+                {
+                    message.channel.send("You must be an officer to execute setuserchannel command")
+                    return 0;
+                }
 
-                    else
-                        message.channel.send("You do not have permission to execute this command.")
+                var CommandArray = message.content.toLowerCase().split(' ');
 
-                })();
-            }
-            else
-                message.channel.send("Error:  Bot is either not installed on server or your data is not setup in master database.  Contact Mhann.")
+                if(CommandArray[1] == undefined)
+                {
+                    message.channel.send("Please specify a channel after !setuserchannel.  For example:  !setuserchannel #guildannouncments")
+                    return 0;
+                }
 
+                if(!CommandArray[1].startsWith("<#"))
+                {
+                    message.channel.send("You must specify a channel after !setuserrole.")
+                    return 0;
+                }
+
+                var UserChannelArgument = CommandArray[1].replace("<#","").replace(">","")
+
+                AllGuildData[GuildFoundRow][8] = UserChannelArgument //set user role in memory
+                
+                authorize(content, listMajors);
+                function listMajors(auth)
+                {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!I' + (GuildFoundRow + 2),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[UserChannelArgument]]
+                        },
+                    })
+                }
+                message.channel.send("User channel has been set to: <#" + UserChannelArgument + ">")
+            })();
+        }
+
+        else if(message.content.toLowerCase().startsWith(prefix + 'setuserrole')){
+            (async () => {
+                if(message.channel.type =='dm')
+                {
+                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                    return 0;
+                }
+
+                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
+                {
+                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
+                    return 0;
+                }
+
+                if(!await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message))
+                {
+                    message.channel.send("You must be an officer to execute setuserrole command")
+                    return 0;
+                }
+
+                var CommandArray = message.content.toLowerCase().split(' ');
+
+                if(CommandArray[1] == undefined)
+                {
+                    message.channel.send("Please specify a role after !setuserrole.  For example:  !setuserrrole @StandardUserRole")
+                    return 0;
+                }
+
+                if(!CommandArray[1].startsWith("<@&"))
+                {
+                    message.channel.send("You must specify a role after !setuserrole.")
+                    return 0;
+                }
+
+                var UserRoleIDArgument = CommandArray[1].replace("<@&","").replace(">","")
+
+                AllGuildData[GuildFoundRow][7] = UserRoleIDArgument //set user role in memory
+                
+                authorize(content, listMajors);
+                function listMajors(auth)
+                {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!H' + (GuildFoundRow + 2),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[UserRoleIDArgument]]
+                        },
+                    })
+                }
+                message.channel.send("User role has been set to: <@&" + UserRoleIDArgument + ">")
+            })();
+        }
+
+        else if(message.content.toLowerCase().startsWith(prefix + 'setofficerrole')){
+            (async () => {
+                if(message.channel.type =='dm')
+                {
+                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                    return 0;
+                }
+
+                var ServerOwnerID = AllGuildData[GuildFoundRow][4]
+
+                if(ServerOwnerID != message.author.id)
+                {
+                    message.channel.send("You must be server owner to execute this command.")
+                    return 0;
+                }
+
+                var CommandArray = message.content.toLowerCase().split(' ');
+
+                if(CommandArray[1] == undefined)
+                {
+                    message.channel.send("Please specify a role after !setofficerrole.  For example:  !setofficerrole @leaders")
+                    return 0;
+                }
+
+                if(!CommandArray[1].startsWith("<@&"))
+                {
+                    message.channel.send("You must specify a role after !setofficerrole.")
+                    return 0;
+                }
+
+                var OfficerRoleIDArgument = CommandArray[1].replace("<@&","").replace(">","")
+
+                AllGuildData[GuildFoundRow][5] = OfficerRoleIDArgument //set officer role in memory
+                
+                authorize(content, listMajors);
+                function listMajors(auth)
+                {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!F' + (GuildFoundRow + 2),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[OfficerRoleIDArgument]]
+                        },
+                    })
+                }
+                message.channel.send("Officer role has been set to: <@&" + OfficerRoleIDArgument + ">")
+            })();
         }
 
         else if((message.content.toLowerCase().startsWith(`${prefix}full`)) && (wookieGuild)){
@@ -2280,8 +2522,8 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            UpdateTotalGP();
-            //PostWeeklyGuildGP();
+            //UpdateTotalGP();
+            PostWeeklyGuildGP();
 
            //UpdateUsersAndAllycodes();
 
@@ -2293,15 +2535,19 @@ client.on('message', message => {
            // SkynetChannel.join();
         }
         
-        else if((message.content.toLowerCase().startsWith(`${prefix}help`)) && (wookieGuild || message.channel.type=='dm')){
+        else if((message.content.toLowerCase().startsWith(`${prefix}help`))){
             (async () => {
+                if(message.channel.type == 'dm')
+                {
+                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                    return 0;
+                }
                 
-                const guild = client.guilds.cache.get("505515654833504266"); 
+                const guild = client.guilds.cache.get(AllGuildData[GuildFoundRow][1]); 
                 var User =  await client.users.fetch(message.author.id)
                 var GuildMember =  await guild.members.fetch(User);
 
-                console.log(message.author.username + " asked for help. QZ")
-            
+                console.log(message.author.username + " asked for help. QZ")            
 
                 if(message.author.id == "406945430967156766")
                 {
@@ -2318,11 +2564,11 @@ client.on('message', message => {
                     message.channel.send(Embed3)
                 }
 
-                if(GuildMember.roles.cache.has("505527335768948754"))
+                if(GuildMember.roles.cache.has(AllGuildData[GuildFoundRow][5]))
                 {
                     const Embed2 = new Discord.MessageEmbed()
                         .setColor('#3495D5')
-                        .setTitle('Commands available to those with Wook-Tang role (not case sensitive)')
+                        .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][5]).name + ' role (not case sensitive)')
                         .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
                             + "__**" + prefix + "addgif**__, __***arg1***__, __***arg2***__, __***arg3***__, __***arg4***__ - Command to add "
                             + "GIF to databse. *Arg1* is the keyword to trigger GIF. *Arg2* is the phrase to search for on Giphy. *Arg3* is the "
@@ -2348,7 +2594,7 @@ client.on('message', message => {
 
                 const Embed = new Discord.MessageEmbed()
                     .setColor('#2FC071')
-                    .setTitle('Commands available to those with bandit role (not case sensitive)')
+                    .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).name + ' role (not case sensitive)')
                     .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
                         + "__**" + prefix + "alert**__ __***arg1***__ __***arg2***__ - Subscribes or unsubscribes you from a reminder. "
                         + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
@@ -2372,52 +2618,67 @@ client.on('message', message => {
             })()
         }
 
-        else if((message.content.toLowerCase().startsWith(`${prefix}gp`)) && (wookieGuild || message.channel.type=='dm'))
+        else if(message.content.toLowerCase().startsWith(`${prefix}gp`))
         {
             (async () => {
-                
-                const guild = client.guilds.cache.get("505515654833504266"); 
-                var User =  await client.users.fetch(message.author.id)
-                var GuildMember =  await guild.members.fetch(User);
+                if(message.channel.type == 'dm')
+                {
+                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                    return 0;
+                }
 
-                if(GuildMember.roles.cache.has("530083964380250116")) //Must be a bandit
+                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][7]))
+                {
+                    message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setuserrole before using this command.")
+                    return 0;
+                }
+
+                if(await DetermineIfGuildMember(AllGuildData[GuildFoundRow][7], AllGuildData[GuildFoundRow][1], message)) //Must be a standard user 
                 {
                     var CommandArray = message.content.split(' ');
 
-                    if(CommandArray[1] != undefined)
+                    if(CommandArray[1] != undefined) //user entered something after gp command
                     {
                         if(isNaN(CommandArray[1]))
                         {
-                            if(CommandArray[1].toLowerCase() != 'guild')
+                            if(CommandArray[1].toLowerCase() != 'guild') //user entered guild member name or ID
                             {
-                                if(GuildMember.roles.cache.has("505527335768948754")) //must have wooktang role
-                                    Lookup(message, 'GP')
+                                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
+                                {
+                                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
+                                    return 0;
+                                }
+
+                                if(message.channel.type != 'dm' && await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message)) //must be an officer
+                                    Lookup(message, 'GP', AllGuildData, GuildFoundRow)
                                 else
-                                    message.channel.send("You do not have sufficient prividleges to execute this command.")
+                                    message.channel.send("This command must be executed by an officer in a channel on the server.")
                             }
                             else //First argument was the word guild
-                                if(CommandArray[2] == undefined)
-                                    GP(message, 'guildGP', CommandArray[2])
+                            {
+                                if(CommandArray[2] == undefined) //No number of days specified after guild
+                                    GP(message, 'guildGP', CommandArray[2], AllGuildData, GuildFoundRow)
                                 else
                                 {
-                                    if(!isNaN(CommandArray[2]) && CommandArray[2] > 0)
-                                        GP(message, 'guildGP', CommandArray[2])
+                                    if(!isNaN(CommandArray[2]) && CommandArray[2] > 0) //number of days specified after guild
+                                        GP(message, 'guildGP', CommandArray[2], AllGuildData, GuildFoundRow)
                                     else
                                         message.channel.send("Please specify a number of days greater than 0.")
                                 }
+                            }
                                 
                         }
                         else
                             if(CommandArray[1] > 0)
-                                GP(message, message.author.id, CommandArray[1])
+                                GP(message, message.author.id, CommandArray[1], AllGuildData, GuildFoundRow)
                             else
                                 message.channel.send("Please specify a number of days greater than 0.")
                     }
-                    else //no argument provided
-                        GP(message, message.author.id)
+                    else //no argument provided (standard GP command)
+                        GP(message, message.author.id, undefined, AllGuildData, GuildFoundRow)
                 }
                 else
-                    message.channel.send("You must be have the role of bandit to execute this command.")
+                    message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).name + " role to execute this command.")
             })()
         }
 
@@ -3063,8 +3324,15 @@ client.on('message', message => {
             }
         }
 
-        else if(message.content.toLowerCase().startsWith(`${prefix}lookup`) &&  (wookieGuild || message.channel.type=='dm')){
-            Lookup(message, "lookup")
+        else if(message.content.toLowerCase().startsWith(`${prefix}lookup`))
+        {
+            if(message.channel.type == 'dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
+
+            Lookup(message, "lookup", AllGuildData, GuildFoundRow)
         }
         else
         {
