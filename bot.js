@@ -54,35 +54,23 @@ function GuildSearch(GuildID)
     return -1
 }
 
-async function DetermineIfOwnerOrOfficer(GuildOwnerID, OfficerRoleID, GuildID, message)
+function DetermineIfOwnerOrOfficer(GuildOwnerID, OfficerRoleID, message)
 {
     if(GuildOwnerID == message.author.id)
         return true;
     
     else if(OfficerRoleID != undefined)
-    {
-        const guild = client.guilds.cache.get(GuildID);            
-
-        var User =  await client.users.fetch(message.author.id)
-        var GuildMember =  await guild.members.fetch(User);
-
-        if(GuildMember.roles.cache.has(OfficerRoleID))
+        if(message.member.roles.cache.has(OfficerRoleID))
             return true;
-    }
 
     return false;
 }
 
-async function DetermineIfGuildMember(UserRoleID, GuildID, message)
+function DetermineIfGuildMember(UserRoleID, message)
 {  
     if(UserRoleID != undefined)
     {
-        const guild = client.guilds.cache.get(GuildID);            
-
-        var User =  await client.users.fetch(message.author.id)
-        var GuildMember =  await guild.members.fetch(User);
-
-        if(GuildMember.roles.cache.has(UserRoleID))
+        if(message.member.roles.cache.has(UserRoleID))
             return true;
     }
 
@@ -294,13 +282,13 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow){
                                                             message.channel.send(attachment)
                                                         else
                                                         {
-                                                            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][7]))
+                                                            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9], AllGuildData[GuildFoundRow][8]))
                                                             {
-                                                                client.users.cache.get(AllGuildData[GuildFoundRow][4]).send("Standard user role and/or user announcement channel not set.  "
-                                                                + "Please run " + AllGuildData[GuildFoundRow][6] + "setuserrole and/or " + AllGuildData[GuildFoundRow][6] + "setuserchannel. ")
+                                                                client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Standard user role and/or user announcement channel not set.  "
+                                                                + "Please run " + AllGuildData[GuildFoundRow][7] + "setuserrole and/or " + AllGuildData[GuildFoundRow][7] + "setuserchannel. ")
                                                                 return 0;
                                                             }
-                                                            client.channels.cache.get(AllGuildData[GuildFoundRow][8]).send(attachment)
+                                                            client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send(attachment)
                                                         }
                                                     })()
 
@@ -318,14 +306,14 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow){
                                                     
                                                     else
                                                     {
-                                                        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][7]))
+                                                        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9], AllGuildData[GuildFoundRow][8]))
                                                             return 0;
 
                                                         else
                                                         {
                                                             var TwoDaysAgo = new Date();
                                                             TwoDaysAgo.setDate(TwoDaysAgo.getDate() - 2);
-                                                            client.channels.cache.get(AllGuildData[GuildFoundRow][8]).send("<@&" + AllGuildData[GuildFoundRow][7] + "> Weekly Galactic Power Update for week of " + TwoDaysAgo.toLocaleDateString("en-US") + "." +
+                                                            client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send("<@&" + AllGuildData[GuildFoundRow][8] + "> Weekly Galactic Power Update for week of " + TwoDaysAgo.toLocaleDateString("en-US") + "." +
                                                             "  The graph below will eventually contain data for the previous 90 days.\n\n From " +
                                                             Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease + " by " + PercentChange + "%.")
                                                         }
@@ -361,9 +349,9 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
     if(CallingFunction == 'lookup')
         console.log(message.author.username + " issued lookup command. QZ")
 
-    if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][7]))
+    if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8]))
     {
-        message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setuserrole before using this command.")
+        message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setuserrole before using this command.")
         return 0;
     }
     
@@ -412,7 +400,7 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                     await guild.members.fetch()                    
                 })()
 
-                DiscordSWGOHNameIDArray  = guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).members.map(m => [m.id, m.displayName])
+                DiscordSWGOHNameIDArray  = guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).members.map(m => [m.id, m.displayName])
 
                 for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)  //no longer used
                 {
@@ -1019,7 +1007,7 @@ function InitializeGIFArray(auth)
     sheets.spreadsheets.values.get(
         {
             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-            range: 'Guilds!A2:I30',
+            range: 'Guilds!A2:K30',
         }, (err, res) => {
                 if (err) return console.log('The API returned an error: ' + err);
                 AllGuildData = res.data.values;
@@ -1027,17 +1015,17 @@ function InitializeGIFArray(auth)
                 const GuildsWithBotInstalled = client.guilds.cache.map(g => [g.id, g.ownerID])
                 for(var i = 0; i < AllGuildData.length; i++)
                 {
-                    if(CheckIfBlankOrUndefined(AllGuildData[i][4])) //If owner is undefined
+                    if(CheckIfBlankOrUndefined(AllGuildData[i][5])) //If owner is undefined
                     {
                         for(var k = 0; k < GuildsWithBotInstalled.length; k++)
                         {
                             if(AllGuildData[i][1] == GuildsWithBotInstalled[k][0]) //If guild Ids match
                             {
-                                AllGuildData[i][4] = GuildsWithBotInstalled[k][1] //set owner ID
+                                AllGuildData[i][5] = GuildsWithBotInstalled[k][1] //set owner ID
                                 
                                 sheets.spreadsheets.values.update({
                                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                                    range: 'Guilds!E' + (i + 2),
+                                    range: 'Guilds!F' + (i + 2),
                                     valueInputOption: 'USER_ENTERED',
                                     resource: {
                                         values: [[GuildsWithBotInstalled[k][1]]]
@@ -1051,13 +1039,13 @@ function InitializeGIFArray(auth)
                         }
                     }
 
-                    if(CheckIfBlankOrUndefined(AllGuildData[i][6]))
+                    if(CheckIfBlankOrUndefined(AllGuildData[i][7]))
                     {
-                        AllGuildData[i][6] = '!' //Set default prefix
+                        AllGuildData[i][7] = '!' //Set default prefix
 
                         sheets.spreadsheets.values.update({
                             spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                            range: 'Guilds!G' + (i + 2),
+                            range: 'Guilds!H' + (i + 2),
                             valueInputOption: 'USER_ENTERED',
                             resource: {
                                 values: [["!"]]
@@ -1474,6 +1462,70 @@ var job7 = new CronJob('15 19 * * 3', function() {
 }, null, true, 'America/New_York');
 job7.start();
 
+var job8 = new CronJob('30 18 * * 4', function() {
+    console.log("Weekly GP Performance Individual")
+    PostWeeklyGPPerformanceIndividual(AllGuildData)
+}, null, true, 'America/New_York');
+job8.start();
+
+function PostWeeklyGPPerformanceIndividual(AllGuildData) {
+    var searchObj = { // Please set search values.
+      searchTitle1: "Highest and Lowest GP Growth by Raw GP (Past 30 Days)",
+      searchTitle2: "Highest and Lowest GP Growth by Percent (Past 30 Days)",
+
+      searchTitle3: "Highest GP Growth by Raw Increase (Past 30 Days)",
+      searchTitle4: "Highest GP Growth by Percent (Past 30 Days)",
+    }
+
+    var ThreeDaysAgo = new Date();
+    ThreeDaysAgo.setDate(ThreeDaysAgo.getDate() - 3);
+
+    for(var i = 0; i < AllGuildData.length; i++)
+        findByAnythingElse(AllGuildData[i][3], i, searchObj, ThreeDaysAgo);
+  }
+
+function findByAnythingElse(spreadsheetId, GuildFoundRow, searchObj, ThreeDaysAgo) {
+    authorize(content, listMajors);
+    
+    async function listMajors(auth) {
+        const Sheets = google.sheets({version: 'v4', auth});
+
+        const request = {
+            spreadsheetId: spreadsheetId,  
+            fields: 'sheets(charts(chartId,spec(altText,subtitle,title)))'
+        };
+        
+        (async () => {
+            var obj = await Sheets.spreadsheets.get(request);
+
+           // console.log(obj.data.sheets[1].charts[1].spec.title)
+           
+           client.channels.cache.get(AllGuildData[GuildFoundRow][10]).send("<@&" + AllGuildData[GuildFoundRow][6] + "> GP performance update for week of " + 
+           ThreeDaysAgo.toLocaleDateString("en-US")) + ".\n\n" //Officer heading for post
+
+           client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send("<@&" + AllGuildData[GuildFoundRow][8] + "> GP performance update for week of " + 
+           ThreeDaysAgo.toLocaleDateString("en-US")) + ".\n\n" //User heading for post
+
+            for (var i = 0; i < obj.data.sheets.length; i++)
+            {
+                var charts = obj.data.sheets[i].charts;
+                if (charts)
+                {
+                    for (var j = 0; j < charts.length; j++)
+                    {
+                        var title = charts[j].spec.title;
+                        if (title == searchObj.searchTitle1 || title == searchObj.searchTitle2)
+                            client.channels.cache.get(AllGuildData[GuildFoundRow][10]).send(AllGuildData[GuildFoundRow][4].replace("-----",charts[j].chartId))
+
+                        if (title == searchObj.searchTitle3 || title == searchObj.searchTitle4)
+                            client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send(AllGuildData[GuildFoundRow][4].replace("-----",charts[j].chartId))
+                    }
+                }
+            }
+       })()
+    }
+  }
+
 async function AddFlair(passedMember, row, Type, SpecialF){
     var OldNickname = passedMember.displayName
 
@@ -1769,7 +1821,17 @@ client.on('message', message => {
     else
         wookieGuild = false
 
-    if(message.channel.id == "767844286028840960" || message.channel.id == "674049431594729472")
+    if(message.channel.id == "674049431594729472" && !message.author.bot)
+    {
+        (async () => {                
+            await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
+                messages.delete();
+            })
+            
+        })()
+    }
+
+    if(message.channel.id == "767844286028840960")
     {
         if(message.webhookID == null)
         {
@@ -1794,7 +1856,7 @@ client.on('message', message => {
     }
 
     if(message.channel.type != 'dm')
-        prefix = AllGuildData[GuildFoundRow][6]
+        prefix = AllGuildData[GuildFoundRow][7]
     else
         prefix = ""
 
@@ -1854,14 +1916,14 @@ client.on('message', message => {
         }
 
 
-        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][7], AllGuildData[GuildFoundRow][5]))
+        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][6]))
         {
-            message.channel.send("Officer role and/or user role not set.  An officer must set these values using the commands " + AllGuildData[GuildFoundRow][6] + "setuserrole and "
-            + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
+            message.channel.send("Officer role and/or user role not set.  An officer must set these values using the commands " + AllGuildData[GuildFoundRow][7] + "setuserrole and "
+            + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
             return 0;
         }
 
-        if(message.member.roles.cache.has(AllGuildData[GuildFoundRow][7]))
+        if(message.member.roles.cache.has(AllGuildData[GuildFoundRow][8]))
         {
             var allyCode = String(message.content.slice(3,12));
             var officer;
@@ -1870,7 +1932,7 @@ client.on('message', message => {
 
             if(message.content.includes("@"))
             {
-                if(message.member.roles.cache.has(AllGuildData[GuildFoundRow][5]))
+                if(DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
                 {
                     var discordID = String(message.content.split('@')[1].match(/\d+/g));
                     officer = true;
@@ -2117,7 +2179,7 @@ client.on('message', message => {
             }
         }
         else
-            message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).name + " role to execute this command.")
+            message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + " role to execute this command.")
     }
 
     else if(message.content.startsWith(prefix) && !bot)
@@ -2176,166 +2238,213 @@ client.on('message', message => {
         }
         else if(message.content.toLowerCase().startsWith(prefix + 'setprefix')){
 
-            (async () => {
-                if(message.channel.type =='dm')
-                {
-                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
-                    return 0;
-                }
+            if(message.channel.type =='dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
 
-                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
-                {
-                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
-                    return 0;
-                }
-                
-                if(!await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message))
-                {
-                    message.channel.send("You must be an officer to execute setprefix command")
-                    return 0;
-                }            
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
+            {
+                message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
+                return 0;
+            }
+            
+            if(!DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
+            {
+                message.channel.send("You must be an officer to execute setprefix command")
+                return 0;
+            }            
 
-                var CommandArray = message.content.toLowerCase().split(' ');
+            var CommandArray = message.content.toLowerCase().split(' ');
 
-                if(CommandArray[1] == undefined)
-                {
-                    message.channel.send("Please specify a prefix after " + prefix + "setprefix.  For example:  " + prefix + "setprefix ?")
-                    return 0;
-                }
+            if(CommandArray[1] == undefined)
+            {
+                message.channel.send("Please specify a prefix after " + prefix + "setprefix.  For example:  " + prefix + "setprefix ?")
+                return 0;
+            }
 
-                if(CommandArray[1].length != 1)
-                {
-                    message.channel.send("Prefix must be a single character.")
-                    return 0;
-                }
+            if(CommandArray[1].length != 1)
+            {
+                message.channel.send("Prefix must be a single character.")
+                return 0;
+            }
 
-                AllGuildData[GuildFoundRow][6] = CommandArray[1] //set prefix in memory
+            AllGuildData[GuildFoundRow][7] = CommandArray[1] //set prefix in memory
 
-                authorize(content, listMajors);
-                function listMajors(auth)
-                {
-                    const sheets = google.sheets({version: 'v4', auth});
-                    sheets.spreadsheets.values.update({
-                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                        range: 'Guilds!G' + (GuildFoundRow + 2),
-                        valueInputOption: 'USER_ENTERED',
-                        resource: {
-                            values: [[CommandArray[1]]]
-                        },
-                    })
-                }
-                message.channel.send("Command prefix has been set to: " + CommandArray[1])
-            })();
+            authorize(content, listMajors);
+            function listMajors(auth)
+            {
+                const sheets = google.sheets({version: 'v4', auth});
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guilds!H' + (GuildFoundRow + 2),
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: [[CommandArray[1]]]
+                    },
+                })
+            }
+            message.channel.send("Command prefix has been set to: " + CommandArray[1])
         }
 
         else if(message.content.toLowerCase().startsWith(prefix + 'setuserchannel')){
-            (async () => {
-                if(message.channel.type =='dm')
-                {
-                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
-                    return 0;
-                }
+            if(message.channel.type =='dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
 
-                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
-                {
-                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
-                    return 0;
-                }
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
+            {
+                message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
+                return 0;
+            }
 
-                if(!await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message))
-                {
-                    message.channel.send("You must be an officer to execute setuserchannel command")
-                    return 0;
-                }
+            if(!DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
+            {
+                message.channel.send("You must be an officer to execute setuserchannel command.")
+                return 0;
+            }
 
-                var CommandArray = message.content.toLowerCase().split(' ');
+            var CommandArray = message.content.toLowerCase().split(' ');
 
-                if(CommandArray[1] == undefined)
-                {
-                    message.channel.send("Please specify a channel after !setuserchannel.  For example:  !setuserchannel #guildannouncments")
-                    return 0;
-                }
+            if(CommandArray[1] == undefined)
+            {
+                message.channel.send("Please specify a channel after !setuserchannel.  For example:  !setuserchannel #guildannouncments")
+                return 0;
+            }
 
-                if(!CommandArray[1].startsWith("<#"))
-                {
-                    message.channel.send("You must specify a channel after !setuserrole.")
-                    return 0;
-                }
+            if(!CommandArray[1].startsWith("<#"))
+            {
+                message.channel.send("You must specify a channel after !setuserchannel.")
+                return 0;
+            }
 
-                var UserChannelArgument = CommandArray[1].replace("<#","").replace(">","")
+            var UserChannelArgument = CommandArray[1].replace("<#","").replace(">","")
 
-                AllGuildData[GuildFoundRow][8] = UserChannelArgument //set user role in memory
-                
-                authorize(content, listMajors);
-                function listMajors(auth)
-                {
-                    const sheets = google.sheets({version: 'v4', auth});
-                    sheets.spreadsheets.values.update({
-                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                        range: 'Guilds!I' + (GuildFoundRow + 2),
-                        valueInputOption: 'USER_ENTERED',
-                        resource: {
-                            values: [[UserChannelArgument]]
-                        },
-                    })
-                }
-                message.channel.send("User channel has been set to: <#" + UserChannelArgument + ">")
-            })();
+            AllGuildData[GuildFoundRow][9] = UserChannelArgument //set user channel in memory
+            
+            authorize(content, listMajors);
+            function listMajors(auth)
+            {
+                const sheets = google.sheets({version: 'v4', auth});
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guilds!J' + (GuildFoundRow + 2),
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: [[UserChannelArgument]]
+                    },
+                })
+            }
+            message.channel.send("User channel has been set to: <#" + UserChannelArgument + ">")
+        }
+
+        else if(message.content.toLowerCase().startsWith(prefix + 'setofficerchannel')){
+            if(message.channel.type =='dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
+
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
+            {
+                message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
+                return 0;
+            }
+
+            if(!DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
+            {
+                message.channel.send("You must be an officer to execute setofficerchannel command.")
+                return 0;
+            }
+
+            var CommandArray = message.content.toLowerCase().split(' ');
+
+            if(CommandArray[1] == undefined)
+            {
+                message.channel.send("Please specify a channel after !setofficerchannel.  For example:  !setofficerchannel #officerannouncments")
+                return 0;
+            }
+
+            if(!CommandArray[1].startsWith("<#"))
+            {
+                message.channel.send("You must specify a channel after !setofficerchannel.")
+                return 0;
+            }
+
+            var OfficerChannelArgument = CommandArray[1].replace("<#","").replace(">","")
+
+            AllGuildData[GuildFoundRow][10] = OfficerChannelArgument //set user role in memory
+            
+            authorize(content, listMajors);
+            function listMajors(auth)
+            {
+                const sheets = google.sheets({version: 'v4', auth});
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guilds!K' + (GuildFoundRow + 2),
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: [[OfficerChannelArgument]]
+                    },
+                })
+            }
+            message.channel.send("Officer channel has been set to: <#" + OfficerChannelArgument + ">")
         }
 
         else if(message.content.toLowerCase().startsWith(prefix + 'setuserrole')){
-            (async () => {
-                if(message.channel.type =='dm')
-                {
-                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
-                    return 0;
-                }
+            if(message.channel.type =='dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
 
-                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
-                {
-                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
-                    return 0;
-                }
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
+            {
+                message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
+                return 0;
+            }
 
-                if(!await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message))
-                {
-                    message.channel.send("You must be an officer to execute setuserrole command")
-                    return 0;
-                }
+            if(!DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
+            {
+                message.channel.send("You must be an officer to execute setuserrole command")
+                return 0;
+            }
 
-                var CommandArray = message.content.toLowerCase().split(' ');
+            var CommandArray = message.content.toLowerCase().split(' ');
 
-                if(CommandArray[1] == undefined)
-                {
-                    message.channel.send("Please specify a role after !setuserrole.  For example:  !setuserrrole @StandardUserRole")
-                    return 0;
-                }
+            if(CommandArray[1] == undefined)
+            {
+                message.channel.send("Please specify a role after !setuserrole.  For example:  !setuserrrole @StandardUserRole")
+                return 0;
+            }
 
-                if(!CommandArray[1].startsWith("<@&"))
-                {
-                    message.channel.send("You must specify a role after !setuserrole.")
-                    return 0;
-                }
+            if(!CommandArray[1].startsWith("<@&"))
+            {
+                message.channel.send("You must specify a role after !setuserrole.")
+                return 0;
+            }
 
-                var UserRoleIDArgument = CommandArray[1].replace("<@&","").replace(">","")
+            var UserRoleIDArgument = CommandArray[1].replace("<@&","").replace(">","")
 
-                AllGuildData[GuildFoundRow][7] = UserRoleIDArgument //set user role in memory
-                
-                authorize(content, listMajors);
-                function listMajors(auth)
-                {
-                    const sheets = google.sheets({version: 'v4', auth});
-                    sheets.spreadsheets.values.update({
-                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                        range: 'Guilds!H' + (GuildFoundRow + 2),
-                        valueInputOption: 'USER_ENTERED',
-                        resource: {
-                            values: [[UserRoleIDArgument]]
-                        },
-                    })
-                }
-                message.channel.send("User role has been set to: <@&" + UserRoleIDArgument + ">")
-            })();
+            AllGuildData[GuildFoundRow][8] = UserRoleIDArgument //set user role in memory
+            
+            authorize(content, listMajors);
+            function listMajors(auth)
+            {
+                const sheets = google.sheets({version: 'v4', auth});
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guilds!I' + (GuildFoundRow + 2),
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: [[UserRoleIDArgument]]
+                    },
+                })
+            }
+            message.channel.send("User role has been set to: <@&" + UserRoleIDArgument + ">")
         }
 
         else if(message.content.toLowerCase().startsWith(prefix + 'setofficerrole')){
@@ -2346,7 +2455,7 @@ client.on('message', message => {
                     return 0;
                 }
 
-                var ServerOwnerID = AllGuildData[GuildFoundRow][4]
+                var ServerOwnerID = AllGuildData[GuildFoundRow][5]
 
                 if(ServerOwnerID != message.author.id)
                 {
@@ -2370,7 +2479,7 @@ client.on('message', message => {
 
                 var OfficerRoleIDArgument = CommandArray[1].replace("<@&","").replace(">","")
 
-                AllGuildData[GuildFoundRow][5] = OfficerRoleIDArgument //set officer role in memory
+                AllGuildData[GuildFoundRow][6] = OfficerRoleIDArgument //set officer role in memory
                 
                 authorize(content, listMajors);
                 function listMajors(auth)
@@ -2378,7 +2487,7 @@ client.on('message', message => {
                     const sheets = google.sheets({version: 'v4', auth});
                     sheets.spreadsheets.values.update({
                         spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                        range: 'Guilds!F' + (GuildFoundRow + 2),
+                        range: 'Guilds!G' + (GuildFoundRow + 2),
                         valueInputOption: 'USER_ENTERED',
                         resource: {
                             values: [[OfficerRoleIDArgument]]
@@ -2522,8 +2631,14 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
+            PostWeeklyGPPerformanceIndividual(AllGuildData)
             //UpdateTotalGP();
-            PostWeeklyGuildGP();
+            //PostWeeklyGuildGP();
+
+            //for(var i = 0; i < AllGuildData.length; i++)
+            //{
+            //    PostWeeklyGPPerformanceIndividual(AllGuildData, i)
+            //}
 
            //UpdateUsersAndAllycodes();
 
@@ -2564,11 +2679,11 @@ client.on('message', message => {
                     message.channel.send(Embed3)
                 }
 
-                if(GuildMember.roles.cache.has(AllGuildData[GuildFoundRow][5]))
+                if(GuildMember.roles.cache.has(AllGuildData[GuildFoundRow][6]))
                 {
                     const Embed2 = new Discord.MessageEmbed()
                         .setColor('#3495D5')
-                        .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][5]).name + ' role (not case sensitive)')
+                        .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][6]).name + ' role (not case sensitive)')
                         .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
                             + "__**" + prefix + "addgif**__, __***arg1***__, __***arg2***__, __***arg3***__, __***arg4***__ - Command to add "
                             + "GIF to databse. *Arg1* is the keyword to trigger GIF. *Arg2* is the phrase to search for on Giphy. *Arg3* is the "
@@ -2594,7 +2709,7 @@ client.on('message', message => {
 
                 const Embed = new Discord.MessageEmbed()
                     .setColor('#2FC071')
-                    .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).name + ' role (not case sensitive)')
+                    .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + ' role (not case sensitive)')
                     .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
                         + "__**" + prefix + "alert**__ __***arg1***__ __***arg2***__ - Subscribes or unsubscribes you from a reminder. "
                         + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
@@ -2620,66 +2735,64 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}gp`))
         {
-            (async () => {
-                if(message.channel.type == 'dm')
-                {
-                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
-                    return 0;
-                }
+            if(message.channel.type == 'dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
 
-                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][7]))
-                {
-                    message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setuserrole before using this command.")
-                    return 0;
-                }
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8]))
+            {
+                message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setuserrole before using this command.")
+                return 0;
+            }
 
-                if(await DetermineIfGuildMember(AllGuildData[GuildFoundRow][7], AllGuildData[GuildFoundRow][1], message)) //Must be a standard user 
-                {
-                    var CommandArray = message.content.split(' ');
+            if(DetermineIfGuildMember(AllGuildData[GuildFoundRow][8], message)) //Must be a standard user 
+            {
+                var CommandArray = message.content.split(' ');
 
-                    if(CommandArray[1] != undefined) //user entered something after gp command
+                if(CommandArray[1] != undefined) //user entered something after gp command
+                {
+                    if(isNaN(CommandArray[1]))
                     {
-                        if(isNaN(CommandArray[1]))
+                        if(CommandArray[1].toLowerCase() != 'guild') //user entered guild member name or ID
                         {
-                            if(CommandArray[1].toLowerCase() != 'guild') //user entered guild member name or ID
+                            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
                             {
-                                if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][5]))
-                                {
-                                    message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][6] + "setofficerrole before using this command.")
-                                    return 0;
-                                }
-
-                                if(message.channel.type != 'dm' && await DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][4], AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][1], message)) //must be an officer
-                                    Lookup(message, 'GP', AllGuildData, GuildFoundRow)
-                                else
-                                    message.channel.send("This command must be executed by an officer in a channel on the server.")
+                                message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
+                                return 0;
                             }
-                            else //First argument was the word guild
+
+                            if(message.channel.type != 'dm' && DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message)) //must be an officer
+                                Lookup(message, 'GP', AllGuildData, GuildFoundRow)
+                            else
+                                message.channel.send("This command must be executed by an officer in a channel on the server.")
+                        }
+                        else //First argument was the word guild
+                        {
+                            if(CommandArray[2] == undefined) //No number of days specified after guild
+                                GP(message, 'guildGP', CommandArray[2], AllGuildData, GuildFoundRow)
+                            else
                             {
-                                if(CommandArray[2] == undefined) //No number of days specified after guild
+                                if(!isNaN(CommandArray[2]) && CommandArray[2] > 0) //number of days specified after guild
                                     GP(message, 'guildGP', CommandArray[2], AllGuildData, GuildFoundRow)
                                 else
-                                {
-                                    if(!isNaN(CommandArray[2]) && CommandArray[2] > 0) //number of days specified after guild
-                                        GP(message, 'guildGP', CommandArray[2], AllGuildData, GuildFoundRow)
-                                    else
-                                        message.channel.send("Please specify a number of days greater than 0.")
-                                }
+                                    message.channel.send("Please specify a number of days greater than 0.")
                             }
-                                
                         }
-                        else
-                            if(CommandArray[1] > 0)
-                                GP(message, message.author.id, CommandArray[1], AllGuildData, GuildFoundRow)
-                            else
-                                message.channel.send("Please specify a number of days greater than 0.")
+                            
                     }
-                    else //no argument provided (standard GP command)
-                        GP(message, message.author.id, undefined, AllGuildData, GuildFoundRow)
+                    else
+                        if(CommandArray[1] > 0)
+                            GP(message, message.author.id, CommandArray[1], AllGuildData, GuildFoundRow)
+                        else
+                            message.channel.send("Please specify a number of days greater than 0.")
                 }
-                else
-                    message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][7]).name + " role to execute this command.")
-            })()
+                else //no argument provided (standard GP command)
+                    GP(message, message.author.id, undefined, AllGuildData, GuildFoundRow)
+            }
+            else
+                message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + " role to execute this command.")
         }
 
         else if((message.content.toLowerCase().startsWith(`${prefix}gifs`)) && (wookieGuild || message.channel.type=='dm')){
