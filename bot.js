@@ -838,57 +838,62 @@ function UpdateUsersAndAllycodes()
 
         for(var k = 0; k < AllGuildData.length; k++)
         {
-            const BaseURL = AllGuildData[k][2];
-            const SheetID = AllGuildData[k][3];
+            if(!CheckIfBlankOrUndefined(AllGuildData[k][2]) && AllGuildData[k][2].toLowerCase().startsWith("https://swgoh.gg/api/guild"))
+            {
+                const BaseURL = AllGuildData[k][2];
+                const SheetID = AllGuildData[k][3];
 
-            (async () => {
-                Result = await fetch(BaseURL,
-                /* {
-                        method: 'GET',
-                    }).then(response => response.json())*/
+                (async () => {
+                    Result = await fetch(BaseURL,
+                    /* {
+                            method: 'GET',
+                        }).then(response => response.json())*/
 
-                    {
-                        method: 'GET',
-                    }).then(function (response) {
-                        //console.log(response)
-                        return response.json()
-                    })
+                        {
+                            method: 'GET',
+                        }).then(function (response) {
+                            //console.log(response)
+                            return response.json()
+                        })
 
-                    var NamesAndCodes = new Array(54);
+                        var NamesAndCodes = new Array(54);
 
-                    for (var i = 0; i < NamesAndCodes.length; i++) { 
-                        NamesAndCodes[i] = new Array(2);
-                        NamesAndCodes[i][0] = '';
-                        NamesAndCodes[i][1] = '';
-                    }
+                        for (var i = 0; i < NamesAndCodes.length; i++) { 
+                            NamesAndCodes[i] = new Array(2);
+                            NamesAndCodes[i][0] = '';
+                            NamesAndCodes[i][1] = '';
+                        }
 
-                    for(var i = 0; i < Result.players.length; i++)
-                    {
-                        NamesAndCodes[i][0] = Result.players[i].data.name
-                        NamesAndCodes[i][1] = Result.players[i].data.ally_code
-                    }
+                        for(var i = 0; i < Result.players.length; i++)
+                        {
+                            NamesAndCodes[i][0] = Result.players[i].data.name
+                            NamesAndCodes[i][1] = Result.players[i].data.ally_code
+                        }
 
-                    sheets.spreadsheets.values.update({
-                        spreadsheetId: SheetID,
-                        range: 'XML Data!A3:B56',  
-                        valueInputOption: 'USER_ENTERED',
-                        resource: {
-                            values: NamesAndCodes
-                        },
-                    })
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: SheetID,
+                            range: 'XML Data!A3:B56',  
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: NamesAndCodes
+                            },
+                        })
 
-                    var time = new Date().toLocaleTimeString()
-                    var date = new Date().toLocaleDateString()
+                        var time = new Date().toLocaleTimeString()
+                        var date = new Date().toLocaleDateString()
 
-                    sheets.spreadsheets.values.update({
-                        spreadsheetId: SheetID,
-                        range: 'Guild Members & Data!C122',  
-                        valueInputOption: 'RAW',
-                        resource: {
-                            values: [[date + " " + time]]
-                        },
-                    })
-            })()
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: SheetID,
+                            range: 'Guild Members & Data!C122',  
+                            valueInputOption: 'RAW',
+                            resource: {
+                                values: [[date + " " + time]]
+                            },
+                        })
+                })()
+            }
+            else
+                client.users.cache.get(AllGuildData[k][5]).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL.  Contact Mhann.")
         }
     }
 }
@@ -1829,7 +1834,11 @@ client.on("guildBanRemove", (guild,user) => {
 client.on("guildCreate", function(guild){
     (async () => {
         var NewChannel = await guild.channels.create('Mhanndalorian-bot', {type: 'text', reason: 'Bot was installed on server'})
-        NewChannel.send("Welcome to the Mhanndalorian Bot!")
+        const BotRole = guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot')
+
+        NewChannel.updateOverwrite(BotRole, {})
+        NewChannel.send("Welcome to the Mhanndalorian Bot!  In order to get up and running please check out the help file using the **!help** command.  You will need to run all the set commands to tell "
+                        + "the bot a bit about your server.  If you have any questions or problems, please reach out to <@406945430967156766>.")
 
         for(var i = 0; i < AllGuildData.length; i++)
         {
@@ -1859,6 +1868,42 @@ client.on("guildCreate", function(guild){
 
 client.on("guildDelete", function(guild){
     console.log(`the client deleted/left a guild`);
+
+    for(var i = 0; i < AllGuildData.length; i++)
+    {
+        if(guild.id == AllGuildData[i][1])
+        {
+            AllGuildData.splice(i,1)
+
+            authorize(content, listMajors);
+            function listMajors(auth)
+            {
+                const sheets = google.sheets({version: 'v4', auth});
+                sheets.spreadsheets.batchUpdate({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    resource: {
+                        "requests": 
+                        [
+                            {
+                                "deleteRange": 
+                                {
+                                    "range": 
+                                    {
+                                        "sheetId": 33239746, // gid
+                                        "startRowIndex": i+1,
+                                        "endRowIndex": i+2
+                                    },
+                                    "shiftDimension": "ROWS"
+                                }
+                            }
+                        ]
+                    }
+                })
+            }
+
+            return 0;
+        }
+    }
 });
 
 client.on('message', message => {
@@ -2382,7 +2427,22 @@ client.on('message', message => {
 
             var UserChannelArgument = CommandArray[1].replace("<#","").replace(">","")
 
-            AllGuildData[GuildFoundRow][9] = UserChannelArgument //set user channel in memory
+            const BotRole = message.guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot')
+
+            if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9]))//Remove Mhanndalorian read permission from channel 
+            {
+                (async () => {
+                    var ChannelObject = await client.channels.fetch(AllGuildData[GuildFoundRow][9])
+                    ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: false})
+                })()
+            }
+
+            AllGuildData[GuildFoundRow][9] = UserChannelArgument; //set user channel in memory
+
+            (async () => { //add Mhanndalorian bot role to channel
+                var ChannelObject = await client.channels.fetch(UserChannelArgument)
+                ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: true})
+            })()
             
             authorize(content, listMajors);
             function listMajors(auth)
@@ -2435,7 +2495,22 @@ client.on('message', message => {
 
             var OfficerChannelArgument = CommandArray[1].replace("<#","").replace(">","")
 
-            AllGuildData[GuildFoundRow][10] = OfficerChannelArgument //set user role in memory
+            const BotRole = message.guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot')
+
+            if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][10]))//Remove Mhanndalorian read permission from channel 
+            {
+                (async () => {
+                    var ChannelObject = await client.channels.fetch(AllGuildData[GuildFoundRow][10])
+                    ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: false})
+                })()
+            }
+
+            AllGuildData[GuildFoundRow][10] = OfficerChannelArgument; //set officer channel in memory
+
+            (async () => { //add Mhanndalorian bot role to channel
+                var ChannelObject = await client.channels.fetch(OfficerChannelArgument)
+                ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: true})
+            })()
             
             authorize(content, listMajors);
             function listMajors(auth)
@@ -2692,9 +2767,11 @@ client.on('message', message => {
         {
            //PostWeeklyGPPerformanceIndividual(AllGuildData)
 
+           UpdateUsersAndAllycodes();
+
           // console.log(AllGuildData)
           //  UpdateTotalGP();
-          FiveMinRaidReminder();
+          //FiveMinRaidReminder();
             //PostWeeklyGuildGP();
 
             //for(var i = 0; i < AllGuildData.length; i++)
@@ -2847,9 +2924,9 @@ client.on('message', message => {
                             color = '#3495D5'
 
                         if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
-                            title = 'Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + ' role (not case sensitive)'
+                            title = 'Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][6]).name + ' role (not case sensitive)'
                         else
-                            title = 'Commands available to those with officer user role (not case sensitive)'
+                            title = 'Commands available to those with officer role (not case sensitive)'
 
                         const Embed2 = new Discord.MessageEmbed()
                             .setColor(color)
