@@ -284,7 +284,7 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow){
                                                         {
                                                             if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9], AllGuildData[GuildFoundRow][8]))
                                                             {
-                                                                client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Standard user role and/or user announcement channel not set.  "
+                                                                client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Weekly Guild GP update failed to run.  Standard user role and/or user announcement channel not set.  "
                                                                 + "Please run " + AllGuildData[GuildFoundRow][7] + "setuserrole and/or " + AllGuildData[GuildFoundRow][7] + "setuserchannel. ")
                                                                 return 0;
                                                             }
@@ -490,150 +490,155 @@ function UpdateTotalGP() {
     {
         for(var k = 0; k < AllGuildData.length; k++)
         {
-            const BaseURL = AllGuildData[k][2];
-            const SheetID = AllGuildData[k][3];
+            if(!CheckIfBlankOrUndefined(AllGuildData[k][2],  AllGuildData[k][3]))
+            {            
+                const BaseURL = AllGuildData[k][2];
+                const SheetID = AllGuildData[k][3];
 
-            (async () => {
-                var NextAvailableRow;
-                var NextAvailableColumn;
+                (async () => {
+                    var NextAvailableRow;
+                    var NextAvailableColumn;
 
-                var Result = await fetch(BaseURL,
-                    {
-                /*     method: 'GET',
-                    }).then(function (response) {
-                        var response2 = response.clone();
-                        response.json().then(function(ParsedJSON) {
-                            console.log(ParsedJSON)
+                    var Result = await fetch(BaseURL,
+                        {
+                    /*     method: 'GET',
+                        }).then(function (response) {
+                            var response2 = response.clone();
+                            response.json().then(function(ParsedJSON) {
+                                console.log(ParsedJSON)
+                            })
+                            return response2.json()
+                        })*/
+                            method: 'GET',
+                        }).then(function (response) {
+                            //console.log(response)
+                            return response.json()
                         })
-                        return response2.json()
-                    })*/
-                        method: 'GET',
-                    }).then(function (response) {
-                        //console.log(response)
-                        return response.json()
-                    })
 
-                    var AllyCodeAndGP = new Array(Result.players.length);
+                        var AllyCodeAndGP = new Array(Result.players.length);
 
-                    for (var i = 0; i < AllyCodeAndGP.length; i++) { 
-                        AllyCodeAndGP[i] = new Array(3);
-                        AllyCodeAndGP[i][0] = '';
-                        AllyCodeAndGP[i][1] = '';
-                        AllyCodeAndGP[i][2] = 'Y';
-                    }
+                        for (var i = 0; i < AllyCodeAndGP.length; i++) { 
+                            AllyCodeAndGP[i] = new Array(3);
+                            AllyCodeAndGP[i][0] = '';
+                            AllyCodeAndGP[i][1] = '';
+                            AllyCodeAndGP[i][2] = 'Y';
+                        }
 
-                    for(var i = 0; i < Result.players.length; i++)
-                    {
-                        AllyCodeAndGP[i][0] = Result.players[i].data.ally_code
-                        AllyCodeAndGP[i][1] = Result.players[i].data.galactic_power
-                    }
+                        for(var i = 0; i < Result.players.length; i++)
+                        {
+                            AllyCodeAndGP[i][0] = Result.players[i].data.ally_code
+                            AllyCodeAndGP[i][1] = Result.players[i].data.galactic_power
+                        }
 
-                    const sheets = google.sheets({version: 'v4', auth});
+                        const sheets = google.sheets({version: 'v4', auth});
 
-                    sheets.spreadsheets.values.get({
-                        spreadsheetId: SheetID,
-                        range: 'TotalGP!A:A',
-                        }, async (err, res) => {
-                            if (err) return console.log('The API returned an error: ' + err);
-                            const rows = res.data.values;
+                        sheets.spreadsheets.values.get({
+                            spreadsheetId: SheetID,
+                            range: 'TotalGP!A:A',
+                            }, async (err, res) => {
+                                if (err) return console.log('The API returned an error: ' + err);
+                                const rows = res.data.values;
 
-                            if(rows != undefined)
-                                NextAvailableRow = rows.length + 1
-                            else
-                                NextAvailableRow = 2
+                                if(rows != undefined)
+                                    NextAvailableRow = rows.length + 1
+                                else
+                                    NextAvailableRow = 2
 
-                            var Today = new Date().toLocaleDateString()                            
+                                var Today = new Date().toLocaleDateString()                            
 
-                            sheets.spreadsheets.values.update({
-                                spreadsheetId: SheetID,
-                                range: 'TotalGP!A' + NextAvailableRow,  
-                                valueInputOption: 'RAW',
-                                resource: {
-                                    values: [[Today]]
-                                },
-                            })
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: SheetID,
+                                    range: 'TotalGP!A' + NextAvailableRow,  
+                                    valueInputOption: 'RAW',
+                                    resource: {
+                                        values: [[Today]]
+                                    },
+                                })
 
-                            sheets.spreadsheets.values.update({
-                                spreadsheetId: SheetID,
-                                range: 'TotalGP!PP' + NextAvailableRow,  
-                                valueInputOption: 'USER_ENTERED',
-                                resource: {
-                                    //values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
-                                    values: [[Result.data.galactic_power]]
-                                },
-                            })
+                                sheets.spreadsheets.values.update({
+                                    spreadsheetId: SheetID,
+                                    range: 'TotalGP!PP' + NextAvailableRow,  
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: {
+                                        //values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
+                                        values: [[Result.data.galactic_power]]
+                                    },
+                                })
 
-                            sheets.spreadsheets.values.get({
-                                spreadsheetId: SheetID,
-                                range: 'TotalGP!B1:PO1',
-                                }, async (err, res) => {
-                                    if (err) return console.log('The API returned an error: ' + err);
-                                    const rows = res.data.values;
+                                sheets.spreadsheets.values.get({
+                                    spreadsheetId: SheetID,
+                                    range: 'TotalGP!B1:PO1',
+                                    }, async (err, res) => {
+                                        if (err) return console.log('The API returned an error: ' + err);
+                                        const rows = res.data.values;
 
-                                    if(rows != undefined)
-                                        NextAvailableColumn = rows[0].length + 2
-                                    else
-                                        NextAvailableColumn = 2
+                                        if(rows != undefined)
+                                            NextAvailableColumn = rows[0].length + 2
+                                        else
+                                            NextAvailableColumn = 2
 
-                                    var UpdateGPData = [];
-                                    var NewGPDataAllyCode = []
-                                    var NewGPDataGP = []
+                                        var UpdateGPData = [];
+                                        var NewGPDataAllyCode = []
+                                        var NewGPDataGP = []
 
-                                    if(rows != undefined)
-                                    {
-                                        for(var i = 0; i < rows[0].length; i++)
+                                        if(rows != undefined)
                                         {
-                                            for(var j = 0; j < AllyCodeAndGP.length; j++)
+                                            for(var i = 0; i < rows[0].length; i++)
                                             {
-                                                //console.log(j)
-                                                //console.log("ID from sheet " + rows[0][i] + "    ID from SWGOH " + AllyCodeAndGP[j][0])
-                                                if(rows[0][i] == AllyCodeAndGP[j][0])
+                                                for(var j = 0; j < AllyCodeAndGP.length; j++)
                                                 {
-                                                    UpdateGPData[i] = AllyCodeAndGP[j][1]
-                                                    AllyCodeAndGP[j][2] = 'N'
-                                                    j = AllyCodeAndGP.length;
+                                                    //console.log(j)
+                                                    //console.log("ID from sheet " + rows[0][i] + "    ID from SWGOH " + AllyCodeAndGP[j][0])
+                                                    if(rows[0][i] == AllyCodeAndGP[j][0])
+                                                    {
+                                                        UpdateGPData[i] = AllyCodeAndGP[j][1]
+                                                        AllyCodeAndGP[j][2] = 'N'
+                                                        j = AllyCodeAndGP.length;
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
 
-                                    sheets.spreadsheets.values.update({
-                                        spreadsheetId: SheetID,
-                                        range: 'TotalGP!B' + NextAvailableRow,  
-                                        valueInputOption: 'RAW',
-                                        resource: {
-                                            values: [UpdateGPData]
-                                        },
+                                        sheets.spreadsheets.values.update({
+                                            spreadsheetId: SheetID,
+                                            range: 'TotalGP!B' + NextAvailableRow,  
+                                            valueInputOption: 'RAW',
+                                            resource: {
+                                                values: [UpdateGPData]
+                                            },
+                                        })
+
+                                        for(var i = 0; i < AllyCodeAndGP.length; i++)
+                                            if(AllyCodeAndGP[i][2] == 'Y')
+                                            {
+                                                NewGPDataAllyCode.push(AllyCodeAndGP[i][0])
+                                                NewGPDataGP.push(AllyCodeAndGP[i][1])
+                                            }
+
+                                        sheets.spreadsheets.values.update({
+                                            spreadsheetId: SheetID,
+                                            range: 'TotalGP!' + toColumnName(NextAvailableColumn) + '1',  
+                                            valueInputOption: 'RAW',
+                                            resource: {
+                                                values: [NewGPDataAllyCode]
+                                            },
+                                        })
+
+                                        sheets.spreadsheets.values.update({
+                                            spreadsheetId: SheetID,
+                                            range: 'TotalGP!' + toColumnName(NextAvailableColumn) + NextAvailableRow,  
+                                            valueInputOption: 'RAW',
+                                            resource: {
+                                                values: [NewGPDataGP]
+                                            },
+                                        })
                                     })
-
-                                    for(var i = 0; i < AllyCodeAndGP.length; i++)
-                                        if(AllyCodeAndGP[i][2] == 'Y')
-                                        {
-                                            NewGPDataAllyCode.push(AllyCodeAndGP[i][0])
-                                            NewGPDataGP.push(AllyCodeAndGP[i][1])
-                                        }
-
-                                    sheets.spreadsheets.values.update({
-                                        spreadsheetId: SheetID,
-                                        range: 'TotalGP!' + toColumnName(NextAvailableColumn) + '1',  
-                                        valueInputOption: 'RAW',
-                                        resource: {
-                                            values: [NewGPDataAllyCode]
-                                        },
-                                    })
-
-                                    sheets.spreadsheets.values.update({
-                                        spreadsheetId: SheetID,
-                                        range: 'TotalGP!' + toColumnName(NextAvailableColumn) + NextAvailableRow,  
-                                        valueInputOption: 'RAW',
-                                        resource: {
-                                            values: [NewGPDataGP]
-                                        },
-                                    })
-                                })
-                        }
-                    )
-            })()
+                            }
+                        )
+                })()
+            }
+            else
+                console.log("Update Total GP function could not run for " + AllGuildData[k][0] + " due to AllGuildData[k][2] or AllGuildData[k][3]) being blank or undefined. QZ")
         }
     }
 }
@@ -1469,7 +1474,7 @@ var job8 = new CronJob('30 18 * * 4', function() {
 job8.start();
 
 function PostWeeklyGPPerformanceIndividual(AllGuildData) {
-    var searchObj = { // Please set search values.
+    var searchObj = {
       searchTitle1: "Highest and Lowest GP Growth by Raw GP (Past 30 Days)",
       searchTitle2: "Highest and Lowest GP Growth by Percent (Past 30 Days)",
 
@@ -1499,6 +1504,20 @@ function findByAnythingElse(spreadsheetId, GuildFoundRow, searchObj, ThreeDaysAg
             var obj = await Sheets.spreadsheets.get(request);
 
            // console.log(obj.data.sheets[1].charts[1].spec.title)
+
+           if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6], AllGuildData[GuildFoundRow][8]))
+           {
+               client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Weekly individual GP performance failed to run.  Standard user role and/or officer role not set.  "
+               + "Please run **" + AllGuildData[GuildFoundRow][7] + "setofficerrole** and/or **" + AllGuildData[GuildFoundRow][7] + "setofficerrole.** ")
+               return 0;
+           }
+
+           if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9], AllGuildData[GuildFoundRow][10]))
+           {
+               client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Weekly individual GP performance failed to run.  Standard user channel and/or officer channel not set.  "
+               + "Please run **" + AllGuildData[GuildFoundRow][7] + "setuserchannel** and/or **" + AllGuildData[GuildFoundRow][7] + "setofficerchannel.** ")
+               return 0;
+           }
            
            client.channels.cache.get(AllGuildData[GuildFoundRow][10]).send("<@&" + AllGuildData[GuildFoundRow][6] + "> GP performance update for week of " + 
            ThreeDaysAgo.toLocaleDateString("en-US")) + ".\n\n" //Officer heading for post
@@ -1807,6 +1826,41 @@ client.on("guildBanRemove", (guild,user) => {
     }
 });
 
+client.on("guildCreate", function(guild){
+    (async () => {
+        var NewChannel = await guild.channels.create('Mhanndalorian-bot', {type: 'text', reason: 'Bot was installed on server'})
+        NewChannel.send("Welcome to the Mhanndalorian Bot!")
+
+        for(var i = 0; i < AllGuildData.length; i++)
+        {
+            if(guild.id == AllGuildData[i][1])
+                return 0;
+        }
+
+        const BlankRow = AllGuildData.length + 2;
+
+        AllGuildData.push([guild.name,guild.id,,,,guild.ownerID,,'!',,,,])
+
+        authorize(content, listMajors);
+        function listMajors(auth)
+        {
+            const sheets = google.sheets({version: 'v4', auth});
+            sheets.spreadsheets.values.update({
+                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                range: 'Guilds!A' + BlankRow,
+                valueInputOption: 'USER_ENTERED',
+                resource: {
+                    values: [[guild.name,guild.id,,,,guild.ownerID,,'!']]
+                },
+            })
+        }
+    })()
+});
+
+client.on("guildDelete", function(guild){
+    console.log(`the client deleted/left a guild`);
+});
+
 client.on('message', message => {
     var bot = message.author.bot
     var wookieGuild
@@ -1844,21 +1898,26 @@ client.on('message', message => {
         }
     }
 
+    if(message.channel.type == 'dm' && bot == false)
+    {
+        message.channel.send("Mhanndalorian commands must be issued on the server and not in a direct message.")
+        return 0;
+    }
+
+    if(message.channel.type == 'dm' && bot == true)
+    {
+        return 0;
+    }
+
     var GuildFoundRow = -1;
-
-    if(message.channel.type != 'dm')
-        GuildFoundRow = GuildSearch(message.guild.id)
-
-    if(GuildFoundRow == -1 && !bot && message.channel.type != 'dm')
+    GuildFoundRow = GuildSearch(message.guild.id)
+    if(GuildFoundRow == -1)
     {
         console.log("Guild data not setup in Master Database.  Error 1.  Contact Mhann.  Guild ID: " + message.guild.id)
         return 0;
     }
 
-    if(message.channel.type != 'dm')
-        prefix = AllGuildData[GuildFoundRow][7]
-    else
-        prefix = ""
+    var prefix = AllGuildData[GuildFoundRow][7]
 
     if(message.channel.id == "804864706200076329" && message.author.id != "470635832462540800" && message.author.id != "678748334906671145")
     {
@@ -1866,7 +1925,7 @@ client.on('message', message => {
         {
             message.reply("Error damage not recorded.  You typed: **" + message.content + "**  Please use one of the following commands:  \n**[rancor 5.43**    "  +
             "Replace 5.43 with the percent damage you did. \n**[rancor abort**   This will cancel your held damage.");
-
+ 
             (async () => {                
                 await message.channel.messages.fetch(message.id).then(messages => { // Fetches the messages
                     messages.delete();
@@ -2631,8 +2690,11 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-            PostWeeklyGPPerformanceIndividual(AllGuildData)
-            //UpdateTotalGP();
+           //PostWeeklyGPPerformanceIndividual(AllGuildData)
+
+          // console.log(AllGuildData)
+          //  UpdateTotalGP();
+          FiveMinRaidReminder();
             //PostWeeklyGuildGP();
 
             //for(var i = 0; i < AllGuildData.length; i++)
@@ -2651,86 +2713,194 @@ client.on('message', message => {
         }
         
         else if((message.content.toLowerCase().startsWith(`${prefix}help`))){
-            (async () => {
-                if(message.channel.type == 'dm')
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6], AllGuildData[GuildFoundRow][8]))
+            {
+                message.channel.send("Officer role and/or user role not set.  An officer must set these values using the commands  **" + AllGuildData[GuildFoundRow][7] + "setuserrole @YourUserRole**  and/or  **"
+                + AllGuildData[GuildFoundRow][7] + "setofficerrole @YourOfficerRole**  before others can use use this command.")
+
+                if(message.author.id != AllGuildData[GuildFoundRow][5])
                 {
-                    message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
                     return 0;
                 }
-                
-                const guild = client.guilds.cache.get(AllGuildData[GuildFoundRow][1]); 
-                var User =  await client.users.fetch(message.author.id)
-                var GuildMember =  await guild.members.fetch(User);
+            }
 
-                console.log(message.author.username + " asked for help. QZ")            
+            if(wookieGuild)
+            {
+                (async () => {
+                    if(message.channel.type == 'dm')
+                    {
+                        message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                        return 0;
+                    }
+                    
+                    const guild = client.guilds.cache.get(AllGuildData[GuildFoundRow][1]); 
+                    var User =  await client.users.fetch(message.author.id)
+                    var GuildMember =  await guild.members.fetch(User);
 
-                if(message.author.id == "406945430967156766")
-                {
-                    const Embed3 = new Discord.MessageEmbed()
-                        .setColor('ff0000')
-                        .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
-                        .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                            + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
-                            + "__**" + prefix + "demote**__ - Restore regular role after command testing. \n \n"
-                            + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
-                            + "__**" + prefix + "info**__ - Display information about the servers the bot is installed on. \n \n"
-                            + "__**" + prefix + "promote**__ - Elevate role for command testing. \n \n"
-                            + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
-                    message.channel.send(Embed3)
-                }
+                    console.log(message.author.username + " asked for help. QZ")            
 
-                if(GuildMember.roles.cache.has(AllGuildData[GuildFoundRow][6]))
-                {
-                    const Embed2 = new Discord.MessageEmbed()
+                    if(message.author.id == "406945430967156766")
+                    {
+                        const Embed3 = new Discord.MessageEmbed()
+                            .setColor('ff0000')
+                            .setTitle('Commands available to Mhann Uhdea (not case sensitive)')
+                            .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                                + "__**" + prefix + "broadcast**__ __***arg***__ - Post a message to the cantina.  *Arg* is a string. \n \n"
+                                + "__**" + prefix + "demote**__ - Restore regular role after command testing. \n \n"
+                                + "__**" + prefix + "dmmissedraids**__ - Send direct message to all users who have missed raids. \n \n"
+                                + "__**" + prefix + "info**__ - Display information about the servers the bot is installed on. \n \n"
+                                + "__**" + prefix + "promote**__ - Elevate role for command testing. \n \n"
+                                + "__**" + prefix + "updateflair**__ - Update flair for everyone in guild.");
+                        message.channel.send(Embed3)
+                    }
+
+                    if(GuildMember.roles.cache.has(AllGuildData[GuildFoundRow][6]))
+                    {
+                        const Embed2 = new Discord.MessageEmbed()
+                            .setColor('#3495D5')
+                            .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][6]).name + ' role (not case sensitive)')
+                            .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+
+                                + "The following commands are used to setup the bot.  Each command must be run one time for the bot to be full functional. \n"
+
+                                + "> __**" + prefix + "setofficerchannel**__ __** #OFCChannel**__ - Sets the channel that Mhanndalorian bot will use for officer announcements. \n"
+                                + "> __**" + prefix + "setofficerrole**__ __** @OFCRole**__ - Sets the role that designates a user as an officer. \n"
+                                + "> __**" + prefix + "setprefix**__ __***arg***__ - Sets the prefix used for Mhanndalorian Bot commands.  Can only be run by server owner.  Default prefix is !.  Replace arg with a single character. \n"
+                                + "> __**" + prefix + "setuserchannel**__ __** #UserChannel**__ - Sets the channel that Mhanndalorian bot will use for guild wide announcements. \n"
+                                + "> __**" + prefix + "setuserrole**__ __** @UserRole**__ - Sets the role that designates a user as a member of the guild in game. \n\n"
+
+                                + "__**" + prefix + "addgif**__, __***arg1***__, __***arg2***__, __***arg3***__, __***arg4***__ - Command to add "
+                                + "GIF to databse. *Arg1* is the keyword to trigger GIF. *Arg2* is the phrase to search for on Giphy. *Arg3* is the "
+                                + "title displayed on the GIF. *Arg4* is the category and must be either wrestling, star wars or other.\n\n"
+                                + "__**" + prefix + "award**__ __***arg***__ @user1 @user2 - Award flair to user. *Arg* can be TWO (TW Offensive) or "
+                                + "TWD (TW Defensive).  You can mention as many users as you want after the argument. \n");
+                        message.channel.send(Embed2)
+
+                        const Embed3 = new Discord.MessageEmbed()
                         .setColor('#3495D5')
-                        .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][6]).name + ' role (not case sensitive)')
+                        .setDescription(
+                                  "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
+                                + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
+                                + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
+                                + "remove \n \n"
+
+                                + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  In addition to the ways this command can be "
+                                + "run as a regular guild member, officers have access to the following 2 command options: \n"
+
+                                + "> __**" + prefix + "gp @user**__ - The entire GP history for a specific user will be displayed. \n"
+                                + "> __**" + prefix + "gp @user n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n"
+                                
+                                + "__**" + prefix + "status**__ - Displays date and time bot was launched along with total up time. \n \n "
+                                + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
+                                + "channels. \n");
+                        message.channel.send(Embed3)
+                    }
+
+                    const Embed = new Discord.MessageEmbed()
+                        .setColor('#2FC071')
+                        .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + ' role (not case sensitive)')
                         .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                            + "__**" + prefix + "addgif**__, __***arg1***__, __***arg2***__, __***arg3***__, __***arg4***__ - Command to add "
-                            + "GIF to databse. *Arg1* is the keyword to trigger GIF. *Arg2* is the phrase to search for on Giphy. *Arg3* is the "
-                            + "title displayed on the GIF. *Arg4* is the category and must be either wrestling, star wars or other.\n\n"
-                            + "__**" + prefix + "award**__ __***arg***__ @user1 @user2 - Award flair to user. *Arg* can be TWO (TW Offensive) or "
-                            + "TWD (TW Defensive).  You can mention as many users as you want after the argument. \n \n"
-                            + "__**" + prefix + "clean**__ __***arg***__ - Deletes a specified number of messages from the current channel. "
-                            + "*Arg* is the number of messages to delete and must be an integer less than or equal to 100. \n \n"
-                            + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
-                            + "remove \n \n"
+                            + "__**" + prefix + "alert**__ __***arg1***__ __***arg2***__ - Subscribes or unsubscribes you from a reminder. "
+                            + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
+                            + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
+                            + "__**" + prefix + "full**__ - Receive all notifications and access to all channels. \n \n"
+                            + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image. \n \n"
+                            + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
 
-                            + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  In addition to the ways this command can be "
-                            + "run as a regular guild member, officers have access to the following 2 command options: \n"
+                            + "> __**" + prefix + "gp**__ - Your entire GP history will be displayed. \n"
+                            + "> __**" + prefix + "gp n**__ - Will display your GP history back up to n days (replace n with a number of days). \n "
+                            + "> __**" + prefix + "gp guild**__ - Display all GP history for the entire guild. \n "
+                            + "> __**" + prefix + "gp guild n**__ - Display GP history back up to n days for entire guild (replace n with a number of days). \n \n"
 
-                            + "> __**" + prefix + "gp @user**__ - The entire GP history for a specific user will be displayed. \n"
-                            + "> __**" + prefix + "gp @user n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n"
-                            
-                            + "__**" + prefix + "status**__ - Displays date and time bot was launched along with total up time. \n \n "
-                            + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
-                            + "channels. \n");
-                    message.channel.send(Embed2)
-                }
+                            + "__**" + prefix + "help**__ - Display this help message. \n \n"
+                            + "__**" + prefix + "light**__ - Receive only essential notifications and access to a streamlined set of channels. \n \n"
+                            + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
+                            + "be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
+                            + "__**" + prefix + "santa**__ - Display a link to a live Santa tracker. \n \n "
+                            + "__**" + prefix + "skynet**__ - Propaganda video for skynet. \n \n ");
+                    message.channel.send(Embed)
+                })()
+            }
+            else
+            {
+                (async () => {
+                    if(message.channel.type == 'dm')
+                    {
+                        message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                        return 0;
+                    }
+                    
+                    const guild = client.guilds.cache.get(AllGuildData[GuildFoundRow][1]); 
+                    var User =  await client.users.fetch(message.author.id)
+                    var GuildMember =  await guild.members.fetch(User);
 
-                const Embed = new Discord.MessageEmbed()
-                    .setColor('#2FC071')
-                    .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + ' role (not case sensitive)')
-                    .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
-                        + "__**" + prefix + "alert**__ __***arg1***__ __***arg2***__ - Subscribes or unsubscribes you from a reminder. "
-                        + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
-                        + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
-                        + "__**" + prefix + "full**__ - Receive all notifications and access to all channels. \n \n"
-                        + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image. \n \n"
-                        + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
+                    console.log(message.author.username + " asked for help. QZ")            
 
-                        + "> __**" + prefix + "gp**__ - Your entire GP history will be displayed. \n"
-                        + "> __**" + prefix + "gp n**__ - Will display your GP history back up to n days (replace n with a number of days). \n "
-                        + "> __**" + prefix + "gp guild**__ - Display all GP history for the entire guild. \n "
-                        + "> __**" + prefix + "gp guild n**__ - Display GP history back up to n days for entire guild (replace n with a number of days). \n \n"
+                    if(message.author.id == AllGuildData[GuildFoundRow][5] || GuildMember.roles.cache.has(AllGuildData[GuildFoundRow][6]))
+                    {
+                        var color;
+                        var title;
 
-                        + "__**" + prefix + "help**__ - Display this help message. \n \n"
-                        + "__**" + prefix + "light**__ - Receive only essential notifications and access to a streamlined set of channels. \n \n"
-                        + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
-                        + "be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n"
-                        + "__**" + prefix + "santa**__ - Display a link to a live Santa tracker. \n \n "
-                        + "__**" + prefix + "skynet**__ - Propaganda video for skynet. \n \n ");
-                message.channel.send(Embed)
-            })()
+                        if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
+                            color =  message.guild.roles.cache.get(AllGuildData[GuildFoundRow][6]).hexColor
+                        else
+                            color = '#3495D5'
+
+                        if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
+                            title = 'Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + ' role (not case sensitive)'
+                        else
+                            title = 'Commands available to those with officer user role (not case sensitive)'
+
+                        const Embed2 = new Discord.MessageEmbed()
+                            .setColor(color)
+                            .setTitle(title)
+                            .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                                + "The following commands are used to setup the bot.  Each command must be run one time for the bot to be full functional. \n"
+
+                                + "> __**" + prefix + "setofficerchannel**__ __** #OFCChannel**__ - Sets the channel that Mhanndalorian bot will use for officer announcements. \n"
+                                + "> __**" + prefix + "setofficerrole**__ __** @OFCRole**__ - Sets the role that designates a user as an officer. \n"
+                                + "> __**" + prefix + "setprefix**__ __***arg***__ - Sets the prefix used for Mhanndalorian Bot commands.  Can only be run by server owner.  Default prefix is !.  Replace arg with a single character. \n"
+                                + "> __**" + prefix + "setuserchannel**__ __** #UserChannel**__ - Sets the channel that Mhanndalorian bot will use for guild wide announcements. \n"
+                                + "> __**" + prefix + "setuserrole**__ __** @UserRole**__ - Sets the role that designates a user as a member of the guild in game. \n\n"
+                                
+                                + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  In addition to the ways this command can be "
+                                + "run as a regular guild member, officers have access to the following 2 command options: \n"
+
+                                + "> __**" + prefix + "gp @user**__ - The entire GP history for a specific user will be displayed. \n"
+                                + "> __**" + prefix + "gp @user n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n");
+                        message.channel.send(Embed2)
+                    }
+
+                    var color;
+                    var title;
+
+                    if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8]))
+                        color =  message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).hexColor
+                    else
+                        color = '#2FC071'
+
+                    if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8]))
+                        title = 'Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + ' role (not case sensitive)'
+                    else
+                        title = 'Commands available to those with standard user role (not case sensitive)'
+
+                    const Embed = new Discord.MessageEmbed()
+                        .setColor(color)                        
+                        .setTitle(title)
+                        .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                            + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
+
+                            + "> __**" + prefix + "gp**__ - Your entire GP history will be displayed. \n"
+                            + "> __**" + prefix + "gp n**__ - Will display your GP history back up to n days (replace n with a number of days). \n "
+                            + "> __**" + prefix + "gp guild**__ - Display all GP history for the entire guild. \n "
+                            + "> __**" + prefix + "gp guild n**__ - Display GP history back up to n days for entire guild (replace n with a number of days). \n \n"
+
+                            + "__**" + prefix + "help**__ - Display this help message. \n \n"
+                            + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
+                            + "be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n");
+                    message.channel.send(Embed)
+                })()
+            }
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}gp`))
