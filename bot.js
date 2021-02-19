@@ -88,7 +88,7 @@ function CheckIfBlankOrUndefined()
 }
 
 
-function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow){
+function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltFound){
     if(message.author != undefined)
         console.log(message.author.username + " executed GP command. QZ")
 
@@ -107,6 +107,7 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow){
                 if (err) return console.log('The API returned an error: ' + err);
                 const rows = res.data.values;
                 var Continue = false
+                var RunOnce = true
 
                 var Name = ''
 
@@ -114,12 +115,20 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow){
                 {
                     for(var i = 0; i < rows.length; i++) //Match discord ID of author to SWGOH Ally code
                     {
-                        if(rows[i][6] != undefined && DiscordID == rows[i][6].replace("<@","").replace(">","").replace(" ",""))
+                        if(rows[i][6] != undefined && DiscordID == rows[i][6].replace("<@","").replace(">","").replace(" ",""))// ALT WORK HERE
                         {
-                            Allycode = rows[i][0];
-                            Name = rows[i][1];
-                            i = rows.length
-                            Continue = true
+                            if(AltFound == true && RunOnce == true)
+                            {
+                                RunOnce = false
+                            }
+
+                            else
+                            {
+                                Allycode = rows[i][0];
+                                Name = rows[i][1];
+                                i = rows.length
+                                Continue = true
+                            }
                         }
                     }
                 }
@@ -380,6 +389,8 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                 var DiscordSWGOHNameIDArray;
                 var Found = false;
                 var DaysBack;
+                var AltFound = false;
+                var AltRowFound;
 
                 if(CommandArray[1].match(/[\s](\d+)($)/))
                 {
@@ -438,24 +449,51 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                         i = DiscordSWGOHNameIDArray.length
                         Found = true
                     }
+
+                   // console.log("i=" + i + "   " + !CheckIfBlankOrUndefined(DiscordSWGOHNameIDArray[i][4], DiscordSWGOHNameIDArray[i][5]))
+
+                    if(Found == false && !CheckIfBlankOrUndefined(DiscordSWGOHNameIDArray[i][4], DiscordSWGOHNameIDArray[i][5]))
+                    {
+                        if(DiscordSWGOHNameIDArray[i][4].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][5].toLowerCase().includes(CommandArray[1].toLowerCase()))
+                        {
+                            AltRowFound = i;
+                            i = DiscordSWGOHNameIDArray.length
+                            AltFound = true
+                        }
+                    }
                 }
 
-                if(Found == true)
+                if(Found == true || AltFound == true)
                 {
                     if(CallingFunction == 'lookup')
                     {
                         (async () => { 
-                            User =  await client.users.fetch(DiscordSWGOHNameIDArray[RowFound][0])                         
-                            GuildMember =  await guild.members.fetch(User)
-                            DisplayNamed = GuildMember.displayName
-                            message.channel.send
-                                ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
-                                + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n"
-                                + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[RowFound][0] + ">")
+                           // User =  await client.users.fetch(DiscordSWGOHNameIDArray[RowFound][0])                         
+                           // GuildMember =  await guild.members.fetch(User)
+                           // DisplayNamed = GuildMember.displayName
+
+                            if(Found == true)
+                                message.channel.send
+                                    ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
+                                    + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n"
+                                    + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[RowFound][0] + ">")
+
+                            else if(AltFound == true)
+                                message.channel.send
+                                    ("**This is an alt in the system** \n"
+                                    + "__**Ally Code:**__  " + DiscordSWGOHNameIDArray[AltRowFound][4] + "\n"
+                                    + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[AltRowFound][5] + "\n"
+                                    + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[AltRowFound][0] + ">")
                         })()
                     }
                     else if(CallingFunction == 'GP')
-                        GP(message, DiscordSWGOHNameIDArray[RowFound][0], DaysBack, AllGuildData, GuildFoundRow)
+                    {
+                        if(Found == true)
+                            GP(message, DiscordSWGOHNameIDArray[RowFound][0], DaysBack, AllGuildData, GuildFoundRow, false)
+
+                        if(AltFound == true)
+                            GP(message, DiscordSWGOHNameIDArray[AltRowFound][0], DaysBack, AllGuildData, GuildFoundRow, true)
+                    }
                 }
 
                 else
@@ -893,7 +931,7 @@ function UpdateUsersAndAllycodes()
                 })()
             }
             else
-                client.users.cache.get(AllGuildData[k][5]).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL.  Contact Mhann.")
+                client.users.cache.get(AllGuildData[k][5]).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL.  Contact Mhann at <@406945430967156766>.")
         }
     }
 }
@@ -1491,7 +1529,10 @@ function PostWeeklyGPPerformanceIndividual(AllGuildData) {
     ThreeDaysAgo.setDate(ThreeDaysAgo.getDate() - 3);
 
     for(var i = 0; i < AllGuildData.length; i++)
+    if(!CheckIfBlankOrUndefined(AllGuildData[i][3]))
         findByAnythingElse(AllGuildData[i][3], i, searchObj, ThreeDaysAgo);
+    else
+        client.users.cache.get(AllGuildData[i][5]).send("FindByAnythingElse could not run due to Google spreadsheet ID not set.  Contact Mhann.")
   }
 
 function findByAnythingElse(spreadsheetId, GuildFoundRow, searchObj, ThreeDaysAgo) {
@@ -1510,25 +1551,27 @@ function findByAnythingElse(spreadsheetId, GuildFoundRow, searchObj, ThreeDaysAg
 
            // console.log(obj.data.sheets[1].charts[1].spec.title)
 
-           if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6], AllGuildData[GuildFoundRow][8]))
-           {
-               client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Weekly individual GP performance failed to run.  Standard user role and/or officer role not set.  "
-               + "Please run **" + AllGuildData[GuildFoundRow][7] + "setofficerrole** and/or **" + AllGuildData[GuildFoundRow][7] + "setofficerrole.** ")
-               return 0;
-           }
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6], AllGuildData[GuildFoundRow][8]))
+            {
+                client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Weekly individual GP performance failed to run.  Standard user role and/or officer role not set.  "
+                + "Please run **" + AllGuildData[GuildFoundRow][7] + "setofficerrole** and/or **" + AllGuildData[GuildFoundRow][7] + "setofficerrole.** ")
+                return 0;
+            }
 
-           if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9], AllGuildData[GuildFoundRow][10]))
-           {
-               client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Weekly individual GP performance failed to run.  Standard user channel and/or officer channel not set.  "
-               + "Please run **" + AllGuildData[GuildFoundRow][7] + "setuserchannel** and/or **" + AllGuildData[GuildFoundRow][7] + "setofficerchannel.** ")
-               return 0;
-           }
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9], AllGuildData[GuildFoundRow][10]))
+            {
+                client.users.cache.get(AllGuildData[GuildFoundRow][5]).send("Weekly individual GP performance failed to run.  Standard user channel and/or officer channel not set.  "
+                + "Please run **" + AllGuildData[GuildFoundRow][7] + "setuserchannel** and/or **" + AllGuildData[GuildFoundRow][7] + "setofficerchannel.** ")
+                return 0;
+            }
            
-           client.channels.cache.get(AllGuildData[GuildFoundRow][10]).send("<@&" + AllGuildData[GuildFoundRow][6] + "> GP performance update for week of " + 
-           ThreeDaysAgo.toLocaleDateString("en-US")) + ".\n\n" //Officer heading for post
+            client.channels.cache.get(AllGuildData[GuildFoundRow][10]).send("<@&" + AllGuildData[GuildFoundRow][6] + "> GP performance update for week of " + 
+            ThreeDaysAgo.toLocaleDateString("en-US")) + ".\n\n" //Officer heading for post
 
-           client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send("<@&" + AllGuildData[GuildFoundRow][8] + "> GP performance update for week of " + 
-           ThreeDaysAgo.toLocaleDateString("en-US")) + ".\n\n" //User heading for post
+            client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send("<@&" + AllGuildData[GuildFoundRow][8] + "> GP performance update for week of " + 
+            ThreeDaysAgo.toLocaleDateString("en-US")) + ".\n\n" //User heading for post
+
+            var seconds = new Date().getTime();
 
             for (var i = 0; i < obj.data.sheets.length; i++)
             {
@@ -1539,10 +1582,10 @@ function findByAnythingElse(spreadsheetId, GuildFoundRow, searchObj, ThreeDaysAg
                     {
                         var title = charts[j].spec.title;
                         if (title == searchObj.searchTitle1 || title == searchObj.searchTitle2)
-                            client.channels.cache.get(AllGuildData[GuildFoundRow][10]).send(AllGuildData[GuildFoundRow][4].replace("-----",charts[j].chartId))
+                            client.channels.cache.get(AllGuildData[GuildFoundRow][10]).send(AllGuildData[GuildFoundRow][4].replace("-----",charts[j].chartId) + "&Time=" + seconds)
 
                         if (title == searchObj.searchTitle3 || title == searchObj.searchTitle4)
-                            client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send(AllGuildData[GuildFoundRow][4].replace("-----",charts[j].chartId))
+                            client.channels.cache.get(AllGuildData[GuildFoundRow][9]).send(AllGuildData[GuildFoundRow][4].replace("-----",charts[j].chartId) + "&Time=" + seconds)
                     }
                 }
             }
@@ -2159,25 +2202,44 @@ client.on('message', message => {
                         if (err) return console.log('The API returned an error: ' + err);
                     const rows = res.data.values;
                     var DiscordIDDuplicate = false
-                    if (rows.length) {
-                        rows.map((row) => {
-                            if(row[6] == discordIDArray[0][0])
+                    if (rows.length)
+                    {
+                        var count = 0//number of times Discord ID appears in database
+
+                        for(var i = 0; i < rows.length; i++)
+                        {
+                            if(rows[i][6] == discordIDArray[0][0])
+                                count = count + 1
+                        }
+                            if(count >= 2)
                             {
                                 const Embed = new Discord.MessageEmbed()
                                     .setColor('#ff0000')
                                     .setTitle('Error - Mhanndalorian Bot')
-                                    .setDescription('The discord ID is already assigned in the Mhanndalorian database.');
+                                    .setDescription('The discord ID is already registered in the Mhanndalorian database to two allycodes.');
 
                                 message.channel.send(Embed)
                                 DiscordIDDuplicate = true
                             }
-                        });
 
                         if(DiscordIDDuplicate == false)
                         {
                             var i = 0
-                            rows.map((row) => {
-                                if(row[0] == allyCode){ //ally code found and set discord ID
+                            var description
+                            for(var i = 0; i < rows.length; i++)
+                            {
+                                if(rows[i][0] == allyCode) //ally code found and set discord ID
+                                {
+                                    if(rows[i][6] == discordIDArray[0][0]) //ally code and discord ID pair already in database
+                                    {
+                                        const Embed = new Discord.MessageEmbed()
+                                            .setColor('#ff0000')
+                                            .setTitle('Error - Mhanndalorian Bot')
+                                            .setDescription('The discord ID is already registered in the Mhanndalorian database to allycode ' + allyCode + ".");
+                                        message.channel.send(Embed)
+                                        return 0;
+                                    }
+                                    
                                     allyCodeFound = true;
                                     sheets.spreadsheets.values.update({
                                         spreadsheetId: AllGuildData[GuildFoundRow][3],
@@ -2187,15 +2249,21 @@ client.on('message', message => {
                                             values: discordIDArray
                                         },
                                     })
+                                    if(count == 0)
+                                        description = "Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode + ".  This Discord ID is registered to one " +
+                                                      "allycode and can be registered to one more."
+
+                                    if(count == 1)
+                                        description = "Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode + ".  This Discord ID is now registered to two " +
+                                                      "allycodes and can not be registered to any more."
                                     
                                     const Embed2 = new Discord.MessageEmbed()
                                         .setColor('#00ff00')
                                         .setTitle('Success - Mhanndalorian Bot')
-                                        .setDescription("Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode);
+                                        .setDescription(description);
                                     message.channel.send(Embed2)
                                 }
-                                i++
-                            });
+                            };
                         }
 
                         if(allyCodeFound == false && DiscordIDDuplicate == false)
@@ -2433,7 +2501,10 @@ client.on('message', message => {
             {
                 (async () => {
                     var ChannelObject = await client.channels.fetch(AllGuildData[GuildFoundRow][9])
-                    ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: false})
+                    ChannelObject.updateOverwrite(BotRole,
+                    {   
+                        VIEW_CHANNEL: false,   
+                    })
                 })()
             }
 
@@ -2441,7 +2512,15 @@ client.on('message', message => {
 
             (async () => { //add Mhanndalorian bot role to channel
                 var ChannelObject = await client.channels.fetch(UserChannelArgument)
-                ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: true})
+                ChannelObject.updateOverwrite(BotRole,
+                    {   VIEW_CHANNEL: true,
+                        SEND_MESSAGES: true,
+                        READ_MESSAGE_HISTORY: true,
+                        ADD_REACTIONS: true,
+                        EMBED_LINKS: true,
+                        ATTACH_FILES: true,
+                        MENTION_EVERYONE: true,     
+                    })
             })()
             
             authorize(content, listMajors);
@@ -2501,7 +2580,9 @@ client.on('message', message => {
             {
                 (async () => {
                     var ChannelObject = await client.channels.fetch(AllGuildData[GuildFoundRow][10])
-                    ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: false})
+                    ChannelObject.updateOverwrite(BotRole,
+                        {   VIEW_CHANNEL: false,   
+                        })
                 })()
             }
 
@@ -2509,7 +2590,15 @@ client.on('message', message => {
 
             (async () => { //add Mhanndalorian bot role to channel
                 var ChannelObject = await client.channels.fetch(OfficerChannelArgument)
-                ChannelObject.updateOverwrite(BotRole, {VIEW_CHANNEL: true})
+                ChannelObject.updateOverwrite(BotRole,
+                    {   VIEW_CHANNEL: true,
+                        SEND_MESSAGES: true,
+                        READ_MESSAGE_HISTORY: true,
+                        ADD_REACTIONS: true,
+                        EMBED_LINKS: true,
+                        ATTACH_FILES: true,
+                        MENTION_EVERYONE: true,     
+                    })
             })()
             
             authorize(content, listMajors);
@@ -2765,9 +2854,12 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-           //PostWeeklyGPPerformanceIndividual(AllGuildData)
+          // PostWeeklyGPPerformanceIndividual(AllGuildData)
 
-           UpdateUsersAndAllycodes();
+          guild = client.guilds.cache.get("399955359801802762")
+          const BotRole = guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot');
+
+           //UpdateUsersAndAllycodes();
 
           // console.log(AllGuildData)
           //  UpdateTotalGP();
@@ -3002,7 +3094,7 @@ client.on('message', message => {
                 {
                     if(isNaN(CommandArray[1]))
                     {
-                        if(CommandArray[1].toLowerCase() != 'guild') //user entered guild member name or ID
+                        if(CommandArray[1].toLowerCase() != 'guild') //user entered guild member name
                         {
                             if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
                             {
@@ -3030,8 +3122,10 @@ client.on('message', message => {
                             
                     }
                     else
-                        if(CommandArray[1] > 0)
+                        if(CommandArray[1] > 0 && CommandArray[1] < 9999999)
                             GP(message, message.author.id, CommandArray[1], AllGuildData, GuildFoundRow)
+                        else if(CommandArray[1] > 9999999)
+                            Lookup(message, 'GP', AllGuildData, GuildFoundRow)
                         else
                             message.channel.send("Please specify a number of days greater than 0.")
                 }
