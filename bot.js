@@ -2208,7 +2208,7 @@ client.on('message', message => {
 
                         for(var i = 0; i < rows.length; i++)
                         {
-                            if(rows[i][6] == discordIDArray[0][0])
+                            if(rows[i][6] != undefined && rows[i][6].match(/\d+/g) - discordIDArray[0][0].match(/\d+/g) == 0) //Weird way to see if rows[i][6] = discordIDArray[0][0]
                                 count = count + 1
                         }
                             if(count >= 2)
@@ -2495,48 +2495,70 @@ client.on('message', message => {
 
             var UserChannelArgument = CommandArray[1].replace("<#","").replace(">","")
 
-            const BotRole = message.guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot')
+            const BotRole = message.guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot');
 
-            if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][9]))//Remove Mhanndalorian read permission from channel 
-            {
-                (async () => {
-                    var ChannelObject = await client.channels.fetch(AllGuildData[GuildFoundRow][9])
-                    ChannelObject.updateOverwrite(BotRole,
-                    {   
-                        VIEW_CHANNEL: false,   
-                    })
-                })()
-            }
-
-            AllGuildData[GuildFoundRow][9] = UserChannelArgument; //set user channel in memory
-
-            (async () => { //add Mhanndalorian bot role to channel
+            (async () => {
+                var User =  await client.users.fetch('678748334906671145')
+                var GuildMember =  await message.guild.members.fetch(User);
+                var OldUserChannel = AllGuildData[GuildFoundRow][9]
                 var ChannelObject = await client.channels.fetch(UserChannelArgument)
-                ChannelObject.updateOverwrite(BotRole,
-                    {   VIEW_CHANNEL: true,
+
+                if(OldUserChannel == UserChannelArgument)
+                {
+                    await message.channel.send("Error:  User channel is already set to " + ChannelObject.name + ".")
+                    return 0;
+                }
+
+                try{
+                    await ChannelObject.updateOverwrite(BotRole, //Update Mhanndalorian bot permissions in new user channel
+                    {   
                         SEND_MESSAGES: true,
                         READ_MESSAGE_HISTORY: true,
                         ADD_REACTIONS: true,
                         EMBED_LINKS: true,
                         ATTACH_FILES: true,
                         MENTION_EVERYONE: true,     
+                    });
+                }
+
+                catch(e){
+                    await message.channel.send("Error 4:  Mhanndalorian bot is unable to view " + ChannelObject.name + " (new user channel) and/or change permissions. Please manually add Mhanndalorian-bot role "
+                    + "to this channel and ensure that both the view channel and manage permissions is allowed.")
+                    return 0;
+                }
+                
+                AllGuildData[GuildFoundRow][9] = UserChannelArgument; //set user channel in memory
+
+                authorize(content, listMajors);
+                function listMajors(auth)
+                {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!J' + (GuildFoundRow + 2),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[UserChannelArgument]]
+                        },
                     })
-            })()
-            
-            authorize(content, listMajors);
-            function listMajors(auth)
-            {
-                const sheets = google.sheets({version: 'v4', auth});
-                sheets.spreadsheets.values.update({
-                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'Guilds!J' + (GuildFoundRow + 2),
-                    valueInputOption: 'USER_ENTERED',
-                    resource: {
-                        values: [[UserChannelArgument]]
-                    },
-                })
-            }
-            message.channel.send("User channel has been set to: <#" + UserChannelArgument + ">")
+                }
+
+                message.channel.send("User channel has been set to: <#" + UserChannelArgument + ">")
+
+                if(!CheckIfBlankOrUndefined(OldUserChannel))//Remove Mhanndalorian read permission from old user channel
+                {          
+                    var ChannelObject = await client.channels.fetch(OldUserChannel)
+                    try{
+                        await ChannelObject.updateOverwrite(BotRole,
+                        {   
+                            VIEW_CHANNEL: false, 
+                        })
+                    }
+                    catch(e){
+                        await message.channel.send("Error 5:  Mhanndalorian bot was unable to edit permissions in " + ChannelObject.name + " (old user channel) to ensure view channel permission is off.")
+                    }
+                }
+            })()                                
         }
 
         else if(message.content.toLowerCase().startsWith(prefix + 'setofficerchannel')){
@@ -2573,25 +2595,23 @@ client.on('message', message => {
             }
 
             var OfficerChannelArgument = CommandArray[1].replace("<#","").replace(">","")
+            const BotRole = message.guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot');
 
-            const BotRole = message.guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot')
+            (async () => {
+                var User =  await client.users.fetch('678748334906671145')
+                var GuildMember =  await message.guild.members.fetch(User);
+                var OldOfficerChannel = AllGuildData[GuildFoundRow][10]
+                var ChannelObject = await client.channels.fetch(OfficerChannelArgument) 
 
-            if(!CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][10]))//Remove Mhanndalorian read permission from channel 
-            {
-                (async () => {
-                    var ChannelObject = await client.channels.fetch(AllGuildData[GuildFoundRow][10])
-                    ChannelObject.updateOverwrite(BotRole,
-                        {   VIEW_CHANNEL: false,   
-                        })
-                })()
-            }
-
-            AllGuildData[GuildFoundRow][10] = OfficerChannelArgument; //set officer channel in memory
-
-            (async () => { //add Mhanndalorian bot role to channel
-                var ChannelObject = await client.channels.fetch(OfficerChannelArgument)
-                ChannelObject.updateOverwrite(BotRole,
-                    {   VIEW_CHANNEL: true,
+                if(OldOfficerChannel == OfficerChannelArgument)
+                {
+                    await message.channel.send("Error:  Officer channel is already set to " + ChannelObject.name + ".")
+                    return 0;
+                }
+            
+                try{
+                    await ChannelObject.updateOverwrite(BotRole, //Update Mhanndalorian bot permissions in new officer channel
+                    {   
                         SEND_MESSAGES: true,
                         READ_MESSAGE_HISTORY: true,
                         ADD_REACTIONS: true,
@@ -2599,22 +2619,45 @@ client.on('message', message => {
                         ATTACH_FILES: true,
                         MENTION_EVERYONE: true,     
                     })
-            })()
+                }
+                catch(e){
+                    await message.channel.send("Error 2:  Mhanndalorian bot is unable to view " + ChannelObject.name + " (new officer channel) and/or change permissions. Please manually add Mhanndalorian-bot role "
+                    + "to this channel and ensure that both the view channel and manage permissions is allowed.")
+                    return 0;
+                }
+
+                AllGuildData[GuildFoundRow][10] = OfficerChannelArgument; //set new officer channel in memory
             
-            authorize(content, listMajors);
-            function listMajors(auth)
-            {
-                const sheets = google.sheets({version: 'v4', auth});
-                sheets.spreadsheets.values.update({
-                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                    range: 'Guilds!K' + (GuildFoundRow + 2),
-                    valueInputOption: 'USER_ENTERED',
-                    resource: {
-                        values: [[OfficerChannelArgument]]
-                    },
-                })
-            }
-            message.channel.send("Officer channel has been set to: <#" + OfficerChannelArgument + ">")
+                authorize(content, listMajors);
+                function listMajors(auth)
+                {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!K' + (GuildFoundRow + 2),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[OfficerChannelArgument]]
+                        },
+                    })
+                }
+
+                message.channel.send("Officer channel has been set to: <#" + OfficerChannelArgument + ">")
+
+                if(!CheckIfBlankOrUndefined(OldOfficerChannel))//Remove Mhanndalorian read permission from old channel officer channel
+                {          
+                    var ChannelObject = await client.channels.fetch(OldOfficerChannel)
+                    try{
+                        await ChannelObject.updateOverwrite(BotRole,
+                        {   
+                            VIEW_CHANNEL: false, 
+                        })
+                    }
+                    catch(e){
+                        await message.channel.send("Error 3:  Mhanndalorian bot was unable to edit permissions in " + ChannelObject.name + " (old officer channel) to ensure view channel permission is off.")
+                    }
+                }
+            })()
         }
 
         else if(message.content.toLowerCase().startsWith(prefix + 'setuserrole')){
@@ -2854,10 +2897,10 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-          // PostWeeklyGPPerformanceIndividual(AllGuildData)
+           PostWeeklyGPPerformanceIndividual(AllGuildData)
 
-          guild = client.guilds.cache.get("399955359801802762")
-          const BotRole = guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot');
+         // guild = client.guilds.cache.get("399955359801802762")
+         // const BotRole = guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot');
 
            //UpdateUsersAndAllycodes();
 
