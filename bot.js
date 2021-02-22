@@ -40,6 +40,339 @@ client.once('ready', () => {
     BotUpTime = new Date().toLocaleTimeString()
     BotUpDate = new Date().toLocaleDateString()
 })
+function UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, command)
+{
+    if(message.channel.type == 'dm')
+        {
+            message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+            return 0;
+        }
+
+
+        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][6]))
+        {
+            message.channel.send("Officer role and/or user role not set.  An officer must set these values using the commands " + AllGuildData[GuildFoundRow][7] + "setuserrole and "
+            + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
+            return 0;
+        }
+
+        if(message.member.roles.cache.has(AllGuildData[GuildFoundRow][8]))
+        {
+            var allyCode = String(message.content.slice(3,12));
+            var officer;
+
+            console.log(message.member.displayName + " issued echo base register command. QZ")
+
+            if(message.content.includes("@"))
+            {
+                if(DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
+                {
+                    var discordID = String(message.content.split('@')[1].match(/\d+/g));
+                    officer = true;
+                }
+                else
+                {
+                    officer = false
+                    discordID = "xxxx"
+                }
+            }
+            else
+                var discordID = String(message.member.id)
+
+            var user = client.users.cache.get(discordID)
+
+            if(officer == false) //A non officer attempted to execute an officer command
+            { 
+                const Embed = new Discord.MessageEmbed()
+                    .setColor('#ff0000')
+                    .setTitle('Error - Mhanndalorian Bot')
+                    .setDescription('You do not have permission to execute this command.');
+                message.channel.send(Embed)
+                console.log(message.member.displayName + " Attempted to use officer Echo Base register command. QZ")
+            }
+
+            else if(user == undefined){ //Discord user doesn't exist
+                const Embed = new Discord.MessageEmbed()
+                    .setColor('#ff0000')
+                    .setTitle('Error - Mhanndalorian Bot')
+                    .setDescription('Could not find Discord User.');
+                message.channel.send(Embed)
+            }
+
+            else //Discord user was found on server
+            {
+                //*********REGISTER FOR HOT BOT**************//
+                if(message.guild.id == 505515654833504266 && command == 'register')
+                {        
+                    (async () => {
+                        const guild = client.guilds.cache.get("505515654833504266");
+                        const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
+                    
+                        var User;
+                        var GuildMember;
+
+                        var DiscordDiscriminator;
+                        var DiscordName;
+                        var Color;
+                        var Title;
+
+                        User =  await client.users.fetch(discordID);
+                        GuildMember =  await guild.members.fetch(User);
+
+                    //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
+                    //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
+
+                        DiscordDiscriminator = "#" + GuildMember.user.discriminator
+                        DiscordName = GuildMember.user.username
+
+                        var headers = {
+                            "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
+                        };
+
+                        var body = {
+                            "discordTag": DiscordName + DiscordDiscriminator,
+                            "discordId": discordID,
+                            "allyCode": allyCode                };
+
+                    //  Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode OLD API
+
+                    //  Result = await fetch(Server, { headers: headers}).then(response => response.json()) OLD API
+
+                        Result = await fetch(BaseURL,
+                        {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(body)
+                        }).then(response => response.json())
+
+                        var JSONResponse = (JSON.parse(Result));
+
+                        if(JSONResponse.ResponseCode == 0)
+                        {
+                            Color = "#ff0000"
+                            Title = "Error - HotBot"
+                        }
+                        else if (JSONResponse.ResponseCode == 1)
+                        {
+                            Color = "00ff00"
+                            Title = "Success - HotBot"
+                        }
+
+                        const Embed = new Discord.MessageEmbed()
+                            .setColor(Color)
+                            .setTitle(Title)
+                            .setDescription(JSONResponse.ResponseMessage);
+                        message.channel.send(Embed) 
+                    })()
+                }
+
+                //**************BELOW IS TO REGISTER FOR MHANN BOT***************
+
+                discordIDArray = new Array(1)
+                discordIDArray[0] = new Array(1)
+                discordIDArray[0][0]= "<@" + discordID + "> "
+
+                var allyCodeFound = false;
+
+                //var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+                authorize(content, listMajors);
+
+                function listMajors(auth) {
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.get({
+                        spreadsheetId: AllGuildData[GuildFoundRow][3],
+                        range: 'Guild Members & Data!A66:G119',
+                    }, (err, res) => {
+                        if (err) return console.log('The API returned an error: ' + err);
+                    const rows = res.data.values;
+                    var DiscordIDDuplicate = false
+                    if (rows.length)
+                    {
+                        if(command == 'register')
+                        {
+                            var count = 0//number of times Discord ID appears in database
+
+                            for(var i = 0; i < rows.length; i++)
+                            {
+                                if(rows[i][6] != undefined && rows[i][6].match(/\d+/g) - discordIDArray[0][0].match(/\d+/g) == 0) //Weird way to see if rows[i][6] = discordIDArray[0][0]
+                                    count = count + 1
+                            }
+                                if(count >= 2)
+                                {
+                                    const Embed = new Discord.MessageEmbed()
+                                        .setColor('#ff0000')
+                                        .setTitle('Error - Mhanndalorian Bot')
+                                        .setDescription('The discord ID is already registered in the Mhanndalorian database to two allycodes.');
+
+                                    message.channel.send(Embed)
+                                    DiscordIDDuplicate = true
+                                }
+
+                            if(DiscordIDDuplicate == false)
+                            {
+                                var i = 0
+                                var description
+                                for(var i = 0; i < rows.length; i++)
+                                {
+                                    if(rows[i][0] == allyCode) //ally code found and set discord ID
+                                    {
+                                        if(rows[i][6] == discordIDArray[0][0]) //ally code and discord ID pair already in database
+                                        {
+                                            const Embed = new Discord.MessageEmbed()
+                                                .setColor('#ff0000')
+                                                .setTitle('Error - Mhanndalorian Bot')
+                                                .setDescription('The discord ID is already registered in the Mhanndalorian database to allycode ' + allyCode + ".");
+                                            message.channel.send(Embed)
+                                            return 0;
+                                        }
+                                        
+                                        allyCodeFound = true;
+                                        sheets.spreadsheets.values.update({
+                                            spreadsheetId: AllGuildData[GuildFoundRow][3],
+                                            range: 'Guild Members & Data!G' + (i+66),
+                                            valueInputOption: 'USER_ENTERED',
+                                            resource: {
+                                                values: discordIDArray
+                                            },
+                                        })
+                                        if(count == 0)
+                                            description = "Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode + ".  This Discord ID is registered to one " +
+                                                        "allycode and can be registered to one more."
+
+                                        if(count == 1)
+                                            description = "Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode + ".  This Discord ID is now registered to two " +
+                                                        "allycodes and can not be registered to any more."
+                                        
+                                        const Embed2 = new Discord.MessageEmbed()
+                                            .setColor('#00ff00')
+                                            .setTitle('Success - Mhanndalorian Bot')
+                                            .setDescription(description);
+                                        message.channel.send(Embed2)
+                                    }
+                                };
+                            }
+
+                            if(allyCodeFound == false && DiscordIDDuplicate == false)
+                            {
+                                var Description = "Ally code " + allyCode +" was not found in Mhanndalorian database.";
+
+                            // message.channel.send("Ally code " + allyCode +" was not found in Mhanndalorian database")
+                                const sheets = google.sheets({version: 'v4', auth});
+                                sheets.spreadsheets.values.get({
+                                    spreadsheetId: AllGuildData[GuildFoundRow][3],
+                                    range: 'Guild Members & Data!A57:A63',
+                                }, (err, res) => {
+                                    if (err) return console.log('The API returned an error: ' + err);
+                                const rows = res.data.values;
+                                if (rows.length) {
+                                    var i = 0;
+                                    var TempAllyCodeFound = false
+
+                                    while(i<rows.length && !TempAllyCodeFound) //See if ally code is already in temp table
+                                    {
+                                        if(rows[i][0] == allyCode)
+                                        {
+                                            TempAllyCodeFound = true;
+                                        }
+
+                                        else
+                                        {
+                                            i++;
+                                        }
+                                    }
+
+                                    if(!TempAllyCodeFound) //If ally code wasnt in temp table, search for a blank spot
+                                    {
+                                        i = 0;
+                                        while(i<rows.length && rows[i][0] != undefined)
+                                        {
+                                            i++
+                                        }
+                                    }
+
+                                    if(i < 7)
+                                    {
+                                        var today = new Date();
+                                        var localdate = ((today.getTime() / 86400000) + 25569) - (4/24)
+                                        Description = Description + " Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database and will be added after new member is in SWGOH.GG database."
+                                        
+                                        const Embed3 = new Discord.MessageEmbed()
+                                            .setColor('#ffff00')
+                                            .setTitle('Info - Mhanndalorian Bot')
+                                            .setDescription(Description);
+                                        message.channel.send(Embed3)
+
+                                    //  message.channel.send("Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database.")
+                                        sheets.spreadsheets.values.update({
+                                            spreadsheetId: AllGuildData[GuildFoundRow][3],
+                                            range: 'Guild Members & Data!A' + (i+57) + ':C' + (i+57),
+                                            valueInputOption: 'USER_ENTERED',
+                                            resource: {
+                                                values: [[allyCode, "<@" + discordID + "> ", localdate]]
+                                            },
+                                        })
+                                    }
+                                    else{
+                                        Description = Description + " Allycode and Discord ID could not be stored in a temporary location in Mhanndalorian database.  Temporary location is full."
+
+                                        const Embed4 = new Discord.MessageEmbed()
+                                            .setColor('#ff0000')
+                                            .setTitle('Error - Mhanndalorian Bot')
+                                            .setDescription(Description);
+                                        message.channel.send(Embed4)
+                                    // message.channel.send("Temporary location in Mhanndalorian database is currently full.")
+                                    }                  
+
+                                }else {
+                                    console.log('No data found.');
+                                }
+                                });
+                                
+                            }
+                        }
+                        else if (command == 'unregister')
+                        {
+                            for(var i = 0; i < rows.length; i++)
+                            {
+                                if(rows[i][6] != undefined && discordID == rows[i][6].replace("<@","").replace(">","").replace(" ",""))
+                                {
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: AllGuildData[GuildFoundRow][3],
+                                        range: 'Guild Members & Data!G' + (i+66),
+                                        valueInputOption: 'USER_ENTERED',
+                                        resource: {
+                                            values: [['']]
+                                        },
+                                    })
+
+                                    const Embed = new Discord.MessageEmbed()
+                                        .setColor('#00ff00')
+                                        .setTitle('Success - Mhanndalorian Bot')
+                                        .setDescription('Discord ID successfully removed from Mhanndalorian database for Allycode ' + allyCode + '.')
+                                    message.channel.send(Embed)
+
+                                    return 0;
+                                }
+                            }
+                            const Embed = new Discord.MessageEmbed()
+                                .setColor('#ff0000')
+                                .setTitle('Error - Mhanndalorian Bot')
+                                .setDescription('Discord ID could not be found in Mhanndalorian database.');
+                            message.channel.send(Embed)
+                                                        
+                        }
+                    }else {
+                        console.log('No data found.');
+                    }
+                    });
+                }                
+            }
+        }
+        else
+            message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + " role to execute this command.")
+}
 
 function GuildSearch(GuildID)
 {
@@ -1532,7 +1865,7 @@ function PostWeeklyGPPerformanceIndividual(AllGuildData) {
     if(!CheckIfBlankOrUndefined(AllGuildData[i][3]))
         findByAnythingElse(AllGuildData[i][3], i, searchObj, ThreeDaysAgo);
     else
-        client.users.cache.get(AllGuildData[i][5]).send("FindByAnythingElse could not run due to Google spreadsheet ID not set.  Contact Mhann.")
+        client.users.cache.get(AllGuildData[i][5]).send("FindByAnythingElse could not run due to Google spreadsheet ID not set.  Contact Mhann at <@406945430967156766>.")
   }
 
 function findByAnythingElse(spreadsheetId, GuildFoundRow, searchObj, ThreeDaysAgo) {
@@ -1880,8 +2213,15 @@ client.on("guildCreate", function(guild){
         const BotRole = guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot')
 
         NewChannel.updateOverwrite(BotRole, {})
-        NewChannel.send("Welcome to the Mhanndalorian Bot!  In order to get up and running please check out the help file using the **!help** command.  You will need to run all the set commands to tell "
-                        + "the bot a bit about your server.  If you have any questions or problems, please reach out to <@406945430967156766>.")
+        NewChannel.send("Welcome to the Mhanndalorian Bot!  In order to get up and running please check out the help file using the **!help** command.  You will need to run all the set commands to "
+                        + "tell the bot a bit about your server.  To complete set up, you will need to go to https://www.patreon.com/MhannUhdea and choose a membership tier.  If you have any "
+                        + "questions or problems, please reach out to <@406945430967156766>.")
+
+        client.users.cache.get('406945430967156766').send("Bot has just been installed:"
+        +"\n **Guild Name: **" + guild.name
+        +"\n **Guild ID: **" + guild.id
+        +"\n **Owner: **<@" + guild.ownerID + ">"
+        +"\n - - - - - -") 
 
         for(var i = 0; i < AllGuildData.length; i++)
         {
@@ -1910,7 +2250,11 @@ client.on("guildCreate", function(guild){
 });
 
 client.on("guildDelete", function(guild){
-    console.log(`the client deleted/left a guild`);
+    client.users.cache.get('406945430967156766').send("Bot has just been uninstalled:"
+    +"\n **Guild Name: **" + guild.name
+    +"\n **Guild ID: **" + guild.id
+    +"\n **Owner: **<@" + guild.ownerID + ">"
+    +"\n - - - - - -") 
 
     for(var i = 0; i < AllGuildData.length; i++)
     {
@@ -2001,7 +2345,11 @@ client.on('message', message => {
     GuildFoundRow = GuildSearch(message.guild.id)
     if(GuildFoundRow == -1)
     {
-        console.log("Guild data not setup in Master Database.  Error 1.  Contact Mhann.  Guild ID: " + message.guild.id)
+        if(bot == false)
+        {
+            //client.users.cache.get('406945430967156766').send(("Guild data not setup in Master Database.  Error 1.  Contact Mhann at <@406945430967156766>.  Guild ID: " + message.guild.id))
+            message.channel.send(("Guild data not setup in Master Database.  Error 1.  Contact Mhann at <@406945430967156766>.  Guild ID: " + message.guild.id))
+        }
         return 0;
     }
 
@@ -2055,304 +2403,11 @@ client.on('message', message => {
         processMIAMessage(message)                                                                  //584496478412734464 Real MIA channel   
     }
 
-    if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && (message.content.toLowerCase().startsWith("eb")) &&!bot){
-        if(message.channel.type == 'dm')
-        {
-            message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
-            return 0;
-        }
+    if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && (message.content.toLowerCase().startsWith("eb")) &&!bot)
+        UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, "register");        
 
-
-        if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][6]))
-        {
-            message.channel.send("Officer role and/or user role not set.  An officer must set these values using the commands " + AllGuildData[GuildFoundRow][7] + "setuserrole and "
-            + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
-            return 0;
-        }
-
-        if(message.member.roles.cache.has(AllGuildData[GuildFoundRow][8]))
-        {
-            var allyCode = String(message.content.slice(3,12));
-            var officer;
-
-            console.log(message.member.displayName + " issued echo base register command. QZ")
-
-            if(message.content.includes("@"))
-            {
-                if(DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
-                {
-                    var discordID = String(message.content.split('@')[1].match(/\d+/g));
-                    officer = true;
-                }
-                else
-                {
-                    officer = false
-                    discordID = "xxxx"
-                }
-            }
-            else
-                var discordID = String(message.member.id)
-
-            var user = client.users.cache.get(discordID)
-
-            if(officer == false) //A non officer attempted to execute an officer command
-            { 
-                const Embed = new Discord.MessageEmbed()
-                    .setColor('#ff0000')
-                    .setTitle('Error - Mhanndalorian Bot')
-                    .setDescription('You do not have permission to execute this command.');
-                message.channel.send(Embed)
-                console.log(message.member.displayName + " Attempted to use officer Echo Base register command. QZ")
-            }
-
-            else if(user == undefined){ //Discord user doesn't exist
-                const Embed = new Discord.MessageEmbed()
-                    .setColor('#ff0000')
-                    .setTitle('Error - Mhanndalorian Bot')
-                    .setDescription('Could not find Discord User.');
-                message.channel.send(Embed)
-            }
-
-            else //Discord user was found on server
-            {
-                //*********REGISTER FOR HOT BOT**************//
-                if(message.guild.id == 505515654833504266)
-                {        
-                    (async () => {
-                        const guild = client.guilds.cache.get("505515654833504266");
-                        const BaseURL = "https://www.hotutils.app/HotStaging/swgoh/register"
-                    
-                        var User;
-                        var GuildMember;
-
-                        var DiscordDiscriminator;
-                        var DiscordName;
-                        var Color;
-                        var Title;
-
-                        User =  await client.users.fetch(discordID);
-                        GuildMember =  await guild.members.fetch(User);
-
-                    //  DiscordDiscriminator = "%23" + GuildMember.user.discriminator OLD API
-                    //  DiscordName = GuildMember.user.username.replace(/ /g, "%20") OLD API
-
-                        DiscordDiscriminator = "#" + GuildMember.user.discriminator
-                        DiscordName = GuildMember.user.username
-
-                        var headers = {
-                            "VendorID": "81babb8a-e943-4dc0-a178-a6a29e94924e",
-                            "Accept": "application/json",
-                            "Content-Type": "application/json"
-                        };
-
-                        var body = {
-                            "discordTag": DiscordName + DiscordDiscriminator,
-                            "discordId": discordID,
-                            "allyCode": allyCode                };
-
-                    //  Server = BaseURL + DiscordName + DiscordDiscriminator + "/" + discordID + "/" + allyCode OLD API
-
-                    //  Result = await fetch(Server, { headers: headers}).then(response => response.json()) OLD API
-
-                        Result = await fetch(BaseURL,
-                        {
-                            method: 'POST',
-                            headers: headers,
-                            body: JSON.stringify(body)
-                        }).then(response => response.json())
-
-                        var JSONResponse = (JSON.parse(Result));
-
-                        if(JSONResponse.ResponseCode == 0)
-                        {
-                            Color = "#ff0000"
-                            Title = "Error - HotBot"
-                        }
-                        else if (JSONResponse.ResponseCode == 1)
-                        {
-                            Color = "00ff00"
-                            Title = "Success - HotBot"
-                        }
-
-                        const Embed = new Discord.MessageEmbed()
-                            .setColor(Color)
-                            .setTitle(Title)
-                            .setDescription(JSONResponse.ResponseMessage);
-                        message.channel.send(Embed) 
-                    })()
-                }
-
-                //**************BELOW IS TO REGISTER FOR MHANN BOT***************
-
-                discordIDArray = new Array(1)
-                discordIDArray[0] = new Array(1)
-                discordIDArray[0][0]= "<@" + discordID + "> "
-
-                var allyCodeFound = false;
-
-                //var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-                authorize(content, listMajors);
-
-                function listMajors(auth) {
-                    const sheets = google.sheets({version: 'v4', auth});
-                    sheets.spreadsheets.values.get({
-                        spreadsheetId: AllGuildData[GuildFoundRow][3],
-                        range: 'Guild Members & Data!A66:G119',
-                    }, (err, res) => {
-                        if (err) return console.log('The API returned an error: ' + err);
-                    const rows = res.data.values;
-                    var DiscordIDDuplicate = false
-                    if (rows.length)
-                    {
-                        var count = 0//number of times Discord ID appears in database
-
-                        for(var i = 0; i < rows.length; i++)
-                        {
-                            if(rows[i][6] != undefined && rows[i][6].match(/\d+/g) - discordIDArray[0][0].match(/\d+/g) == 0) //Weird way to see if rows[i][6] = discordIDArray[0][0]
-                                count = count + 1
-                        }
-                            if(count >= 2)
-                            {
-                                const Embed = new Discord.MessageEmbed()
-                                    .setColor('#ff0000')
-                                    .setTitle('Error - Mhanndalorian Bot')
-                                    .setDescription('The discord ID is already registered in the Mhanndalorian database to two allycodes.');
-
-                                message.channel.send(Embed)
-                                DiscordIDDuplicate = true
-                            }
-
-                        if(DiscordIDDuplicate == false)
-                        {
-                            var i = 0
-                            var description
-                            for(var i = 0; i < rows.length; i++)
-                            {
-                                if(rows[i][0] == allyCode) //ally code found and set discord ID
-                                {
-                                    if(rows[i][6] == discordIDArray[0][0]) //ally code and discord ID pair already in database
-                                    {
-                                        const Embed = new Discord.MessageEmbed()
-                                            .setColor('#ff0000')
-                                            .setTitle('Error - Mhanndalorian Bot')
-                                            .setDescription('The discord ID is already registered in the Mhanndalorian database to allycode ' + allyCode + ".");
-                                        message.channel.send(Embed)
-                                        return 0;
-                                    }
-                                    
-                                    allyCodeFound = true;
-                                    sheets.spreadsheets.values.update({
-                                        spreadsheetId: AllGuildData[GuildFoundRow][3],
-                                        range: 'Guild Members & Data!G' + (i+66),
-                                        valueInputOption: 'USER_ENTERED',
-                                        resource: {
-                                            values: discordIDArray
-                                        },
-                                    })
-                                    if(count == 0)
-                                        description = "Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode + ".  This Discord ID is registered to one " +
-                                                      "allycode and can be registered to one more."
-
-                                    if(count == 1)
-                                        description = "Discord ID successfully added to Mhanndalorian database for Allycode " + allyCode + ".  This Discord ID is now registered to two " +
-                                                      "allycodes and can not be registered to any more."
-                                    
-                                    const Embed2 = new Discord.MessageEmbed()
-                                        .setColor('#00ff00')
-                                        .setTitle('Success - Mhanndalorian Bot')
-                                        .setDescription(description);
-                                    message.channel.send(Embed2)
-                                }
-                            };
-                        }
-
-                        if(allyCodeFound == false && DiscordIDDuplicate == false)
-                        {
-                            var Description = "Ally code " + allyCode +" was not found in Mhanndalorian database.";
-
-                        // message.channel.send("Ally code " + allyCode +" was not found in Mhanndalorian database")
-                            const sheets = google.sheets({version: 'v4', auth});
-                            sheets.spreadsheets.values.get({
-                                spreadsheetId: AllGuildData[GuildFoundRow][3],
-                                range: 'Guild Members & Data!A57:A63',
-                            }, (err, res) => {
-                                if (err) return console.log('The API returned an error: ' + err);
-                            const rows = res.data.values;
-                            if (rows.length) {
-                                var i = 0;
-                                var TempAllyCodeFound = false
-
-                                while(i<rows.length && !TempAllyCodeFound) //See if ally code is already in temp table
-                                {
-                                    if(rows[i][0] == allyCode)
-                                    {
-                                        TempAllyCodeFound = true;
-                                    }
-
-                                    else
-                                    {
-                                        i++;
-                                    }
-                                }
-
-                                if(!TempAllyCodeFound) //If ally code wasnt in temp table, search for a blank spot
-                                {
-                                    i = 0;
-                                    while(i<rows.length && rows[i][0] != undefined)
-                                    {
-                                        i++
-                                    }
-                                }
-
-                                if(i < 7)
-                                {
-                                    var today = new Date();
-                                    var localdate = ((today.getTime() / 86400000) + 25569) - (4/24)
-                                    Description = Description + " Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database and will be added after new member is in SWGOH.GG database."
-                                    
-                                    const Embed3 = new Discord.MessageEmbed()
-                                        .setColor('#ffff00')
-                                        .setTitle('Info - Mhanndalorian Bot')
-                                        .setDescription(Description);
-                                    message.channel.send(Embed3)
-
-                                //  message.channel.send("Allycode and Discord ID have have been stored in a temporary location in Mhanndalorian database.")
-                                    sheets.spreadsheets.values.update({
-                                        spreadsheetId: AllGuildData[GuildFoundRow][3],
-                                        range: 'Guild Members & Data!A' + (i+57) + ':C' + (i+57),
-                                        valueInputOption: 'USER_ENTERED',
-                                        resource: {
-                                            values: [[allyCode, "<@" + discordID + "> ", localdate]]
-                                        },
-                                    })
-                                }
-                                else{
-                                    Description = Description + " Allycode and Discord ID could not be stored in a temporary location in Mhanndalorian database.  Temporary location is full."
-
-                                    const Embed4 = new Discord.MessageEmbed()
-                                        .setColor('#ff0000')
-                                        .setTitle('Error - Mhanndalorian Bot')
-                                        .setDescription(Description);
-                                    message.channel.send(Embed4)
-                                // message.channel.send("Temporary location in Mhanndalorian database is currently full.")
-                                }                  
-
-                            }else {
-                                console.log('No data found.');
-                            }
-                            });
-                            
-                        } 
-                    }else {
-                        console.log('No data found.');
-                    }
-                    });
-                }                
-            }
-        }
-        else
-            message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + " role to execute this command.")
-    }
+    if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][u][n][r][e][g][i][s][t][e][r]/) && (message.content.toLowerCase().startsWith("eb")) &&!bot)
+        UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, "unregister");        
 
     else if(message.content.startsWith(prefix) && !bot)
     {
@@ -2996,11 +3051,14 @@ client.on('message', message => {
                                 + "__**" + prefix + "delgif**__ __***arg***__ - Command to remove GIF from database. *Arg* is the keyword to "
                                 + "remove \n \n"
 
+                                + "__**" + "eb.UserAllyCode.register @DiscordUser**__ - Used to register a specific Discord user & ally code for Mhanndalorian Bot.  No dashes in ally code (eb.123456789.register). \n\n"
+                                + "__**" + "eb.UserAllyCode.unregister @DiscordUser**__ - Used to unregister a specific Discord user & ally code from Mhanndalorian Bot.  No dashes in ally code (eb.123456789.unregister). \n\n"
+
                                 + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  In addition to the ways this command can be "
                                 + "run as a regular guild member, officers have access to the following 2 command options: \n"
 
-                                + "> __**" + prefix + "gp @user**__ - The entire GP history for a specific user will be displayed. \n"
-                                + "> __**" + prefix + "gp @user n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n"
+                                + "> __**" + prefix + "gp @DiscordUser**__ - The entire GP history for a specific user will be displayed. \n"
+                                + "> __**" + prefix + "gp @DiscordUser n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n"
                                 
                                 + "__**" + prefix + "status**__ - Displays date and time bot was launched along with total up time. \n \n "
                                 + "__**" + prefix + "nuke**__ - Command to completely clear a channel.  Only works in the recruiting and Cynydes barrel "
@@ -3011,9 +3069,11 @@ client.on('message', message => {
                     const Embed = new Discord.MessageEmbed()
                         .setColor('#2FC071')
                         .setTitle('Commands available to those with ' + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + ' role (not case sensitive)')
-                        .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                        .setDescription("All commands start with either" + prefix + " or eb.  If a command has *arg* after it, it requires an argument.\n\n"
                             + "__**" + prefix + "alert**__ __***arg1***__ __***arg2***__ - Subscribes or unsubscribes you from a reminder. "
                             + "*Arg1* must be the word raid. *Arg2* can be the word subscribe or unsubscribe. \n\n"
+                            + "__**" + "eb.YourAllyCode.register**__ - Used to register yourself for Mhanndalorian Bot.  No dashes in ally code (eb.123456789.register). \n\n"
+                            + "__**" + "eb.YourAllyCode.unregister**__ - Used to unregister yourself from Mhanndalorian Bot.  No dashes in ally code (eb.123456789.unregister). \n\n"
                             + "__**" + prefix + "flair**__ - Display number of consecutive days without missing a raid. \n \n"
                             + "__**" + prefix + "full**__ - Receive all notifications and access to all channels. \n \n"
                             + "__**" + prefix + "gifs**__ - Display all the keywords that will trigger a GIF image. \n \n"
@@ -3066,7 +3126,7 @@ client.on('message', message => {
                         const Embed2 = new Discord.MessageEmbed()
                             .setColor(color)
                             .setTitle(title)
-                            .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                            .setDescription("All commands start with either" + prefix + " or eb.  If a command has *arg* after it, it requires an argument.\n\n"
                                 + "The following commands are used to setup the bot.  Each command must be run one time for the bot to be full functional. \n"
 
                                 + "> __**" + prefix + "setofficerchannel**__ __** #OFCChannel**__ - Sets the channel that Mhanndalorian bot will use for officer announcements. \n"
@@ -3074,12 +3134,15 @@ client.on('message', message => {
                                 + "> __**" + prefix + "setprefix**__ __***arg***__ - Sets the prefix used for Mhanndalorian Bot commands.  Can only be run by server owner.  Default prefix is !.  Replace arg with a single character. \n"
                                 + "> __**" + prefix + "setuserchannel**__ __** #UserChannel**__ - Sets the channel that Mhanndalorian bot will use for guild wide announcements. \n"
                                 + "> __**" + prefix + "setuserrole**__ __** @UserRole**__ - Sets the role that designates a user as a member of the guild in game. \n\n"
+
+                                + "__**" + "eb.UserAllyCode.register @DiscordUser**__ - Used to register a specific Discord user & ally code for Mhanndalorian Bot.  No dashes in ally code (eb.123456789.register). \n\n"
+                                + "__**" + "eb.UserAllyCode.unregister @DiscordUser**__ - Used to unregister a specific Discord user & ally code from Mhanndalorian Bot.  No dashes in ally code (eb.123456789.unregister). \n\n"
                                 
                                 + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  In addition to the ways this command can be "
                                 + "run as a regular guild member, officers have access to the following 2 command options: \n"
 
-                                + "> __**" + prefix + "gp @user**__ - The entire GP history for a specific user will be displayed. \n"
-                                + "> __**" + prefix + "gp @user n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n");
+                                + "> __**" + prefix + "gp @DiscordUser**__ - The entire GP history for a specific user will be displayed. \n"
+                                + "> __**" + prefix + "gp @DiscordUser n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n");
                         message.channel.send(Embed2)
                     }
 
@@ -3099,7 +3162,9 @@ client.on('message', message => {
                     const Embed = new Discord.MessageEmbed()
                         .setColor(color)                        
                         .setTitle(title)
-                        .setDescription("All commands start with " + prefix + ".  If a command has *arg* after it, it requires an argument.\n\n"
+                        .setDescription("All commands start with either " + prefix + " or eb.  If a command has *arg* after it, it requires an argument.\n\n"
+                            + "__**" + "eb.YourAllyCode.register**__ - Used to register yourself for Mhanndalorian Bot.  No dashes in ally code (eb.123456789.register). \n\n"
+                            + "__**" + "eb.YourAllyCode.unregister**__ - Used to unregister yourself from Mhanndalorian Bot.  No dashes in ally code (eb.123456789.unregister). \n\n"
                             + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
 
                             + "> __**" + prefix + "gp**__ - Your entire GP history will be displayed. \n"
