@@ -40,6 +40,86 @@ client.once('ready', () => {
     BotUpTime = new Date().toLocaleTimeString()
     BotUpDate = new Date().toLocaleDateString()
 })
+
+function CheckMemberPatreonStatus(UserID)
+{
+    const MhanndalorianBotGuild = client.guilds.cache.get('814625223906689044')
+    const CarboniteIDs = MhanndalorianBotGuild.roles.cache.get('814627631008841799').members.map(m=>m.user.id)
+
+    for(var i = 0; i < CarboniteIDs.length; i++)
+    {
+        if(UserID == CarboniteIDs[i])
+            return 1
+    }
+
+    return 0
+}
+
+async function GetSubscribers(AllGuildData,GuildFoundRow)
+{
+    const guild = client.guilds.cache.get(AllGuildData[GuildFoundRow][1]);
+    const DiscordIDs = guild.roles.cache.get(AllGuildData[GuildFoundRow][1]).members.map(m=>m.user.id)
+
+    const BotGuild = client.guilds.cache.get('814625223906689044')
+    const CarboniteIDs = BotGuild.roles.cache.get('814627631008841799').members.map(m=>m.user.id)
+
+    async function authorize(credentials, callback) {
+    const {client_secret, client_id, redirect_uris} = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+        client_id, client_secret, redirect_uris[0]);
+    // READ ONLY  token = {"access_token":"ya29.Il-9BygCO5hRduHR-tUsBx32geTiZxDF4QUjh17uDovL_OQYrsW-q53oknT-PYfQbG6qMAvDeV4myI3_uKIYIQLMsFPIuRV0UTR4g31GFJpdOuv-uQwqm1I-g4ttX0CgDg","refresh_token":"1//0dhkLg8Xv7BDXCgYIARAAGA0SNwF-L9IrG-vrIlgGQGioOCDU2gilJp7ZHgDWgiiugPjQWGw091GlSXJx4fTJJ5-6XIZYu5p_7Ds","scope":"https://www.googleapis.com/auth/spreadsheets.readonly","token_type":"Bearer","expiry_date":1581974001623}
+      token =  {"access_token":"ya29.a0Adw1xeVMaJdFu4_Prd1JMj5VW6JLzPAux780mPR-FKiDT2XNCJ1xdywo5Q2mOCgj6PXzQEkrJJ68TymBCLF1NGIxJdwd6r6F-pDXqk8th8dc6bd_v711TCJpxdbEBSmXktCMFwb241KyLv1rJDvox_15WH4LLpNU9x8","refresh_token":"1//0dpVeaJ3ELcQBCgYIARAAGA0SNwF-L9IrUePhHzcm67KPL99LpKuThsJVLerdoAtDw5zTBbWhaxR0PobydX1sUCmVx8TdYXXpewA","scope":"https://www.googleapis.com/auth/spreadsheets","token_type":"Bearer","expiry_date":1583977474403}
+      oAuth2Client.setCredentials(token);
+      return await callback(oAuth2Client);
+}
+    async function listMajors(auth) {
+        const sheets = google.sheets({version: 'v4', auth})
+        var request = {
+            spreadsheetId: AllGuildData[GuildFoundRow][3],
+            range: 'Guild Members & Data!G66:G119'
+        }
+
+        function GetSheetDataAsync(request)
+        {
+            return new Promise(function(resolve,reject) {
+                sheets.spreadsheets.values.get(request, function(err, res){
+                    if (err !== null) reject(err);
+                    else resolve(res.data.values);
+                });
+
+            });
+        }
+
+        var DiscordIDsFromDatabase = ""
+
+        DiscordIDsFromDatabase = await GetSheetDataAsync(request)
+
+        var SubscriberLevel = 0
+    
+        for(var i = 0; i < DiscordIDs.length; i++)
+        {
+            for(var j = 0; j < CarboniteIDs.length; j++)
+            {
+                if(DiscordIDs[i] == CarboniteIDs[j])
+                {
+                    for(var k = 0; k < DiscordIDsFromDatabase.length; k++)
+                    {
+                        if(DiscordIDsFromDatabase[k][0] != undefined && DiscordIDs[i] == DiscordIDsFromDatabase[k][0].replace("<@","").replace(">","").replace(" ",""))
+                        {
+                            SubscriberLevel = SubscriberLevel + 1
+                            k = DiscordIDsFromDatabase.length
+                        }
+                    }
+                    j = CarboniteIDs.length
+                }
+            }
+        }
+        return SubscriberLevel;
+    }
+
+    return (await authorize(content, listMajors));
+}
+
 function UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, command)
 {
     if(message.channel.type == 'dm')
@@ -846,10 +926,20 @@ function toColumnName(num) {
     return ret;
 }
 
-function PostWeeklyGuildGP(){
+async function PostWeeklyGuildGP(){
     for(var i = 0; i < AllGuildData.length; i++)
     {
-        GP('GuildWeekly', 'guildGP', 90, AllGuildData, i)
+        if(AllGuildData[i][1] != '814625223906689044')//Skip Mhanndalorian Bot server
+        { 
+            if(await GetSubscribers(AllGuildData, i) >= 1)
+                GP('GuildWeekly', 'guildGP', 90, AllGuildData, i)
+            else
+            {
+                if(!CheckIfBlankOrUndefined(AllGuildData[i][9], AllGuildData[i][8]))
+                    client.channels.cache.get(AllGuildData[i][9]).send("<@&" + AllGuildData[i][8] + ">" + " Weekly Guild Galactic Power report failed to complete.  You must have at least one Patreon subscriber "
+                    +"that is registered in the Mhanndalorian database to utilize this feature.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>  Guild ID: " + AllGuildData[i][1])
+            }
+        }
     }
 }
 
@@ -861,155 +951,159 @@ function UpdateTotalGP() {
     {
         for(var k = 0; k < AllGuildData.length; k++)
         {
-            if(!CheckIfBlankOrUndefined(AllGuildData[k][2],  AllGuildData[k][3]))
-            {            
-                const BaseURL = AllGuildData[k][2];
-                const SheetID = AllGuildData[k][3];
+            if(AllGuildData[k][1] != '814625223906689044') //Skip check Mhanndalorian Bot Server
+            {
+                if(!CheckIfBlankOrUndefined(AllGuildData[k][2],  AllGuildData[k][3]))
+                {            
+                    const BaseURL = AllGuildData[k][2];
+                    const SheetID = AllGuildData[k][3];
 
-                (async () => {
-                    var NextAvailableRow;
-                    var NextAvailableColumn;
+                    (async () => {
+                        var NextAvailableRow;
+                        var NextAvailableColumn;
 
-                    var Result = await fetch(BaseURL,
-                        {
-                    /*     method: 'GET',
-                        }).then(function (response) {
-                            var response2 = response.clone();
-                            response.json().then(function(ParsedJSON) {
-                                console.log(ParsedJSON)
+                        var Result = await fetch(BaseURL,
+                            {
+                        /*     method: 'GET',
+                            }).then(function (response) {
+                                var response2 = response.clone();
+                                response.json().then(function(ParsedJSON) {
+                                    console.log(ParsedJSON)
+                                })
+                                return response2.json()
+                            })*/
+                                method: 'GET',
+                            }).then(function (response) {
+                                //console.log(response)
+                                return response.json()
                             })
-                            return response2.json()
-                        })*/
-                            method: 'GET',
-                        }).then(function (response) {
-                            //console.log(response)
-                            return response.json()
-                        })
 
-                        var AllyCodeAndGP = new Array(Result.players.length);
+                            var AllyCodeAndGP = new Array(Result.players.length);
 
-                        for (var i = 0; i < AllyCodeAndGP.length; i++) { 
-                            AllyCodeAndGP[i] = new Array(3);
-                            AllyCodeAndGP[i][0] = '';
-                            AllyCodeAndGP[i][1] = '';
-                            AllyCodeAndGP[i][2] = 'Y';
-                        }
+                            for (var i = 0; i < AllyCodeAndGP.length; i++) { 
+                                AllyCodeAndGP[i] = new Array(3);
+                                AllyCodeAndGP[i][0] = '';
+                                AllyCodeAndGP[i][1] = '';
+                                AllyCodeAndGP[i][2] = 'Y';
+                            }
 
-                        for(var i = 0; i < Result.players.length; i++)
-                        {
-                            AllyCodeAndGP[i][0] = Result.players[i].data.ally_code
-                            AllyCodeAndGP[i][1] = Result.players[i].data.galactic_power
-                        }
+                            for(var i = 0; i < Result.players.length; i++)
+                            {
+                                AllyCodeAndGP[i][0] = Result.players[i].data.ally_code
+                                AllyCodeAndGP[i][1] = Result.players[i].data.galactic_power
+                            }
 
-                        const sheets = google.sheets({version: 'v4', auth});
+                            const sheets = google.sheets({version: 'v4', auth});
 
-                        sheets.spreadsheets.values.get({
-                            spreadsheetId: SheetID,
-                            range: 'TotalGP!A:A',
-                            }, async (err, res) => {
-                                if (err) return console.log('The API returned an error: ' + err);
-                                const rows = res.data.values;
+                            sheets.spreadsheets.values.get({
+                                spreadsheetId: SheetID,
+                                range: 'TotalGP!A:A',
+                                }, async (err, res) => {
+                                    if (err) return console.log('The API returned an error: ' + err);
+                                    const rows = res.data.values;
 
-                                if(rows != undefined)
-                                    NextAvailableRow = rows.length + 1
-                                else
-                                    NextAvailableRow = 2
+                                    if(rows != undefined)
+                                        NextAvailableRow = rows.length + 1
+                                    else
+                                        NextAvailableRow = 2
 
-                                var Today = new Date().toLocaleDateString()                            
+                                    var Today = new Date().toLocaleDateString()                            
 
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: SheetID,
-                                    range: 'TotalGP!A' + NextAvailableRow,  
-                                    valueInputOption: 'RAW',
-                                    resource: {
-                                        values: [[Today]]
-                                    },
-                                })
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: SheetID,
+                                        range: 'TotalGP!A' + NextAvailableRow,  
+                                        valueInputOption: 'RAW',
+                                        resource: {
+                                            values: [[Today]]
+                                        },
+                                    })
 
-                                sheets.spreadsheets.values.update({
-                                    spreadsheetId: SheetID,
-                                    range: 'TotalGP!PP' + NextAvailableRow,  
-                                    valueInputOption: 'USER_ENTERED',
-                                    resource: {
-                                        //values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
-                                        values: [[Result.data.galactic_power]]
-                                    },
-                                })
+                                    sheets.spreadsheets.values.update({
+                                        spreadsheetId: SheetID,
+                                        range: 'TotalGP!PP' + NextAvailableRow,  
+                                        valueInputOption: 'USER_ENTERED',
+                                        resource: {
+                                            //values: [["=sum(B" + NextAvailableRow + ":PO" + NextAvailableRow + ")"]]
+                                            values: [[Result.data.galactic_power]]
+                                        },
+                                    })
 
-                                sheets.spreadsheets.values.get({
-                                    spreadsheetId: SheetID,
-                                    range: 'TotalGP!B1:PO1',
-                                    }, async (err, res) => {
-                                        if (err) return console.log('The API returned an error: ' + err);
-                                        const rows = res.data.values;
+                                    sheets.spreadsheets.values.get({
+                                        spreadsheetId: SheetID,
+                                        range: 'TotalGP!B1:PO1',
+                                        }, async (err, res) => {
+                                            if (err) return console.log('The API returned an error: ' + err);
+                                            const rows = res.data.values;
 
-                                        if(rows != undefined)
-                                            NextAvailableColumn = rows[0].length + 2
-                                        else
-                                            NextAvailableColumn = 2
+                                            if(rows != undefined)
+                                                NextAvailableColumn = rows[0].length + 2
+                                            else
+                                                NextAvailableColumn = 2
 
-                                        var UpdateGPData = [];
-                                        var NewGPDataAllyCode = []
-                                        var NewGPDataGP = []
+                                            var UpdateGPData = [];
+                                            var NewGPDataAllyCode = []
+                                            var NewGPDataGP = []
 
-                                        if(rows != undefined)
-                                        {
-                                            for(var i = 0; i < rows[0].length; i++)
+                                            if(rows != undefined)
                                             {
-                                                for(var j = 0; j < AllyCodeAndGP.length; j++)
+                                                for(var i = 0; i < rows[0].length; i++)
                                                 {
-                                                    //console.log(j)
-                                                    //console.log("ID from sheet " + rows[0][i] + "    ID from SWGOH " + AllyCodeAndGP[j][0])
-                                                    if(rows[0][i] == AllyCodeAndGP[j][0])
+                                                    for(var j = 0; j < AllyCodeAndGP.length; j++)
                                                     {
-                                                        UpdateGPData[i] = AllyCodeAndGP[j][1]
-                                                        AllyCodeAndGP[j][2] = 'N'
-                                                        j = AllyCodeAndGP.length;
+                                                        //console.log(j)
+                                                        //console.log("ID from sheet " + rows[0][i] + "    ID from SWGOH " + AllyCodeAndGP[j][0])
+                                                        if(rows[0][i] == AllyCodeAndGP[j][0])
+                                                        {
+                                                            UpdateGPData[i] = AllyCodeAndGP[j][1]
+                                                            AllyCodeAndGP[j][2] = 'N'
+                                                            j = AllyCodeAndGP.length;
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
 
-                                        sheets.spreadsheets.values.update({
-                                            spreadsheetId: SheetID,
-                                            range: 'TotalGP!B' + NextAvailableRow,  
-                                            valueInputOption: 'RAW',
-                                            resource: {
-                                                values: [UpdateGPData]
-                                            },
+                                            sheets.spreadsheets.values.update({
+                                                spreadsheetId: SheetID,
+                                                range: 'TotalGP!B' + NextAvailableRow,  
+                                                valueInputOption: 'RAW',
+                                                resource: {
+                                                    values: [UpdateGPData]
+                                                },
+                                            })
+
+                                            for(var i = 0; i < AllyCodeAndGP.length; i++)
+                                                if(AllyCodeAndGP[i][2] == 'Y')
+                                                {
+                                                    NewGPDataAllyCode.push(AllyCodeAndGP[i][0])
+                                                    NewGPDataGP.push(AllyCodeAndGP[i][1])
+                                                }
+
+                                            sheets.spreadsheets.values.update({
+                                                spreadsheetId: SheetID,
+                                                range: 'TotalGP!' + toColumnName(NextAvailableColumn) + '1',  
+                                                valueInputOption: 'RAW',
+                                                resource: {
+                                                    values: [NewGPDataAllyCode]
+                                                },
+                                            })
+
+                                            sheets.spreadsheets.values.update({
+                                                spreadsheetId: SheetID,
+                                                range: 'TotalGP!' + toColumnName(NextAvailableColumn) + NextAvailableRow,  
+                                                valueInputOption: 'RAW',
+                                                resource: {
+                                                    values: [NewGPDataGP]
+                                                },
+                                            })
                                         })
-
-                                        for(var i = 0; i < AllyCodeAndGP.length; i++)
-                                            if(AllyCodeAndGP[i][2] == 'Y')
-                                            {
-                                                NewGPDataAllyCode.push(AllyCodeAndGP[i][0])
-                                                NewGPDataGP.push(AllyCodeAndGP[i][1])
-                                            }
-
-                                        sheets.spreadsheets.values.update({
-                                            spreadsheetId: SheetID,
-                                            range: 'TotalGP!' + toColumnName(NextAvailableColumn) + '1',  
-                                            valueInputOption: 'RAW',
-                                            resource: {
-                                                values: [NewGPDataAllyCode]
-                                            },
-                                        })
-
-                                        sheets.spreadsheets.values.update({
-                                            spreadsheetId: SheetID,
-                                            range: 'TotalGP!' + toColumnName(NextAvailableColumn) + NextAvailableRow,  
-                                            valueInputOption: 'RAW',
-                                            resource: {
-                                                values: [NewGPDataGP]
-                                            },
-                                        })
-                                    })
-                            }
-                        )
-                })()
+                                }
+                            )
+                    })()
+                }
+                else
+                    client.users.cache.get(AllGuildData[k][5]).send("Update Total GP function could not run for " + AllGuildData[k][0] + " due to SWGOH API Link or "
+                    + "Google spreadsheet ID being blank or undefined. Contact Mhann at <@406945430967156766>.")
             }
-            else
-                console.log("Update Total GP function could not run for " + AllGuildData[k][0] + " due to AllGuildData[k][2] or AllGuildData[k][3]) being blank or undefined. QZ")
         }
     }
 }
@@ -1203,68 +1297,81 @@ function UpdateUsersAndAllycodes()
     //var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     authorize(content, listMajors);
 
-    function listMajors(auth)
+    async function listMajors(auth)
     {
         const sheets = google.sheets({version: 'v4', auth});
+        MyDate = new Date()
+        var hours = MyDate.getHours()
+        var day = MyDate.getDay()
 
         for(var k = 0; k < AllGuildData.length; k++)
         {
-            if(!CheckIfBlankOrUndefined(AllGuildData[k][2]) && AllGuildData[k][2].toLowerCase().startsWith("https://swgoh.gg/api/guild"))
+            if(AllGuildData[k][1] != '814625223906689044') //Skip check Mhanndalorian Bot Server
             {
-                const BaseURL = AllGuildData[k][2];
-                const SheetID = AllGuildData[k][3];
+                if(!CheckIfBlankOrUndefined(AllGuildData[k][2]) && AllGuildData[k][2].toLowerCase().startsWith("https://swgoh.gg/api/guild"))
+                {
+                    if(await GetSubscribers(AllGuildData, k) < 1 && hours == 17 && (day == 2 || day == 6))
+                    {
+                        console.log("Please Subscribe - Update users and Allycodes - Guild ID: " + AllGuildData[k][1] + "   QZ")
+                        client.users.cache.get(AllGuildData[k][5]).send("You have installed Mhanndalorian Bot, but do not yet have any Patreons in your Guild.  You must have at least one Patreon subscriber "
+                        +"that is registered in the Mhanndalorian database to utilize certain features.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>  Guild ID: " + AllGuildData[k][1])
+                    }
+                    
+                    const BaseURL = AllGuildData[k][2];
+                    const SheetID = AllGuildData[k][3];
 
-                (async () => {
-                    Result = await fetch(BaseURL,
-                    /* {
-                            method: 'GET',
-                        }).then(response => response.json())*/
+                    (async () => {
+                        Result = await fetch(BaseURL,
+                        /* {
+                                method: 'GET',
+                            }).then(response => response.json())*/
 
-                        {
-                            method: 'GET',
-                        }).then(function (response) {
-                            //console.log(response)
-                            return response.json()
-                        })
+                            {
+                                method: 'GET',
+                            }).then(function (response) {
+                                //console.log(response)
+                                return response.json()
+                            })
 
-                        var NamesAndCodes = new Array(54);
+                            var NamesAndCodes = new Array(54);
 
-                        for (var i = 0; i < NamesAndCodes.length; i++) { 
-                            NamesAndCodes[i] = new Array(2);
-                            NamesAndCodes[i][0] = '';
-                            NamesAndCodes[i][1] = '';
-                        }
+                            for (var i = 0; i < NamesAndCodes.length; i++) { 
+                                NamesAndCodes[i] = new Array(2);
+                                NamesAndCodes[i][0] = '';
+                                NamesAndCodes[i][1] = '';
+                            }
 
-                        for(var i = 0; i < Result.players.length; i++)
-                        {
-                            NamesAndCodes[i][0] = Result.players[i].data.name
-                            NamesAndCodes[i][1] = Result.players[i].data.ally_code
-                        }
+                            for(var i = 0; i < Result.players.length; i++)
+                            {
+                                NamesAndCodes[i][0] = Result.players[i].data.name
+                                NamesAndCodes[i][1] = Result.players[i].data.ally_code
+                            }
 
-                        sheets.spreadsheets.values.update({
-                            spreadsheetId: SheetID,
-                            range: 'XML Data!A3:B56',  
-                            valueInputOption: 'USER_ENTERED',
-                            resource: {
-                                values: NamesAndCodes
-                            },
-                        })
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: SheetID,
+                                range: 'XML Data!A3:B56',  
+                                valueInputOption: 'RAW',
+                                resource: {
+                                    values: NamesAndCodes
+                                },
+                            })
 
-                        var time = new Date().toLocaleTimeString()
-                        var date = new Date().toLocaleDateString()
+                            var time = new Date().toLocaleTimeString()
+                            var date = new Date().toLocaleDateString()
 
-                        sheets.spreadsheets.values.update({
-                            spreadsheetId: SheetID,
-                            range: 'Guild Members & Data!C122',  
-                            valueInputOption: 'RAW',
-                            resource: {
-                                values: [[date + " " + time]]
-                            },
-                        })
-                })()
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: SheetID,
+                                range: 'Guild Members & Data!C122',  
+                                valueInputOption: 'RAW',
+                                resource: {
+                                    values: [[date + " " + time]]
+                                },
+                            })
+                    })()
+                }
+                else
+                    client.users.cache.get(AllGuildData[k][5]).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL.  Contact Mhann at <@406945430967156766>.")
             }
-            else
-                client.users.cache.get(AllGuildData[k][5]).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL.  Contact Mhann at <@406945430967156766>.")
         }
     }
 }
@@ -1334,7 +1441,7 @@ async function FiveMinRaidReminder()
     lastMessage = fetched.first()
     MSSinceLastMsg = now - lastMessage.createdAt
 
-    if((lastMessage.content.includes("have successfully joined") || lastMessage.content.includes("notifications have been sent") || lastMessage.content.includes("could not be resolved")) && MSSinceLastMsg <= 3960000)
+    if((lastMessage.content.includes("have successfully joined") || lastMessage.content.includes("All notifications have been queued") || lastMessage.content.includes("could not be resolved")) && MSSinceLastMsg <= 3960000)
     {
         //var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
         authorize(content, listMajors);
@@ -1849,7 +1956,7 @@ var job8 = new CronJob('30 18 * * 4', function() {
 }, null, true, 'America/New_York');
 job8.start();
 
-function PostWeeklyGPPerformanceIndividual(AllGuildData) {
+async function PostWeeklyGPPerformanceIndividual(AllGuildData) {
     var searchObj = {
       searchTitle1: "Highest and Lowest GP Growth by Raw GP (Past 30 Days)",
       searchTitle2: "Highest and Lowest GP Growth by Percent (Past 30 Days)",
@@ -1862,11 +1969,35 @@ function PostWeeklyGPPerformanceIndividual(AllGuildData) {
     ThreeDaysAgo.setDate(ThreeDaysAgo.getDate() - 3);
 
     for(var i = 0; i < AllGuildData.length; i++)
-    if(!CheckIfBlankOrUndefined(AllGuildData[i][3]))
-        findByAnythingElse(AllGuildData[i][3], i, searchObj, ThreeDaysAgo);
-    else
-        client.users.cache.get(AllGuildData[i][5]).send("FindByAnythingElse could not run due to Google spreadsheet ID not set.  Contact Mhann at <@406945430967156766>.")
-  }
+    {
+        if(AllGuildData[i][1] != '814625223906689044') //Skip the Mhanndalorian Bot server
+        {
+            if(await GetSubscribers(AllGuildData, i) >= 1)
+            {
+                if(!CheckIfBlankOrUndefined(AllGuildData[i][3]))
+                    findByAnythingElse(AllGuildData[i][3], i, searchObj, ThreeDaysAgo);
+                else
+                    client.users.cache.get(AllGuildData[i][5]).send("FindByAnythingElse could not run due to Google spreadsheet ID not set.  Contact Mhann at <@406945430967156766>.")
+            }
+            else
+            {
+                if(!CheckIfBlankOrUndefined(AllGuildData[i][9], AllGuildData[i][8]))
+                {
+                    console.log("Please subscribe - Post weekly individual GP performance - Guild ID " + AllGuildData[i][1] + "   QZ")
+                    client.channels.cache.get(AllGuildData[i][9]).send("<@&" + AllGuildData[i][8] + ">" + " Individual Galactic Power report failed to complete.  You must have at least one Patreon subscriber "
+                    +"that is registered in the Mhanndalorian database to utilize this feature.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>  Guild ID: " + AllGuildData[i][1])
+                }
+                
+                if(!CheckIfBlankOrUndefined(AllGuildData[i][10], AllGuildData[i][6]))
+                {
+                    console.log("Please subscribe - Post weekly individual GP performance officer - Guild ID " + AllGuildData[i][1] + "   QZ")
+                    client.channels.cache.get(AllGuildData[i][10]).send("<@&" + AllGuildData[i][6] + ">" + " Individual Galactic Power officer report failed to complete.  You must have at least one Patreon subscriber "
+                    +"that is registered in the Mhanndalorian database to utilize this feature.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>  Guild ID: " + AllGuildData[i][1])
+                }
+            }
+        }
+    }
+}
 
 function findByAnythingElse(spreadsheetId, GuildFoundRow, searchObj, ThreeDaysAgo) {
     authorize(content, listMajors);
@@ -2011,6 +2142,7 @@ async function AddFlair(passedMember, row, Type, SpecialF){
 client.on('rateLimit', (RateLimitInfo) => {
     if(RateLimitInfo.path.includes("channels"))
     {
+        console.log("Rate limit reached QZ")
         channelID = RateLimitInfo.path.match(/\d+/g);
         client.channels.cache.get(channelID[0]).send("Rate limit reached for this command. Please wait " + RateLimitInfo.timeout/1000 + " seconds.")
     }
@@ -2018,12 +2150,18 @@ client.on('rateLimit', (RateLimitInfo) => {
 
 client.on("messageDelete", msg => {
     if(msg.channel.id == "584496478412734464")
+    {
+        console.log("Message deleted from MIA QZ")
         processMIAAlertsMhannBot(msg, "ending")
+    }
   })
 
-client.on('messageUpdate', (oldMessage, newMessage) => {  //Handles an edit to a MIA message.  
+client.on('messageUpdate', (oldMessage, newMessage) => {  //Handles an edit to a MIA message. 
     if(newMessage.channel.id == "584496478412734464")
+    {
+        console.log("Message updated in MIA QZ") 
         processMIAMessage(newMessage)
+    }
 })
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
@@ -2096,6 +2234,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 client.on("guildMemberAdd", (member) => {
     if(member.guild.id == "505515654833504266")
     {
+        console.log("New member joined server QZ")
         client.channels.cache.get("710510128381689966").send("Hey <@" + member.user.id + ">! Welcome to Wookie and the Bandit!  You won't find a more eclectic group of rebels "
             + "and scoundrels anywhere in the galaxy.  Have a look around our server and make yourself comfortable.  If you're "
             + "looking for some new droids, entertainment, pie, or good banter, stop in at the <#505515654837698563> and say hello.")
@@ -2209,6 +2348,7 @@ client.on("guildBanRemove", (guild,user) => {
 
 client.on("guildCreate", function(guild){
     (async () => {
+        console.log("Bot has been installed in new Guild QZ")
         var NewChannel = await guild.channels.create('Mhanndalorian-bot', {type: 'text', reason: 'Bot was installed on server'})
         const BotRole = guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot')
 
@@ -2250,6 +2390,7 @@ client.on("guildCreate", function(guild){
 });
 
 client.on("guildDelete", function(guild){
+    console.log("Bot has ben removed from guild QZ")
     client.users.cache.get('406945430967156766').send("Bot has just been uninstalled:"
     +"\n **Guild Name: **" + guild.name
     +"\n **Guild ID: **" + guild.id
@@ -2383,7 +2524,7 @@ client.on('message', message => {
         var HMString = `${time.getHours()}${time.getMinutes()}`
         var HMInt = parseInt(HMString, 10);
 
-        var Allowed = false  //Replace 1849 - 0 and 1859 - 0 with 1849 - adjustment to have allowed posting time chaneg with DST
+        var Allowed = false  //Replace 1849 - 0 and 1859 - 0 with 1849 - adjustment to have allowed posting time change with DST
         if((HMInt >= (1849 - 0) && HMInt <= (1859 - 0)) || (HMInt >= (2225 - Adjustment) && HMInt <= (2235 - Adjustment)) || (HMInt >= (2323 - Adjustment) && HMInt <= (2333 - Adjustment)))
             Allowed = true  
 
@@ -2404,15 +2545,29 @@ client.on('message', message => {
     }
 
     if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][r][e][g][i][s][t][e][r]/) && (message.content.toLowerCase().startsWith("eb")) &&!bot)
-        UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, "register");        
+    {
+        console.log("Echobase Register QZ")
+        UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, "register");  
+    }      
 
     if(message.content.toLowerCase().match(/[e][b][.]\d{9}[.][u][n][r][e][g][i][s][t][e][r]/) && (message.content.toLowerCase().startsWith("eb")) &&!bot)
-        UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, "unregister");        
+    {
+        console.log("Echobase Unregister QZ")
+        UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, "unregister");
+    }        
 
     else if(message.content.startsWith(prefix) && !bot)
     {
 
         if((message.content.toLowerCase().startsWith(`${prefix}flair`)) && (wookieGuild || message.channel.type=='dm')){
+
+            if(CheckMemberPatreonStatus(message.author.id) < 1)
+            {
+                message.channel.send("Could not execute flair command.  You must have at least a Carbonite membership on Patreon to "
+                +"utilize this feature and be registered in the Mhanndalorian database.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>")
+                return 0;
+            }        
+
             //var content = {"installed":{"client_id":"842290271074-u9kfivj3l2i5deugh3ppit9mo6i8oltr.apps.googleusercontent.com","project_id":"mhanndalorian-1581969700452","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"ZPufJMDMo8OuJ-JxOk6X3OXw","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
             authorize(content, listMajors);
             
@@ -2954,6 +3109,19 @@ client.on('message', message => {
         {
            PostWeeklyGPPerformanceIndividual(AllGuildData)
 
+        // dmUsersMissedRaids()
+
+        //PostWeeklyGuildGP()
+        //FiveMinRaidReminder()
+        //newFlairAnncouncment
+
+        //CleanMIA()
+        //UpdateUsersAndAllycodes()
+
+        //console.log(GetSubscribers(AllGuildData,GuildFoundRow))
+
+        //UpdateTotalGP()
+
          // guild = client.guilds.cache.get("399955359801802762")
          // const BotRole = guild.roles.cache.find(role => role.name === 'Mhanndalorian Bot');
 
@@ -3138,11 +3306,11 @@ client.on('message', message => {
                                 + "__**" + "eb.UserAllyCode.register @DiscordUser**__ - Used to register a specific Discord user & ally code for Mhanndalorian Bot.  No dashes in ally code (eb.123456789.register). \n\n"
                                 + "__**" + "eb.UserAllyCode.unregister @DiscordUser**__ - Used to unregister a specific Discord user & ally code from Mhanndalorian Bot.  No dashes in ally code (eb.123456789.unregister). \n\n"
                                 
-                                + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  In addition to the ways this command can be "
+                                + "__**" + prefix + "gp**__ - (PATREON only) - Command used to display graph of galactic power.  In addition to the ways this command can be "
                                 + "run as a regular guild member, officers have access to the following 2 command options: \n"
 
-                                + "> __**" + prefix + "gp @DiscordUser**__ - The entire GP history for a specific user will be displayed. \n"
-                                + "> __**" + prefix + "gp @DiscordUser n**__ - Display GP history back up to n days for specific user (replace n with a number of days). \n \n");
+                                + "> __**" + prefix + "gp @DiscordUser**__ - (PATREON only) - The entire GP history for a specific user will be displayed. \n"
+                                + "> __**" + prefix + "gp @DiscordUser n**__ - (PATREON only) - Display GP history back up to n days for specific user (replace n with a number of days). \n \n");
                         message.channel.send(Embed2)
                     }
 
@@ -3165,12 +3333,12 @@ client.on('message', message => {
                         .setDescription("All commands start with either " + prefix + " or eb.  If a command has *arg* after it, it requires an argument.\n\n"
                             + "__**" + "eb.YourAllyCode.register**__ - Used to register yourself for Mhanndalorian Bot.  No dashes in ally code (eb.123456789.register). \n\n"
                             + "__**" + "eb.YourAllyCode.unregister**__ - Used to unregister yourself from Mhanndalorian Bot.  No dashes in ally code (eb.123456789.unregister). \n\n"
-                            + "__**" + prefix + "gp**__ - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
+                            + "__**" + prefix + "gp**__ - (PATREON only) - Command used to display graph of galactic power.  The command can be run in the following ways: \n"
 
-                            + "> __**" + prefix + "gp**__ - Your entire GP history will be displayed. \n"
-                            + "> __**" + prefix + "gp n**__ - Will display your GP history back up to n days (replace n with a number of days). \n "
-                            + "> __**" + prefix + "gp guild**__ - Display all GP history for the entire guild. \n "
-                            + "> __**" + prefix + "gp guild n**__ - Display GP history back up to n days for entire guild (replace n with a number of days). \n \n"
+                            + "> __**" + prefix + "gp**__ - (PATREON only) - Your entire GP history will be displayed. \n"
+                            + "> __**" + prefix + "gp n**__ - (PATREON only) - Will display your GP history back up to n days (replace n with a number of days). \n "
+                            + "> __**" + prefix + "gp guild**__ - (PATREON only) - Display all GP history for the entire guild. \n "
+                            + "> __**" + prefix + "gp guild n**__ - (PATREON only) - Display GP history back up to n days for entire guild (replace n with a number of days). \n \n"
 
                             + "__**" + prefix + "help**__ - Display this help message. \n \n"
                             + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
@@ -3193,6 +3361,13 @@ client.on('message', message => {
                 message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setuserrole before using this command.")
                 return 0;
             }
+
+            if(CheckMemberPatreonStatus(message.author.id) < 1)
+            {
+                message.channel.send("Could not execute gp command.  You must have at least a Carbonite membership on Patreon to "
+                +"utilize this feature and be registered in the Mhanndalorian database.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>")
+                return 0;
+            } 
 
             if(DetermineIfGuildMember(AllGuildData[GuildFoundRow][8], message)) //Must be a standard user 
             {
