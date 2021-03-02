@@ -45,6 +45,13 @@ function CheckMemberPatreonStatus(UserID)
 {
     const MhanndalorianBotGuild = client.guilds.cache.get('814625223906689044')
     const CarboniteIDs = MhanndalorianBotGuild.roles.cache.get('814627631008841799').members.map(m=>m.user.id)
+    const InitiateIDs = MhanndalorianBotGuild.roles.cache.get('816408440884428830').members.map(m=>m.user.id)
+
+    for(var i = 0; i < InitiateIDs.length; i++)
+    {
+        if(UserID == InitiateIDs[i])
+            return 3
+    }
 
     for(var i = 0; i < CarboniteIDs.length; i++)
     {
@@ -62,6 +69,7 @@ async function GetSubscribers(AllGuildData,GuildFoundRow)
 
     const BotGuild = client.guilds.cache.get('814625223906689044')
     const CarboniteIDs = BotGuild.roles.cache.get('814627631008841799').members.map(m=>m.user.id)
+    const InitiateIDs = BotGuild.roles.cache.get('816408440884428830').members.map(m=>m.user.id)
 
     async function authorize(credentials, callback) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
@@ -111,6 +119,25 @@ async function GetSubscribers(AllGuildData,GuildFoundRow)
                         }
                     }
                     j = CarboniteIDs.length
+                }
+            }
+        }
+
+        for(var i = 0; i < DiscordIDs.length; i++)
+        {
+            for(var j = 0; j < InitiateIDs.length; j++)
+            {
+                if(DiscordIDs[i] == InitiateIDs[j])
+                {
+                    for(var k = 0; k < DiscordIDsFromDatabase.length; k++)
+                    {
+                        if(DiscordIDsFromDatabase[k][0] != undefined && DiscordIDs[i] == DiscordIDsFromDatabase[k][0].replace("<@","").replace(">","").replace(" ",""))
+                        {
+                            SubscriberLevel = SubscriberLevel + 3
+                            k = DiscordIDsFromDatabase.length
+                        }
+                    }
+                    j = InitiateIDs.length
                 }
             }
         }
@@ -528,7 +555,7 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltF
                 {
                     for(var i = 0; i < rows.length; i++) //Match discord ID of author to SWGOH Ally code
                     {
-                        if(rows[i][6] != undefined && DiscordID == rows[i][6].replace("<@","").replace(">","").replace(" ",""))// ALT WORK HERE
+                        if(rows[i][6] != undefined && DiscordID == rows[i][6].replace("<@","").replace(">","").replace(" ",""))// ALT WORK HERE....search by allycode???????
                         {
                             if(AltFound == true && RunOnce == true)
                             {
@@ -845,7 +872,7 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                 }
 
 
-                for(var j = DiscordSWGOHNameIDArray.length - 1; j >= 0; j--) //remove array entried that did not have all the data (not found in Mhann database)
+                for(var j = DiscordSWGOHNameIDArray.length - 1; j >= 0; j--) //remove array entries that did not have all the data (not found in Mhann database)
                 {
                     if(DiscordSWGOHNameIDArray[j][2] == undefined || DiscordSWGOHNameIDArray[j][3] == undefined)
                     {
@@ -855,15 +882,12 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
             
                 for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
                 {
-                //  if(DiscordSWGOHNameIDArray[i][1].toLowerCase() == CommandArray[1].toLowerCase() || DiscordSWGOHNameIDArray[i][2] == CommandArray[1] || DiscordSWGOHNameIDArray[i][3].toLowerCase() == CommandArray[1].toLowerCase())
                     if(DiscordSWGOHNameIDArray[i][1].toLowerCase().includes(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().includes(CommandArray[1].toLowerCase()))
                     {
                         RowFound = i;
                         i = DiscordSWGOHNameIDArray.length
                         Found = true
                     }
-
-                   // console.log("i=" + i + "   " + !CheckIfBlankOrUndefined(DiscordSWGOHNameIDArray[i][4], DiscordSWGOHNameIDArray[i][5]))
 
                     if(Found == false && !CheckIfBlankOrUndefined(DiscordSWGOHNameIDArray[i][4], DiscordSWGOHNameIDArray[i][5]))
                     {
@@ -880,24 +904,18 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                 {
                     if(CallingFunction == 'lookup')
                     {
-                        (async () => { 
-                           // User =  await client.users.fetch(DiscordSWGOHNameIDArray[RowFound][0])                         
-                           // GuildMember =  await guild.members.fetch(User)
-                           // DisplayNamed = GuildMember.displayName
+                        if(Found == true)
+                            message.channel.send
+                                ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
+                                + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n"
+                                + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[RowFound][0] + ">")
 
-                            if(Found == true)
-                                message.channel.send
-                                    ("__**Ally Code:**__  " + DiscordSWGOHNameIDArray[RowFound][2] + "\n"
-                                    + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[RowFound][3] + "\n"
-                                    + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[RowFound][0] + ">")
-
-                            else if(AltFound == true)
-                                message.channel.send
-                                    ("**This is an alt in the system** \n"
-                                    + "__**Ally Code:**__  " + DiscordSWGOHNameIDArray[AltRowFound][4] + "\n"
-                                    + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[AltRowFound][5] + "\n"
-                                    + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[AltRowFound][0] + ">")
-                        })()
+                        else if(AltFound == true)
+                            message.channel.send
+                                ("**This is an alt in the system** \n"
+                                + "__**Ally Code:**__  " + DiscordSWGOHNameIDArray[AltRowFound][4] + "\n"
+                                + "__**SWGOH Name:**__  " + DiscordSWGOHNameIDArray[AltRowFound][5] + "\n"
+                                + "__**Discord Name:**__  <@" + DiscordSWGOHNameIDArray[AltRowFound][0] + ">")
                     }
                     else if(CallingFunction == 'GP')
                     {
@@ -931,6 +949,7 @@ async function PostWeeklyGuildGP(){
     {
         if(AllGuildData[i][1] != '814625223906689044')//Skip Mhanndalorian Bot server
         { 
+            console.log(await GetSubscribers(AllGuildData, i))
             if(await GetSubscribers(AllGuildData, i) >= 1)
                 GP('GuildWeekly', 'guildGP', 90, AllGuildData, i)
             else
@@ -3107,7 +3126,17 @@ client.on('message', message => {
 
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
-           PostWeeklyGPPerformanceIndividual(AllGuildData)
+        //   PostWeeklyGPPerformanceIndividual(AllGuildData)
+
+            (async () => {
+                for(var i = 0; i < AllGuildData.length; i++)
+                {
+                    if(AllGuildData[i][1] != '814625223906689044')//Skip Mhanndalorian Bot server
+                    { 
+                        console.log(await GetSubscribers(AllGuildData, i))
+                    }
+                }
+            })()
 
         // dmUsersMissedRaids()
 
@@ -3345,6 +3374,39 @@ client.on('message', message => {
                             + "be a SWGOH name, ally code, or discord name.  Partial input is ok. \n \n");
                     message.channel.send(Embed)
                 })()
+            }
+        }
+        else if(message.content.toLowerCase().startsWith(`${prefix}gpcompare`))
+        {
+            if(message.channel.type == 'dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
+
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][8]))
+            {
+                message.channel.send("User role not set.  An officer must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setuserrole before using this command.")
+                return 0;
+            }
+
+            if(CheckMemberPatreonStatus(message.author.id) < 1)
+            {
+                message.channel.send("Could not execute gpcompare command.  You must have at least a Carbonite membership on Patreon to "
+                +"utilize this feature and be registered in the Mhanndalorian database.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>")
+                return 0;
+            }
+
+            if(DetermineIfGuildMember(AllGuildData[GuildFoundRow][8], message)) //Must be a standard user 
+            {
+                var CommandArray = message.content.split(' ');
+
+                if(CommandArray.length != 3)
+                {
+                    message.channel.send("You must specify 2 users to compare.  For example: **" + prefix + "gpcompare user1 user2**")
+                    return 0;
+                }
+
             }
         }
 
