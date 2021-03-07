@@ -2799,26 +2799,66 @@ client.on("guildCreate", function(guild){
 
         for(var i = 0; i < AllGuildData.length; i++)
         {
-            if(guild.id == AllGuildData[i][1])
+            if(guild.id == AllGuildData[i][1]) //If guild is already in master sheet
+            {
+                authorize(content, listMajors);
+
+                function listMajors(auth)
+                {
+                    AllGuildData[i][11] = 'yes'
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!A' + (i + 2),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[,,,,,,,,,,,'yes']]
+                        },
+                    })
+                }
                 return 0;
+            }
         }
 
         const BlankRow = AllGuildData.length + 2;
 
-        AllGuildData.push([guild.name,guild.id,,,,guild.ownerID,,'!',,,,])
+        authorize2(content, listMajors);
 
-        authorize(content, listMajors);
         function listMajors(auth)
         {
-            const sheets = google.sheets({version: 'v4', auth});
-            sheets.spreadsheets.values.update({
-                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                range: 'Guilds!A' + BlankRow,
-                valueInputOption: 'USER_ENTERED',
-                resource: {
-                    values: [[guild.name,guild.id,,,,guild.ownerID,,'!']]
+            var drive = google.drive({version:'v3', auth});
+
+            var copyRequest = {
+                name: guild.name + ' (' + guild.id + ')',
+                fileId: '1auIKvvtl6hMzeU-FQe2He315Ya3B5Qsq-N1vlCIEy9s',
+                parents: ['1BpYHQGsr-6BA45Vz_spUgmIhO0wHE6Og']
+            }
+        
+            drive.files.copy(
+                {  // Modified
+                  fileId: "1auIKvvtl6hMzeU-FQe2He315Ya3B5Qsq-N1vlCIEy9s",
+                  requestBody: copyRequest  // or resource: copyRequest
                 },
-            })
+                function(err, response) {
+                  if (err) {
+                    console.log(err);
+                    return;
+                  }
+                  else
+                  {
+                    AllGuildData.push([guild.name,guild.id,,response.data.id,,guild.ownerID,,'!',,,,'yes'])
+                    const sheets = google.sheets({version: 'v4', auth});
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                        range: 'Guilds!A' + BlankRow,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[guild.name,guild.id,,response.data.id,,guild.ownerID,,'!',,,,'yes']]
+                        },
+                    })
+                  }
+                }
+              );
         }
     })()
 });
@@ -2835,13 +2875,21 @@ client.on("guildDelete", function(guild){
     {
         if(guild.id == AllGuildData[i][1])
         {
-            AllGuildData.splice(i,1)
+            AllGuildData[i][11] = 'no'
 
             authorize(content, listMajors);
             function listMajors(auth)
             {
                 const sheets = google.sheets({version: 'v4', auth});
-                sheets.spreadsheets.batchUpdate({
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                    range: 'Guilds!A' + (i + 2),
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: [[,,,,,,,,,,,'no']]
+                    },
+                })
+                /*sheets.spreadsheets.batchUpdate({ //delte entire row when guild uninstalls bot
                     spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
                     resource: {
                         "requests": 
@@ -2860,7 +2908,7 @@ client.on("guildDelete", function(guild){
                             }
                         ]
                     }
-                })
+                })*/
             }
 
             return 0;
@@ -3602,34 +3650,6 @@ client.on('message', message => {
         else if(message.content.toLowerCase().startsWith(`${prefix}test`))
         {
         //   PostWeeklyGPPerformanceIndividual(AllGuildData)
-
-
-        authorize2(content, listMajors);
-
-        function listMajors(auth)
-        {
-            var drive = google.drive({version:'v3', auth});
-
-            var copyRequest = {
-                name: 'aaa',
-                fileId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-
-            }
-        
-            drive.files.copy(
-                {  // Modified
-                  fileId: "1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ",
-                  requestBody: copyRequest  // or resource: copyRequest
-                },
-                function(err, response) {
-                  if (err) {
-                    console.log(err);
-                    return;
-                  }
-                 console.log(response);
-                }
-              );
-    }
 
         // dmUsersMissedRaids()
 
