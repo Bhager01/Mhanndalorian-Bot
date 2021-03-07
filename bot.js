@@ -528,7 +528,8 @@ function CheckIfBlankOrUndefined()
 }
 
 
-function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltFound){
+function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltFound)
+{
     if(message.author != undefined)
         console.log(message.author.username + " executed GP command. QZ")
 
@@ -819,7 +820,7 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
         {
             CommandArray = message.content.split(/ (.+)/)
 
-            if(CommandArray[1] == undefined)
+            if(CommandArray[1] == undefined && CallingFunction != 'gpcompare')
             {
                 message.channel.send("Please specify an allycode, discord name, or SWGOH name")
             }
@@ -832,7 +833,7 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                 var AltFound = false;
                 var AltRowFound;
 
-                if(CommandArray[1].match(/[\s](\d+)($)/))
+                if(CommandArray[1].match(/[\s](\d+)($)/) && CallingFunction != 'gpcompare')
                 {
                     temp = message.content.split(/[\s](\d+)($)/)
                     DaysBack = temp[1]
@@ -845,6 +846,11 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                         message.channel.send("Please specify a number of days greater than 0.")
                         return 0;
                     }
+                }
+
+                if(CallingFunction == 'gpcompare')
+                {
+                    var CommandArray = message.content.split(' ');
                 }
                 
                 (async () => { 
@@ -879,25 +885,100 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                         DiscordSWGOHNameIDArray.splice(j,1)
                     }
                 }
-            
-                for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
-                {
-                    if(DiscordSWGOHNameIDArray[i][1].toLowerCase().includes(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().includes(CommandArray[1].toLowerCase()))
-                    {
-                        RowFound = i;
-                        i = DiscordSWGOHNameIDArray.length
-                        Found = true
-                    }
 
-                    if(Found == false && !CheckIfBlankOrUndefined(DiscordSWGOHNameIDArray[i][4], DiscordSWGOHNameIDArray[i][5]))
+                if(CallingFunction != 'gpcompare')
+                {
+                    for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
                     {
-                        if(DiscordSWGOHNameIDArray[i][4].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][5].toLowerCase().includes(CommandArray[1].toLowerCase()))
+                        if(DiscordSWGOHNameIDArray[i][1].toLowerCase().includes(CommandArray[1].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().includes(CommandArray[1].toLowerCase()))
                         {
-                            AltRowFound = i;
+                            RowFound = i;
                             i = DiscordSWGOHNameIDArray.length
-                            AltFound = true
+                            Found = true
+                        }
+
+                        if(Found == false && !CheckIfBlankOrUndefined(DiscordSWGOHNameIDArray[i][4], DiscordSWGOHNameIDArray[i][5]))
+                        {
+                            if(DiscordSWGOHNameIDArray[i][4].includes(CommandArray[1]) || DiscordSWGOHNameIDArray[i][5].toLowerCase().includes(CommandArray[1].toLowerCase()))
+                            {
+                                AltRowFound = i;
+                                i = DiscordSWGOHNameIDArray.length
+                                AltFound = true
+                            }
                         }
                     }
+                }
+
+                else  //what to do when gpcompare is called
+                {
+                    var NumberofNames = 0
+
+                    if(CommandArray.length == 3)
+                        NumberofNames = 2
+
+                    else if(CommandArray.length == 4)
+                    {
+                        if(isNaN(CommandArray[3]))
+                            NumberofNames = 3
+                        else if(!isNaN(CommandArray[3]) && CommandArray[3] > 9999999)
+                            NumberofNames = 3
+                        else
+                        {
+                            NumberofNames = 2
+                            DaysBack = CommandArray[3]
+                        }
+                    }
+                    else if(CommandArray.length == 5)
+                    {
+                        NumberofNames = 3
+                        DaysBack = CommandArray[4]
+                    }
+
+                    var GPCompareData = new Array(NumberofNames);
+
+                    for (var i = 0; i < GPCompareData.length; i++)
+                        GPCompareData[i] = new Array(3);
+
+                    for(var j = 1; j <= NumberofNames; j++)
+                    {
+                        Found = false
+                        for(var i = 0; i < DiscordSWGOHNameIDArray.length; i++)
+                        {
+                            if(DiscordSWGOHNameIDArray[i].length == 6)
+                            {
+                                DiscordSWGOHNameIDArray[i][1] = ""
+                            }
+
+                            if(DiscordSWGOHNameIDArray[i][1].toLowerCase().includes(CommandArray[j].toLowerCase()) || DiscordSWGOHNameIDArray[i][2].includes(CommandArray[j]) || DiscordSWGOHNameIDArray[i][3].toLowerCase().includes(CommandArray[j].toLowerCase()))
+                            {
+                                GPCompareData[j-1][0] = DiscordSWGOHNameIDArray[i][2]
+                                GPCompareData[j-1][1] = DiscordSWGOHNameIDArray[i][0]
+                                GPCompareData[j-1][2] = DiscordSWGOHNameIDArray[i][3]
+                                i = DiscordSWGOHNameIDArray.length
+                                Found = true
+                            }
+
+                            if(Found == false && !CheckIfBlankOrUndefined(DiscordSWGOHNameIDArray[i][4], DiscordSWGOHNameIDArray[i][5]))
+                            {
+                                if(DiscordSWGOHNameIDArray[i][4].includes(CommandArray[j]) || DiscordSWGOHNameIDArray[i][5].toLowerCase().includes(CommandArray[j].toLowerCase()))
+                                {
+                                    GPCompareData[j-1][0] = DiscordSWGOHNameIDArray[i][4]
+                                    GPCompareData[j-1][1] = DiscordSWGOHNameIDArray[i][0]
+                                    GPCompareData[j-1][2] = DiscordSWGOHNameIDArray[i][5]
+                                    i = DiscordSWGOHNameIDArray.length
+                                    AltFound = true
+                                }
+                            }
+                        }
+                    }                
+                    
+                    for(var i = 0; i < GPCompareData.length; i++)
+                        if(GPCompareData[i][0] == undefined && GPCompareData[i][1] == undefined)
+                        {
+                            message.channel.send("Could not find user: " + CommandArray[i+1])
+                            return 0;
+                        }
+                        
                 }
 
                 if(Found == true || AltFound == true)
@@ -925,6 +1006,11 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
                         if(AltFound == true)
                             GP(message, DiscordSWGOHNameIDArray[AltRowFound][0], DaysBack, AllGuildData, GuildFoundRow, true)
                     }
+
+                    else if(CallingFunction == 'gpcompare')
+                    {
+                        GPCompare(message, GPCompareData, DaysBack, AllGuildData, GuildFoundRow)
+                    }
                 }
 
                 else
@@ -935,6 +1021,324 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
             console.log('No data found.');
         });
     }
+}
+
+function GPCompare(message, GPCompareData, DaysBack, AllGuildData, GuildFoundRow)
+{
+    var AllyCodes = []
+    var Names = []
+
+    for(var i = 0; i < GPCompareData.length; i++)
+    {
+        AllyCodes.push(GPCompareData[i][0])
+    }
+
+    authorize(content, listMajors);
+    function listMajors(auth)
+    {  
+        const sheets = google.sheets({version: 'v4', auth});
+
+        sheets.spreadsheets.values.get({
+            spreadsheetId: AllGuildData[GuildFoundRow][3],
+            range: 'TotalGP!1:1',
+        }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                const rows = res.data.values;
+
+                var GPAllRaw = []
+                var GPAll = []
+                var GraphData = false
+
+                for(var j = 0; j < GPCompareData.length; j++)
+                {
+                    (async () => {     
+                        function GetSheetDataAsync1()
+                        {
+                            return new Promise(function(resolve,reject){
+                                sheets.spreadsheets.values.get({
+                                spreadsheetId: AllGuildData[GuildFoundRow][3],
+                                range: 'TotalGP!' + ColumnName + '1:' + ColumnName,
+                            }, function(err, res) {
+                                    if (err !== null) reject(err);
+                                    else
+                                        resolve(res.data.values);
+                                });
+                            });
+                        }
+                        
+                        for(var i = 0; i < rows[0].length; i++) //Match Allycode to column letter
+                        {
+                            if(AllyCodes[j] == rows[0][i])
+                            {
+                                var ColumnNumber = i + 1
+                                var ColumnName = toColumnName(ColumnNumber)
+                                i = rows[0].length
+                                Continue = true
+                            }
+                        }
+
+                        if(Continue == true)
+                        {               
+                                               
+                            var RawGPWithCode = await GetSheetDataAsync1()
+                            var AllyCode = RawGPWithCode[0]
+                            var RawGP = RawGPWithCode.splice(1, RawGPWithCode.length)
+
+                            if(RawGP != undefined)
+                            {
+                                sheets.spreadsheets.values.get({
+                                    spreadsheetId: AllGuildData[GuildFoundRow][3],
+                                    range: 'TotalGP!A2:A',
+                                }, (err, res) => {
+                                        if (err) return console.log('The API returned an error: ' + err);
+                                        const RawDates = res.data.values;
+                                        
+                                        var GP = []
+                                        var Dates = []
+
+                                        var k = 0
+
+                                        var SetMinDate = true 
+
+                                        for(var i = 0; i < GPCompareData.length; i++)//Funky way to make sure the correct name matches the correct data set.  It could vary depending on a race condition.
+                                        {//Name array is set as data is processed...the order data is processed can be random.
+                                            if(GPCompareData[i][0] == AllyCode)
+                                            Names.push(GPCompareData[i][2])
+                                        }
+
+                                        for(var i = 0; i < RawDates.length; i++)
+                                        {
+                                            GP[k] = RawGP[i][0]/1000000
+                                            Dates[k] = RawDates[i]
+                                            k++
+                                        }
+
+                                        GPAllRaw.push(GP)
+
+                                        var ActualData = []
+
+                                        if(GPCompareData.length == 2)
+                                        {
+                                            if(GPAllRaw[1] != undefined && GPAllRaw[0] != undefined)
+                                            {
+                                                GraphData = true
+                                                
+                                                for(var i = 0; i < GPAllRaw[0].length; i++)
+                                                {
+                                                    if(!isNaN(GPAllRaw[0][i]) || !isNaN(GPAllRaw[1][i]) && SetMinDate == true)
+                                                    {
+                                                        GPAll[0] = GPAllRaw[0].splice(i, GPAllRaw[0].length)
+                                                        GPAll[1] = GPAllRaw[1].splice(i, GPAllRaw[1].length)
+                                                        Dates = Dates.splice(i, Dates.length)
+                                                        i = GPAllRaw[0].length
+                                                    }
+                                                }
+                                                
+                                                if(DaysBack != undefined)
+                                                {
+                                                    Dates.splice(0, Dates.length-DaysBack)
+                                                    GPAll[0].splice(0, GPAll[0].length-DaysBack)
+                                                    GPAll[1].splice(0, GPAll[1].length-DaysBack)
+        
+                                                    if(DaysBack > Dates.length)
+                                                    {
+                                                        if(message != 'GuildWeekly')
+                                                            message.channel.send("You requested the most recent " + DaysBack + " day(s) of data, but only " + Dates.length + " day(s) of data exist.  Displaying all available data.")
+                                                    }
+                                                }
+
+                                                ActualData = [{
+                                                    label: Names[0],
+                                                    data: GPAll[0],
+                                                    backgroundColor: '#000000',
+                                                    borderColor: '#000000',
+                                                    fill: 'no',
+                                                    borderWidth: '3',
+                                                    pointBorderWidth: '1',
+                                                    lineTension: '0',
+                                                },
+
+                                                {
+                                                    label: Names[1],
+                                                    data: GPAll[1],
+                                                    backgroundColor: '#FF0000',
+                                                    borderColor: '#FF0000',
+                                                    fill: 'no',
+                                                    borderWidth: '3',
+                                                    pointBorderWidth: '1',
+                                                    lineTension: '0',
+                                                }]
+                                            }
+                                        }
+
+                                        if(GPCompareData.length == 3)
+                                        {
+                                            if(GPAllRaw[2] != undefined && GPAllRaw[1] != undefined && GPAllRaw[0] != undefined)
+                                            {
+                                                GraphData = true
+                                                for(var i = 0; i < GPAllRaw[0].length; i++)
+                                                {
+                                                    if(!isNaN(GPAllRaw[0][i]) || !isNaN(GPAllRaw[1][i]) && SetMinDate == true)
+                                                    {
+                                                        GPAll[0] = GPAllRaw[0].splice(i, GPAllRaw[0].length)
+                                                        GPAll[1] = GPAllRaw[1].splice(i, GPAllRaw[1].length)
+                                                        GPAll[2] = GPAllRaw[2].splice(i, GPAllRaw[2].length)
+                                                        Dates = Dates.splice(i, Dates.length)
+                                                        i = GPAllRaw[0].length
+                                                    }
+                                                }
+
+                                                if(DaysBack != undefined)
+                                                {
+                                                    Dates.splice(0, Dates.length-DaysBack)
+                                                    GPAll[0].splice(0, GPAll[0].length-DaysBack)
+                                                    GPAll[1].splice(0, GPAll[1].length-DaysBack)
+                                                    GPAll[2].splice(0, GPAll[2].length-DaysBack)
+        
+                                                    if(DaysBack > Dates.length)
+                                                    {
+                                                        if(message != 'GuildWeekly')
+                                                            message.channel.send("You requested the most recent " + DaysBack + " day(s) of data, but only " + Dates.length + " day(s) of data exist.  Displaying all available data.")
+                                                    }
+                                                }
+
+                                                ActualData = [{
+                                                    label: Names[0],
+                                                    data: GPAll[0],
+                                                    backgroundColor: '#000000',
+                                                    borderColor: '#000000',
+                                                    fill: 'no',
+                                                    borderWidth: '3',
+                                                    pointBorderWidth: '1',
+                                                    lineTension: '0',
+                                                },
+
+                                                {
+                                                    label: Names[1],
+                                                    data: GPAll[1],
+                                                    backgroundColor: '#FF0000',
+                                                    borderColor: '#FF0000',
+                                                    fill: 'no',
+                                                    borderWidth: '3',
+                                                    pointBorderWidth: '1',
+                                                    lineTension: '0',
+                                                },
+                                            
+                                                {
+                                                    label: Names[2],
+                                                    data: GPAll[2],
+                                                    backgroundColor: '#39ff33',
+                                                    borderColor: '#39ff33',
+                                                    fill: 'no',
+                                                    borderWidth: '3',
+                                                    pointBorderWidth: '1',
+                                                    lineTension: '0',
+                                                }]
+                                            }
+                                        }
+
+                                        if(GraphData)
+                                        {
+                                            (async () => {
+
+                                                const width = 800
+                                                const height = 600
+
+                                                const chartCallback = (ChartJS) => {
+                                                    ChartJS.plugins.register({
+                                                        beforeDraw: (chartInstance) => {
+                                                            const { ctx } = chartInstance.chart
+                                                            ctx.fillStyle = 'white'
+                                                            ctx.fillRect(0,0, chartInstance.chart.width, chartInstance.chart.height)
+                                                        }
+                                                    })
+                                                }
+
+                                                const chartJSNodeCanvas = new ChartJSNodeCanvas({width, height, chartCallback});
+
+                                                const configuration = {
+                                                    type: 'line',
+                                                    data: {
+                                                        labels: Dates,
+                                                        datasets: ActualData
+                                                    },
+
+                                                    options: {
+                                                        elements: {
+                                                            point:{
+                                                                radius: 0
+                                                            }
+                                                        },
+                                                        title: {
+                                                            display: true,
+                                                            text: 'Galactic Power Comparison',
+                                                            fontSize: 28,
+                                                            fontColor: '#000000'
+                                                        },
+                                                        legend: {
+                                                            display: true,
+                                                            labels: {
+                                                                fontSize: 20,
+                                                            },
+                                                        },
+                                                        scales: {
+                                                            yAxes: [{
+                                                                scaleLabel: {
+                                                                    display: true,
+                                                                    labelString: 'Galactic Power (in Millions)',
+                                                                    fontSize: 24,
+                                                                    fontColor: '#000000'
+                                                                },
+                                                                ticks: {
+                                                                    fontSize: 24,
+                                                                    fontColor: '#000000'
+                                                                }
+                                                            }],
+                                                            xAxes: [{
+                                                                scaleLabel: {
+                                                                    display: true,
+                                                                    labelString: 'Date',
+                                                                    fontSize: 24,
+                                                                    fontColor: '#000000'
+                                                                },
+                                                                ticks: {
+                                                                    fontSize: 24,
+                                                                    fontColor: '#000000'
+                                                                }
+                                                            }]
+                                                        }
+                                                    }
+                                                }
+
+                                                const image = await chartJSNodeCanvas.renderToBuffer(configuration)
+                                                const attachment = new MessageAttachment(image)
+
+                                                message.channel.send(attachment)
+                                            })()
+                                                                                        
+                                          //  message.channel.send("From " + Dates[0] + " to " + Dates[Dates.length-1] + " " + Name + "'s GP has " + IncreaseorDecrease +
+                                          //  " by " + PercentChange + "%.")
+                                        }
+                                    }
+                                )
+                            }
+                            else
+                                message.channel.send("No GP data returned for user")
+
+                        }
+                        else
+                            if(message != 'GuildWeekly')
+                                message.channel.send("Allycode not found within the GP data in the Mhanndalorian database")
+
+                    })()
+                }
+            }
+        )
+    }
+
+
+
+    
 }
 
 function toColumnName(num) {
@@ -1811,6 +2215,17 @@ function authorize(credentials, callback) {
       oAuth2Client.setCredentials(token);
       callback(oAuth2Client);
 }
+
+function authorize2(credentials, callback)
+{
+    const {client_secret, client_id, redirect_uris} = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+    client_id, client_secret, redirect_uris[0]);
+    var token = {"access_token":"ya29.a0AfH6SMBa53RjxvvgT_wM5531VFcmE6GM92qOCkc5A0yfp6wskFlCoaKEs95kWZExijlNiAMrXyHXL-4xzPVwPECN3kSl_rOp0_jIzG2ciM9KGKztg7R4p8A6GIJNxChpnYZ0xNluW7wlISDtO8VyVjL02Ame","refresh_token":"1//0dFJeJ2wmrEdFCgYIARAAGA0SNwF-L9IrcDvoT5oyt5b-wd4qFSoiaClGAHtIn2ryqmLkNTrvsrMx9ZpD6wtjyPyRAb8hdyPUXmw","scope":"https://www.googleapis.com/auth/drive","token_type":"Bearer","expiry_date":1615076535031}
+    oAuth2Client.setCredentials(token);
+    callback(oAuth2Client);
+}
+
 
 async function newFlairAnncouncment(){
 
@@ -2889,6 +3304,66 @@ client.on('message', message => {
             })()
         }
 
+        else if(message.content.toLowerCase().startsWith(prefix + 'setswgohid')){
+            if(message.channel.type =='dm')
+            {
+                message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
+                return 0;
+            }
+
+            if(CheckIfBlankOrUndefined(AllGuildData[GuildFoundRow][6]))
+            {
+                message.channel.send("Officer role not set.  Guild leader must set this value using the command " + AllGuildData[GuildFoundRow][7] + "setofficerrole before using this command.")
+                return 0;
+            }
+
+            if(!DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
+            {
+                message.channel.send("You must be an officer to execute setswgohid command")
+                return 0;
+            }
+
+            var CommandArray = message.content.toLowerCase().split(' ');
+
+            if(CommandArray[1] == undefined || isNaN(CommandArray[1]))
+            {
+                message.channel.send("Please specify SWGOH ID number for your guild.")
+                return 0
+            }
+
+            (async () => {
+                Result = await fetch("https://swgoh.gg/api/guild/" + CommandArray[1],
+                    {
+                        method: 'GET',
+                    }).then(function (response) {
+                        return response.json()
+                    })
+
+                    if(Result.data == undefined)
+                    {
+                        message.channel.send("Guild ID: " + CommandArray[1] + " not found." )
+                        return 0;
+                    }        
+        
+                    AllGuildData[GuildFoundRow][2] = "https://swgoh.gg/api/guild/" + CommandArray[1]//set SWGOH page in memory
+
+                    authorize(content, listMajors);
+                    function listMajors(auth)
+                    {
+                        const sheets = google.sheets({version: 'v4', auth});
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                            range: 'Guilds!C' + (GuildFoundRow + 2),
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: [[AllGuildData[GuildFoundRow][2]]]
+                            },
+                        })
+                    }
+                    message.channel.send("Success! Guild ID has been set to: \n" + "   **ID:** " + CommandArray[1] + "\n   **Name:** " + Result.data.name + "\n\nIf this is incorrect, please run command again.")
+            })()
+        }
+
         else if(message.content.toLowerCase().startsWith(prefix + 'setuserrole')){
             if(message.channel.type =='dm')
             {
@@ -3128,15 +3603,33 @@ client.on('message', message => {
         {
         //   PostWeeklyGPPerformanceIndividual(AllGuildData)
 
-            (async () => {
-                for(var i = 0; i < AllGuildData.length; i++)
-                {
-                    if(AllGuildData[i][1] != '814625223906689044')//Skip Mhanndalorian Bot server
-                    { 
-                        console.log(await GetSubscribers(AllGuildData, i))
-                    }
+
+        authorize2(content, listMajors);
+
+        function listMajors(auth)
+        {
+            var drive = google.drive({version:'v3', auth});
+
+            var copyRequest = {
+                name: 'aaa',
+                fileId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+
+            }
+        
+            drive.files.copy(
+                {  // Modified
+                  fileId: "1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ",
+                  requestBody: copyRequest  // or resource: copyRequest
+                },
+                function(err, response) {
+                  if (err) {
+                    console.log(err);
+                    return;
+                  }
+                 console.log(response);
                 }
-            })()
+              );
+    }
 
         // dmUsersMissedRaids()
 
@@ -3378,6 +3871,7 @@ client.on('message', message => {
         }
         else if(message.content.toLowerCase().startsWith(`${prefix}gpcompare`))
         {
+            console.log(message.author.username + " attempted to execute the gpcompare command.")
             if(message.channel.type == 'dm')
             {
                 message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
@@ -3401,13 +3895,39 @@ client.on('message', message => {
             {
                 var CommandArray = message.content.split(' ');
 
-                if(CommandArray.length != 3)
+                if(CommandArray.length <= 2 || CommandArray.length >= 6)
                 {
-                    message.channel.send("You must specify 2 users to compare.  For example: **" + prefix + "gpcompare user1 user2**")
+                    message.channel.send("You must specify 2 or 3 users to compare.  Replace # with number of days of history to display.  For example: \n"
+                    + "**" + "   " + prefix + "gpcompare user1 user2**\n"
+                    + "**" + "   " + prefix + "gpcompare user1 user2 #**\n"
+                    + "**" + "   " + prefix + "gpcompare user1 user2 user3 **\n"
+                    + "**" + "   " + prefix + "gpcompare user1 user2 user 3 #**\n")
                     return 0;
                 }
 
+                if(!isNaN(CommandArray[1]) && CommandArray[1] < 999)
+                {
+                    message.channel.send("The number entered for the first argument is too small.  When searching by allycode, you must enter at least 4 digits.")
+                    return 0;
+                }
+
+                if(!isNaN(CommandArray[2]) && CommandArray[2] < 999)
+                {
+                    message.channel.send("The number entered for the first argument is too small.  When searching by allycode, you must enter at least 4 digits.")
+                    return 0;
+                }
+
+                if(CommandArray.length == 5 && isNaN(CommandArray[4]))
+                {
+                    message.channel.send("When specifying 4 arguments to gpcompare function, the last one must be a number.")
+                    return 0;
+                }
+
+                else(Lookup(message,'gpcompare',AllGuildData,GuildFoundRow))
+
             }
+            else
+                message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + " role to execute this command.")
         }
 
         else if(message.content.toLowerCase().startsWith(`${prefix}gp`))
@@ -3429,7 +3949,7 @@ client.on('message', message => {
                 message.channel.send("Could not execute gp command.  You must have at least a Carbonite membership on Patreon to "
                 +"utilize this feature and be registered in the Mhanndalorian database.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>")
                 return 0;
-            } 
+            }
 
             if(DetermineIfGuildMember(AllGuildData[GuildFoundRow][8], message)) //Must be a standard user 
             {
