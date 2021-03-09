@@ -3454,6 +3454,11 @@ client.on('message', message => {
                             NamesAndCodes[i][1] = '';
                         }
 
+                        var today = new Date();
+                        var month = today.getMonth() + 1
+                        var day = today.getDate()
+                        var year = today.getFullYear()
+
                         var InitialData = new Array(54)
                         for(var i = 0; i < InitialData.length; i++)
                             InitialData[i] = new Array(21);
@@ -3463,8 +3468,10 @@ client.on('message', message => {
                             NamesAndCodes[i][0] = Result.players[i].data.name
                             NamesAndCodes[i][1] = Result.players[i].data.ally_code
 
-                            InitialData[i][0] =  Result.players[i].data.ally_code
-                            InitialData[i][3] = 'date'
+                            InitialData[i][0] = Result.players[i].data.ally_code
+                            InitialData[i][3] = month + "/" + day + "/" + year
+                            InitialData[i][8] = '0'
+                            InitialData[i][20] = 'Y'
                         }
     
                         sheets.spreadsheets.values.update({
@@ -3485,6 +3492,15 @@ client.on('message', message => {
                             valueInputOption: 'RAW',
                             resource: {
                                 values: [[date + " " + time]]
+                            },
+                        })
+
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: SheetID,
+                            range: 'Guild Members & Data!A66',  
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: InitialData
                             },
                         })
                     }
