@@ -62,6 +62,26 @@ function CheckMemberPatreonStatus(UserID)
     return 0
 }
 
+function RestartHerokuDyno()
+{
+    var request = require('request');
+
+    request.delete(
+    {
+        url: 'https://api.heroku.com/apps/mhanndalorian-bot/dynos/worker.1',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.heroku+json; version=3',
+            'Authorization': 'Bearer ' + '6dff47c6-f019-48a2-8c50-741ea2610c81'
+        }
+    },
+
+    function(error, response, body) {
+        if(error)
+            console.log(error)
+    });
+}
+
 async function GetSubscribers(AllGuildData,GuildFoundRow)
 {
     const guild = client.guilds.cache.get(AllGuildData[GuildFoundRow][1]);
@@ -606,7 +626,7 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltF
 
                             if(CheckIfBlankOrUndefined(rows))
                             {
-                                message.channel.send("There is no galactic power data stored in the database.  The database is updated daily")
+                                message.channel.send("There is no galactic power data stored in the database.  The database is updated daily.")
                                 return 0;
                             }
 
@@ -2421,6 +2441,12 @@ var job8 = new CronJob('30 18 * * 4', function() {
 }, null, true, 'America/New_York');
 job8.start();
 
+var job9 = new CronJob('0 3 * * *', function() {
+    console.log("Daily Heroku Dyno Restart")
+    RestartHerokuDyno()
+}, null, true, 'America/New_York');
+job9.start();
+
 async function PostWeeklyGPPerformanceIndividual(AllGuildData) {
     var searchObj = {
       searchTitle1: "Highest and Lowest GP Growth by Raw GP (Past 30 Days)",
@@ -3759,8 +3785,10 @@ client.on('message', message => {
         //FiveMinRaidReminder()
         //newFlairAnncouncment
 
+        RestartHerokuDyno()
+
         //CleanMIA()
-        UpdateUsersAndAllycodes()
+        //UpdateUsersAndAllycodes()
 
         //console.log(GetSubscribers(AllGuildData,GuildFoundRow))
 
