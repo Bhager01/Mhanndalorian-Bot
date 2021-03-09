@@ -295,6 +295,13 @@ function UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, comma
                         if (err) return console.log('The API returned an error: ' + err);
                     const rows = res.data.values;
                     var DiscordIDDuplicate = false
+
+                    if(CheckIfBlankOrUndefined(rows))
+                    {
+                        message.channel.send("No data in database yet.")
+                        return 0;
+                    }
+
                     if (rows.length)
                     {
                         if(command == 'register')
@@ -551,6 +558,12 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltF
                 var RunOnce = true
 
                 var Name = ''
+
+                if(CheckIfBlankOrUndefined(rows))
+                {
+                    message.channel.send("No data in database yet.")
+                    return 0;
+                }
 
                 if(DiscordIDParam != 'guildGP')
                 {
@@ -818,6 +831,13 @@ function Lookup(message, CallingFunction, AllGuildData, GuildFoundRow)
         }, (err, res) => {
             if (err) return console.log('The API returned an error: ' + err);
         const rows = res.data.values;
+
+        if(CheckIfBlankOrUndefined(rows))
+        {
+            message.channel.send("No data in database yet.")
+            return 0;
+        }
+        
         if (rows.length)
         {
             CommandArray = message.content.split(/ (.+)/)
@@ -1529,7 +1549,7 @@ function UpdateTotalGP() {
                 }
                 else
                     client.users.cache.get(AllGuildData[k][5]).send("Update Total GP function could not run for " + AllGuildData[k][0] + " due to SWGOH API Link "
-                    + "being blank or undefined. Please run " + AllGuildData[k][7] + "setswgohid command.")
+                    + "being blank or undefined. Please run " + AllGuildData[k][7] + "setswgohurl command.")
             }
         }
     }
@@ -1777,7 +1797,7 @@ function UpdateUsersAndAllycodes()
                             sheets.spreadsheets.values.update({
                                 spreadsheetId: SheetID,
                                 range: 'XML Data!A3:B56',  
-                                valueInputOption: 'RAW',
+                                valueInputOption: 'USER_ENTERED', //CHANGED RECENTLY
                                 resource: {
                                     values: NamesAndCodes
                                 },
@@ -1797,7 +1817,7 @@ function UpdateUsersAndAllycodes()
                     })()
                 }
                 else
-                    client.users.cache.get(AllGuildData[k][5]).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL.  Contact Mhann at <@406945430967156766>.")
+                    client.users.cache.get(406945430967156766).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL. Guild ID: " + AllGuildData[k][1])
             }
         }
     }
@@ -2797,7 +2817,7 @@ client.on("guildCreate", function(guild){
                         +"   1) !setofficerrole \n"
                         +"   2) !setuserrole \n"
                         +"   3) !setofficerchannel \n"
-                        +"   4) !setswgohid \n\n"
+                        +"   4) !setswgohurl \n\n"
                         +"To utilize all features, you will need to go to https://www.patreon.com/MhannUhdea and choose a membership tier.  If you have any "
                         + "questions or problems, please reach out to me at <@406945430967156766> or on my server for Mhanndalorian Bot.")
 
@@ -3364,7 +3384,7 @@ client.on('message', message => {
             })()
         }
 
-        else if(message.content.toLowerCase().startsWith(prefix + 'setswgohid')){
+        else if(message.content.toLowerCase().startsWith(prefix + 'setswgohurl')){
             if(message.channel.type =='dm')
             {
                 message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
@@ -3379,20 +3399,22 @@ client.on('message', message => {
 
             if(!DetermineIfOwnerOrOfficer(AllGuildData[GuildFoundRow][5], AllGuildData[GuildFoundRow][6], message))
             {
-                message.channel.send("You must be an officer to execute setswgohid command")
+                message.channel.send("You must be an officer to execute setswgohurl command")
                 return 0;
             }
 
             var CommandArray = message.content.toLowerCase().split(' ');
 
-            if(CommandArray[1] == undefined || isNaN(CommandArray[1]))
+            if(CommandArray[1] == undefined)
             {
-                message.channel.send("Please specify SWGOH ID number for your guild.")
+                message.channel.send("Please specify SWGOH URL for your guild.")
                 return 0
             }
 
+            var SWGOHID = CommandArray[1].match(/[0-9]+/);
+
             (async () => {
-                Result = await fetch("https://swgoh.gg/api/guild/" + CommandArray[1],
+                var Result = await fetch("https://swgoh.gg/api/guild/" + SWGOHID[0],
                     {
                         method: 'GET',
                     }).then(function (response) {
@@ -3401,11 +3423,11 @@ client.on('message', message => {
 
                     if(Result.data == undefined)
                     {
-                        message.channel.send("Guild ID: " + CommandArray[1] + " not found." )
+                        message.channel.send("Guild ID: " + SWGOHID[0] + " not found." )
                         return 0;
                     }        
         
-                    AllGuildData[GuildFoundRow][2] = "https://swgoh.gg/api/guild/" + CommandArray[1]//set SWGOH page in memory
+                    AllGuildData[GuildFoundRow][2] = "https://swgoh.gg/api/guild/" + SWGOHID[0]//set SWGOH page in memory
 
                     authorize(content, listMajors);
                     function listMajors(auth)
@@ -3419,8 +3441,53 @@ client.on('message', message => {
                                 values: [[AllGuildData[GuildFoundRow][2]]]
                             },
                         })
+
+                        message.channel.send("Success! Guild ID has been set to: \n" + "   **ID:** " + SWGOHID[0] + "\n   **Name:** " + Result.data.name + "\n\nIf this is incorrect, please run command again.")
+
+                        const SheetID = AllGuildData[GuildFoundRow][3];
+    
+                        var NamesAndCodes = new Array(54);
+    
+                        for (var i = 0; i < NamesAndCodes.length; i++) { 
+                            NamesAndCodes[i] = new Array(2);
+                            NamesAndCodes[i][0] = '';
+                            NamesAndCodes[i][1] = '';
+                        }
+
+                        var InitialData = new Array(54)
+                        for(var i = 0; i < InitialData.length; i++)
+                            InitialData[i] = new Array(21);
+    
+                        for(var i = 0; i < Result.players.length; i++)
+                        {
+                            NamesAndCodes[i][0] = Result.players[i].data.name
+                            NamesAndCodes[i][1] = Result.players[i].data.ally_code
+
+                            InitialData[i][0] =  Result.players[i].data.ally_code
+                            InitialData[i][3] = 'date'
+                        }
+    
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: SheetID,
+                            range: 'XML Data!A3:B56',  
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                values: NamesAndCodes
+                            },
+                        })
+    
+                        var time = new Date().toLocaleTimeString()
+                        var date = new Date().toLocaleDateString()
+    
+                        sheets.spreadsheets.values.update({
+                            spreadsheetId: SheetID,
+                            range: 'Guild Members & Data!C122',  
+                            valueInputOption: 'RAW',
+                            resource: {
+                                values: [[date + " " + time]]
+                            },
+                        })
                     }
-                    message.channel.send("Success! Guild ID has been set to: \n" + "   **ID:** " + CommandArray[1] + "\n   **Name:** " + Result.data.name + "\n\nIf this is incorrect, please run command again.")
             })()
         }
 
@@ -3849,13 +3916,14 @@ client.on('message', message => {
                             .setColor(color)
                             .setTitle(title)
                             .setDescription("All commands start with either" + prefix + " or eb.  If a command has *arg* after it, it requires an argument.\n\n"
-                                + "The following commands are used to setup the bot.  Each command must be run one time for the bot to be full functional. \n"
+                                + "The following commands are used to setup the bot.  Each command must be run one time (unless a default value is provided) for the bot to be full functional. \n"
 
                                 + "> __**" + prefix + "setofficerchannel**__ __** #OFCChannel**__ - Sets the channel that Mhanndalorian bot will use for officer announcements. \n"
                                 + "> __**" + prefix + "setofficerrole**__ __** @OFCRole**__ - Sets the role that designates a user as an officer. \n"
                                 + "> __**" + prefix + "setprefix**__ __***arg***__ - Sets the prefix used for Mhanndalorian Bot commands.  Can only be run by server owner.  Default prefix is !.  Replace arg with a single character. \n"
-                                + "> __**" + prefix + "setuserchannel**__ __** #UserChannel**__ - Sets the channel that Mhanndalorian bot will use for guild wide announcements. \n"
-                                + "> __**" + prefix + "setuserrole**__ __** @UserRole**__ - Sets the role that designates a user as a member of the guild in game. \n\n"
+                                + "> __**" + prefix + "setuserchannel**__ __** #UserChannel**__ - Sets the channel that Mhanndalorian bot will use for guild wide announcements.  Default is the Mhanndalorian-Bot channel. \n"
+                                + "> __**" + prefix + "setuserrole**__ __** @UserRole**__ - Sets the role that designates a user as a member of the guild in game. \n"
+                                + "> __**" + prefix + "setswgohurl**__ __** arg**__ - Sets SWGOH URL.  Replace arg with the link to your guild's SWGOH.GG page. \n\n"
 
                                 + "__**" + "eb.UserAllyCode.register @DiscordUser**__ - Used to register a specific Discord user & ally code for Mhanndalorian Bot.  No dashes in ally code (eb.123456789.register). \n\n"
                                 + "__**" + "eb.UserAllyCode.unregister @DiscordUser**__ - Used to unregister a specific Discord user & ally code from Mhanndalorian Bot.  No dashes in ally code (eb.123456789.unregister). \n\n"
@@ -3893,6 +3961,12 @@ client.on('message', message => {
                             + "> __**" + prefix + "gp n**__ - (PATREON only) - Will display your GP history back up to n days (replace n with a number of days). \n "
                             + "> __**" + prefix + "gp guild**__ - (PATREON only) - Display all GP history for the entire guild. \n "
                             + "> __**" + prefix + "gp guild n**__ - (PATREON only) - Display GP history back up to n days for entire guild (replace n with a number of days). \n \n"
+
+                            + "__**" + prefix + "gpcompare**__ - (PATREON only) - Command used to display graph that compares galactic power of members.  The user argument can be an allycode, Discord name, or SWGOH name.  Partial input is ok.  The command can be run in the following ways: \n"
+                            + "> __**" + prefix + "gpcompare user1 user 2**__ - (PATREON only) - Compare galactic power history of user1 & user2. \n"
+                            + "> __**" + prefix + "gpcompare user1 user 2 n**__ - (PATREON only) - Compare galactic power history of user1 & user2 up to n days back (replace n with a number of days). \n "
+                            + "> __**" + prefix + "gpcompare user1 user2 user 3**__ - (PATREON only) -  Compare galactic power history of user1, user2 & user3. \n "
+                            + "> __**" + prefix + "gpcompare user1 user2 user3 n**__ - (PATREON only) - Compare galactic power history of user1, user2 & user3 up to n days back (replace n with a number of days). \n \n"
 
                             + "__**" + prefix + "help**__ - Display this help message. \n \n"
                             + "__**" + prefix + "lookup**__ __***arg***__ - Looks up a user by SWGOH name, SWGOH Ally Code, or Discord Name. *Arg* can "
