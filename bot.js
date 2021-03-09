@@ -603,6 +603,13 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltF
                     }, (err, res) => {
                             if (err) return console.log('The API returned an error: ' + err);
                             const rows = res.data.values;
+
+                            if(CheckIfBlankOrUndefined(rows))
+                            {
+                                message.channel.send("There is no galactic power data stored in the database.  The database is updated daily")
+                                return 0;
+                            }
+
                             for(var i = 0; i < rows[0].length; i++) //Match Allycode to column letter
                             {
                                 if(Allycode == rows[0][i])
