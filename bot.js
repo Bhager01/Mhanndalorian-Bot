@@ -2889,41 +2889,62 @@ client.on("guildCreate", function(guild){
 
         authorize2(content, listMajors);
 
-        function listMajors(auth)
+        async function listMajors(auth)
         {
             var drive = google.drive({version:'v3', auth});
 
-            var copyRequest = {
-                name: guild.name + ' (' + guild.id + ')',
-                fileId: '1auIKvvtl6hMzeU-FQe2He315Ya3B5Qsq-N1vlCIEy9s',
-                parents: ['1BpYHQGsr-6BA45Vz_spUgmIhO0wHE6Og']
-            }
-        
-            drive.files.copy(
-                {  // Modified
-                  fileId: "1auIKvvtl6hMzeU-FQe2He315Ya3B5Qsq-N1vlCIEy9s",
-                  requestBody: copyRequest  // or resource: copyRequest
-                },
-                function(err, response) {
-                  if (err) {
-                    console.log(err);
-                    return;
-                  }
-                  else
-                  {
-                    AllGuildData.push([guild.name,guild.id,,response.data.id,,guild.ownerID,,'!',,NewChannel.id,,'yes'])
-                    const sheets = google.sheets({version: 'v4', auth});
-                    sheets.spreadsheets.values.update({
-                        spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
-                        range: 'Guilds!A' + BlankRow,
-                        valueInputOption: 'USER_ENTERED',
-                        resource: {
-                            values: [[guild.name,guild.id,,response.data.id,,guild.ownerID,,'!',,NewChannel.id,,'yes']]
+            var fileMetadata = {
+                'name': guild.name + ' (' + guild.id + ')',
+                'parents': ['1BpYHQGsr-6BA45Vz_spUgmIhO0wHE6Og'],
+                'mimeType': 'application/vnd.google-apps.folder'
+              };
+    
+              
+              await drive.files.create({ //create folder
+                resource: fileMetadata,
+                fields: 'id'
+              }, function (err, folder) {
+                if (err) {
+                  console.log(err);
+                  return;
+                }                
+                else
+                {
+                    var copyRequest = {
+                        name: guild.name + ' (' + guild.id + ')',
+                        fileId: '1auIKvvtl6hMzeU-FQe2He315Ya3B5Qsq-N1vlCIEy9s',
+                        parents: [folder.data.id]
+                    }
+                
+                    drive.files.copy( //create copy of blank template
+                        {  // Modified
+                          fileId: "1auIKvvtl6hMzeU-FQe2He315Ya3B5Qsq-N1vlCIEy9s",
+                          requestBody: copyRequest  // or resource: copyRequest
                         },
-                    })
-                  }
+                        function(err, response) {
+                          if (err) {
+                            console.log(err);
+                            return;
+                          }
+                          else
+                          {
+                            AllGuildData.push([guild.name,guild.id,,response.data.id,,guild.ownerID,,'!',,NewChannel.id,,'yes',folder.data.id])
+                            const sheets = google.sheets({version: 'v4', auth});
+                            sheets.spreadsheets.values.update({
+                                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                                range: 'Guilds!A' + BlankRow,
+                                valueInputOption: 'USER_ENTERED',
+                                resource: {
+                                    values: [[guild.name,guild.id,,response.data.id,,guild.ownerID,,'!',,NewChannel.id,,'yes',folder.data.id]]
+                                },
+                            })
+                          }
+                        }
+                      );
+
+
                 }
-              );
+            });
         }
     })()
 });
@@ -3785,10 +3806,11 @@ client.on('message', message => {
         //FiveMinRaidReminder()
         //newFlairAnncouncment
 
-        RestartHerokuDyno()
+        //RestartHerokuDyno()
 
         //CleanMIA()
         //UpdateUsersAndAllycodes()
+          
 
         //console.log(GetSubscribers(AllGuildData,GuildFoundRow))
 
