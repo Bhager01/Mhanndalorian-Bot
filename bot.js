@@ -122,6 +122,12 @@ async function GetSubscribers(AllGuildData,GuildFoundRow)
 
         DiscordIDsFromDatabase = await GetSheetDataAsync(request)
 
+        if(DiscordIDsFromDatabase == undefined)
+        {
+            console.log("Database contains no data.  Guild ID: " + AllGuildData[GuildFoundRow][1])
+            return 0;
+        }
+
         var SubscriberLevel = 0
     
         for(var i = 0; i < DiscordIDs.length; i++)
@@ -3806,7 +3812,7 @@ client.on('message', message => {
         //FiveMinRaidReminder()
         //newFlairAnncouncment
 
-        //RestartHerokuDyno()
+        RestartHerokuDyno()
 
         //CleanMIA()
         //UpdateUsersAndAllycodes()
