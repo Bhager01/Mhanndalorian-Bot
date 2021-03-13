@@ -41,6 +41,73 @@ client.once('ready', () => {
     BotUpDate = new Date().toLocaleDateString()
 })
 
+
+
+
+async function GetMemberTrialStatus(AllGuildData,GuildFoundRow, message)
+{
+    async function authorize(credentials, callback)
+    {
+        const {client_secret, client_id, redirect_uris} = credentials.installed;
+        const oAuth2Client = new google.auth.OAuth2(
+            client_id, client_secret, redirect_uris[0]);
+        token =  {"access_token":"ya29.a0Adw1xeVMaJdFu4_Prd1JMj5VW6JLzPAux780mPR-FKiDT2XNCJ1xdywo5Q2mOCgj6PXzQEkrJJ68TymBCLF1NGIxJdwd6r6F-pDXqk8th8dc6bd_v711TCJpxdbEBSmXktCMFwb241KyLv1rJDvox_15WH4LLpNU9x8","refresh_token":"1//0dpVeaJ3ELcQBCgYIARAAGA0SNwF-L9IrUePhHzcm67KPL99LpKuThsJVLerdoAtDw5zTBbWhaxR0PobydX1sUCmVx8TdYXXpewA","scope":"https://www.googleapis.com/auth/spreadsheets","token_type":"Bearer","expiry_date":1583977474403}
+        oAuth2Client.setCredentials(token);
+        return await callback(oAuth2Client);
+    }
+    async function listMajors(auth)
+    {
+        const sheets = google.sheets({version: 'v4', auth})
+        var request = {
+            spreadsheetId: AllGuildData[GuildFoundRow][3],
+            range: 'Guild Members & Data!G66:V119'
+        }
+
+        function GetSheetDataAsync(request)
+        {
+            return new Promise(function(resolve,reject) {
+                sheets.spreadsheets.values.get(request, function(err, res){
+                    if (err !== null) reject(err);
+                    else resolve(res.data.values);
+                });
+
+            });
+        }
+
+        var Data = ""
+
+        Data = await GetSheetDataAsync(request)
+
+        if(Data == undefined)
+        {
+            console.log("Database contains no data.  Guild ID: " + AllGuildData[GuildFoundRow][1])
+            return 0;
+        }
+
+        for(var i = 0; i < Data.length; i++)
+        {
+            if(message.author.id == Data[i][0].replace("<@","").replace(">","").replace(" ",""))
+            {
+                sheets.spreadsheets.values.update({
+                    spreadsheetId: AllGuildData[GuildFoundRow][3],
+                    range: 'Guild Members & Data!V' + (i+66),
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: [[Data[i][15] - 1]]
+                    },
+                })
+
+                return Data[i][15]
+            }
+        }
+    }
+
+    return (await authorize(content, listMajors));
+}
+
+
+
+
 function CheckMemberPatreonStatus(UserID)
 {
     const MhanndalorianBotGuild = client.guilds.cache.get('814625223906689044')
@@ -514,9 +581,43 @@ function UpdateMhanndalorianDatabase(message, AllGuildData, GuildFoundRow, comma
             message.channel.send("You must be assigned the " + message.guild.roles.cache.get(AllGuildData[GuildFoundRow][8]).name + " role to execute this command.")
 }
 
-function GuildSearch(GuildID)
+async function GuildSearch(GuildID)
 {
+    if(AllGuildData == undefined)
+    {
+        console.log("AllGuildData had to be set in GuildSearch function")
+        AllGuildData = await authorize(content, GetSheetDataAsync)
+        
+        async function authorize(credentials, callback) {
+            const {client_secret, client_id, redirect_uris} = credentials.installed;
+            const oAuth2Client = new google.auth.OAuth2(
+                client_id, client_secret, redirect_uris[0]);
+              token =  {"access_token":"ya29.a0Adw1xeVMaJdFu4_Prd1JMj5VW6JLzPAux780mPR-FKiDT2XNCJ1xdywo5Q2mOCgj6PXzQEkrJJ68TymBCLF1NGIxJdwd6r6F-pDXqk8th8dc6bd_v711TCJpxdbEBSmXktCMFwb241KyLv1rJDvox_15WH4LLpNU9x8","refresh_token":"1//0dpVeaJ3ELcQBCgYIARAAGA0SNwF-L9IrUePhHzcm67KPL99LpKuThsJVLerdoAtDw5zTBbWhaxR0PobydX1sUCmVx8TdYXXpewA","scope":"https://www.googleapis.com/auth/spreadsheets","token_type":"Bearer","expiry_date":1583977474403}
+              oAuth2Client.setCredentials(token);
+              return await callback(oAuth2Client);
+        }
 
+        async function GetSheetDataAsync(auth)
+        {
+            const sheets = google.sheets({version: 'v4', auth})
+            var request = {
+                spreadsheetId: '1p5nViz3_kCnurF9sHZE1PGsu22RXxh-qf_7JkonbipQ',
+                range: 'Guilds!A2:K30',
+            }
+
+            return new Promise(function(resolve,reject) {
+                sheets.spreadsheets.values.get(request, function(err, res){
+                    if (err !== null) reject(err);
+                    else
+                    {
+                        AllGuildData = res.data.values
+                        resolve(res.data.values);
+                    }
+                });
+
+            });
+        }
+    }
     for(var i = 0; i < AllGuildData.length; i++)
     {
         if(AllGuildData[i][1] == GuildID)
@@ -1100,6 +1201,12 @@ function GPCompare(message, GPCompareData, DaysBack, AllGuildData, GuildFoundRow
                 if (err) return console.log('The API returned an error: ' + err);
                 const rows = res.data.values;
 
+                if(CheckIfBlankOrUndefined(rows))
+                {
+                    message.channel.send("No data in database yet.")
+                    return 0;
+                }
+
                 var GPAllRaw = []
                 var GPAll = []
                 var GraphData = false
@@ -1432,7 +1539,7 @@ function UpdateTotalGP() {
             {
                 if(!CheckIfBlankOrUndefined(AllGuildData[k][2],  AllGuildData[k][3]))
                 { 
-                    if(await GetSubscribers(AllGuildData, k) >= 1)
+                    if(true)  //used to check for subscribers using await GetSubscribers(AllGuildData, k) >= 1
                     {           
                         const BaseURL = AllGuildData[k][2];
                         const SheetID = AllGuildData[k][3];
@@ -1790,10 +1897,10 @@ function UpdateUsersAndAllycodes()
             {
                 if(!CheckIfBlankOrUndefined(AllGuildData[k][2]) && AllGuildData[k][2].toLowerCase().startsWith("https://swgoh.gg/api/guild"))
                 {
-                    if(await GetSubscribers(AllGuildData, k) < 1 && hours == 17 && (day == 2 || day == 6))
+                    if(await GetSubscribers(AllGuildData, k) < 1 && hours == 17 && (day == 6))
                     {
                         console.log("Please Subscribe - Update users and Allycodes - Guild ID: " + AllGuildData[k][1] + "   QZ")
-                        client.users.cache.get(AllGuildData[k][5]).send("You have installed Mhanndalorian Bot, but do not yet have any Patreons in your Guild.  You must have at least one Patreon subscriber "
+                        client.users.cache.get(AllGuildData[k][5]).send("You have installed Mhanndalorian Bot, but do not yet have any Patrons in your Guild.  You must have at least one Patreon subscriber "
                         +"that is registered in the Mhanndalorian database to utilize certain features.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>  Guild ID: " + AllGuildData[k][1])
                     }
                     
@@ -3008,7 +3115,7 @@ client.on("guildDelete", function(guild){
     }
 });
 
-client.on('message', message => {
+client.on('message', async message => {
     var bot = message.author.bot
     var wookieGuild
 
@@ -3057,7 +3164,7 @@ client.on('message', message => {
     }
 
     var GuildFoundRow = -1;
-    GuildFoundRow = GuildSearch(message.guild.id)
+    GuildFoundRow = await GuildSearch(message.guild.id)
     if(GuildFoundRow == -1)
     {
         if(bot == false)
@@ -3808,11 +3915,14 @@ client.on('message', message => {
 
         // dmUsersMissedRaids()
 
+        //UpdateTotalGP();
+
         //PostWeeklyGuildGP()
         //FiveMinRaidReminder()
         //newFlairAnncouncment
+        
 
-        RestartHerokuDyno()
+        //RestartHerokuDyno()
 
         //CleanMIA()
         //UpdateUsersAndAllycodes()
@@ -4056,7 +4166,7 @@ client.on('message', message => {
         }
         else if(message.content.toLowerCase().startsWith(`${prefix}gpcompare`))
         {
-            console.log(message.author.username + "executed the gpcompare command.")
+            console.log(message.author.username + " executed the gpcompare command.")
             if(message.channel.type == 'dm')
             {
                 message.channel.send("This command can not be run in a direct message. Please run the command on a server.")
@@ -4131,9 +4241,17 @@ client.on('message', message => {
 
             if(CheckMemberPatreonStatus(message.author.id) < 1)
             {
-                message.channel.send("Could not execute gp command.  You must have at least a Carbonite membership on Patreon to "
-                +"utilize this feature and be registered in the Mhanndalorian database.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>")
-                return 0;
+                var TrialStatus =  await GetMemberTrialStatus(AllGuildData, GuildFoundRow, message)
+                if(TrialStatus > 0)
+                {
+                    message.channel.send("Since you are not a Patreon you may issue this command " + (TrialStatus - 1) + " more times(s).  To use this command unrestricted, please become a Patron.")
+                }
+                else
+                {
+                    message.channel.send("Could not execute gp command.  You must have at least a Carbonite membership on Patreon to "
+                    +"utilize this feature and be registered in the Mhanndalorian database.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>")
+                    return 0;
+                }
             }
 
             if(DetermineIfGuildMember(AllGuildData[GuildFoundRow][8], message)) //Must be a standard user 
