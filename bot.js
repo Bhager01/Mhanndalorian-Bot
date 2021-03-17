@@ -44,7 +44,7 @@ client.once('ready', () => {
 
 
 
-async function GetMemberTrialStatus(AllGuildData,GuildFoundRow, message)
+async function GetMemberTrialStatus(AllGuildData,GuildFoundRow, message, SubtractOneFromTrial)
 {
     async function authorize(credentials, callback)
     {
@@ -88,14 +88,17 @@ async function GetMemberTrialStatus(AllGuildData,GuildFoundRow, message)
         {
             if(message.author.id == Data[i][0].replace("<@","").replace(">","").replace(" ",""))
             {
-                sheets.spreadsheets.values.update({
-                    spreadsheetId: AllGuildData[GuildFoundRow][3],
-                    range: 'Guild Members & Data!V' + (i+66),
-                    valueInputOption: 'USER_ENTERED',
-                    resource: {
-                        values: [[Data[i][15] - 1]]
-                    },
-                })
+                if(SubtractOneFromTrial == true)
+                {
+                    sheets.spreadsheets.values.update({
+                        spreadsheetId: AllGuildData[GuildFoundRow][3],
+                        range: 'Guild Members & Data!V' + (i+66),
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            values: [[Data[i][15] - 1]]
+                        },
+                    })
+                }
 
                 return Data[i][15]
             }
@@ -640,13 +643,15 @@ function DetermineIfOwnerOrOfficer(GuildOwnerID, OfficerRoleID, message)
     return false;
 }
 
-function DetermineIfGuildMember(UserRoleID, message)
+function DetermineIfGuildMemberOrOfficer(UserRoleID, OfficerRoleID, message)
 {  
     if(UserRoleID != undefined)
-    {
         if(message.member.roles.cache.has(UserRoleID))
             return true;
-    }
+
+    if(OfficerRoleID != undefined)
+        if(message.member.roles.cache.has(OfficerRoleID))
+            return true;
 
     return false;
 }
@@ -794,6 +799,17 @@ function GP(message, DiscordIDParam, DaysBack, AllGuildData, GuildFoundRow, AltF
                                                     }
 
                                                     (async () => {
+                                                        var CommandArray = message.content.split(' ');
+                                                        var TrialCheck = true
+                                            
+                                                        if(message == 'GuildWeekly' || CheckMemberPatreonStatus(message.author.id) >= 1 || (CommandArray[1] != undefined && CommandArray[1].toLowerCase() == 'guild'))
+                                                            TrialCheck = false
+
+                                                        if(TrialCheck)
+                                                        {
+                                                            var TrialStatus = await GetMemberTrialStatus(AllGuildData, GuildFoundRow, message, true)
+                                                            message.channel.send("Since you are not a Patreon you may issue this command " + (TrialStatus - 1) + " more times(s).  To use this command unrestricted, please become a Patron.")
+                                                        }
 
                                                         const width = 800
                                                         const height = 600
@@ -1957,7 +1973,11 @@ function UpdateUsersAndAllycodes()
                     })()
                 }
                 else
-                    client.users.cache.get(406945430967156766).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL. Guild ID: " + AllGuildData[k][1])
+                {
+                    client.users.cache.get(AllGuildData[k][5]).send("UpdateUsersandAllyCodes failed to complete due to improper SWGOH API URL. "
+                    + "Please run **" + AllGuildData[k][7] + "setswgohurl**")
+                    console.log("SWGOH URL Error.  Guild: " + AllGuildData[k][1] + "  QZ")
+                }
             }
         }
     }
@@ -3925,7 +3945,7 @@ client.on('message', async message => {
         //RestartHerokuDyno()
 
         //CleanMIA()
-        //UpdateUsersAndAllycodes()
+        UpdateUsersAndAllycodes()
           
 
         //console.log(GetSubscribers(AllGuildData,GuildFoundRow))
@@ -4186,7 +4206,7 @@ client.on('message', async message => {
                 return 0;
             }
 
-            if(DetermineIfGuildMember(AllGuildData[GuildFoundRow][8], message)) //Must be a standard user 
+            if(DetermineIfGuildMemberOrOfficer(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][6], message)) //Must be a standard user or officer
             {
                 var CommandArray = message.content.split(' ');
 
@@ -4239,14 +4259,16 @@ client.on('message', async message => {
                 return 0;
             }
 
-            if(CheckMemberPatreonStatus(message.author.id) < 1)
+            var CommandArray = message.content.split(' ');
+            var TrialCheck = true
+
+            if(CheckMemberPatreonStatus(message.author.id) >= 1 || (CommandArray[1] != undefined && CommandArray[1].toLowerCase() == 'guild'))
+                TrialCheck = false
+
+            if(TrialCheck)
             {
-                var TrialStatus =  await GetMemberTrialStatus(AllGuildData, GuildFoundRow, message)
-                if(TrialStatus > 0)
-                {
-                    message.channel.send("Since you are not a Patreon you may issue this command " + (TrialStatus - 1) + " more times(s).  To use this command unrestricted, please become a Patron.")
-                }
-                else
+                var TrialStatus =  await GetMemberTrialStatus(AllGuildData, GuildFoundRow, message, false)
+                if(TrialStatus <= 0)
                 {
                     message.channel.send("Could not execute gp command.  You must have at least a Carbonite membership on Patreon to "
                     +"utilize this feature and be registered in the Mhanndalorian database.  Subscribe to Mhanndalorian Bot at <https://www.patreon.com/MhannUhdea>")
@@ -4254,10 +4276,8 @@ client.on('message', async message => {
                 }
             }
 
-            if(DetermineIfGuildMember(AllGuildData[GuildFoundRow][8], message)) //Must be a standard user 
+            if(DetermineIfGuildMemberOrOfficer(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][6], message)) //Must be a standard user or officer
             {
-                var CommandArray = message.content.split(' ');
-
                 if(CommandArray[1] != undefined) //user entered something after gp command
                 {
                     if(isNaN(CommandArray[1]))
@@ -4958,29 +4978,11 @@ client.on('message', async message => {
         }
         else
         {
-            (async () => { 
-                const guild = client.guilds.cache.get("505515654833504266");
-
-                try {var User =  await client.users.fetch(message.author.id)}
-                catch(e) {
-                    console.log(e)
-                    console.log("Error setting User from fetching message.author.id. QZ")
-                    return;
-                };
-
-                try {var GuildMember =  await guild.members.fetch(User)}
-                catch(e) {
-                    console.log(e)
-                    console.log("Error setting GuildMember from fetching User. QZ")
-                    return;
-                };
-
-                if(GuildMember.roles.cache.has("530083964380250116"))
-                {
-                    message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
-                    console.log("Unknown Command: " + message.content + " issued by " + message.author.username + ". QZ")
-                }
-            })()
+            if(DetermineIfGuildMemberOrOfficer(AllGuildData[GuildFoundRow][8], AllGuildData[GuildFoundRow][6], message))
+            {
+                message.channel.send(message.content + " command not recognized.  Type !help for a list of available commands.")
+                console.log("Unknown Command: " + message.content + " issued by " + message.author.username + ". QZ")
+            }
         }
     }
 //check this xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
